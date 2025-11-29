@@ -62,6 +62,31 @@
             text-align: left;
         }
         
+        .search-mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .mode-option {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .mode-radio {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+        
+        .mode-label {
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+        }
+        
         .results-container {
             margin-top: 20px;
             display: none;
@@ -125,15 +150,32 @@
 </head>
 <body>
     <div class="search-container">
-        <h2>Поиск товаров (29.11.2025)</h2>
+        <h2>Поиск товаров</h2>
         <input type="text" 
                class="search-input" 
                id="searchInput" 
                placeholder="Введите артикул, штрихкод, наименование или комбинацию через / ..."
                autocomplete="off">
+        
+        <!-- Блок выбора режима поиска -->
+        <div class="search-mode-selector">
+            <div class="mode-option">
+                <input type="radio" id="modeGeneral" name="searchMode" class="mode-radio" value="general" checked>
+                <label for="modeGeneral" class="mode-label">Общий</label>
+            </div>
+            <div class="mode-option">
+                <input type="radio" id="modeArticle" name="searchMode" class="mode-radio" value="article">
+                <label for="modeArticle" class="mode-label">Артикул</label>
+            </div>
+            <div class="mode-option">
+                <input type="radio" id="modeBarcode" name="searchMode" class="mode-radio" value="barcode">
+                <label for="modeBarcode" class="mode-label">Штрихкод</label>
+            </div>
+        </div>
+        
         <button class="search-button" id="searchButton">Найти</button>
         <div class="search-hint">Поиск по артикулу, штрихкоду и наименованию товара</div>
-        <div class="search-hint">Для комбинированного поиска используйте символ / (например: маркер/KS-423) - первая часть в наименовании, вторая в артикуле</div>
+        <div class="search-hint">Для комбинированного поиска используйте символ / (например: маркер/423) - первая часть в наименовании, вторая в артикуле</div>
         
         <div class="results-container" id="resultsContainer">
             <!-- Результаты поиска будут здесь -->
@@ -141,6 +183,7 @@
     </div>
 
     <script>
+        // Пример данных (замените на загрузку из вашего файла)
         const productsData = `6014991490300;KS-14903;Шары воздушные для моделирования 23см;0.70;0.70;
 2005000003370;KS-95-12;Простые карандаши.(Дешёвые,);1.00;1.00;
 2000000002675;KS-95-12;Простые карандаши.(Дешёвые,);1.00;1.00;
@@ -20379,36 +20422,56 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         const searchInput = document.getElementById('searchInput');
         const searchButton = document.getElementById('searchButton');
         const resultsContainer = document.getElementById('resultsContainer');
+        const searchModeRadios = document.querySelectorAll('input[name="searchMode"]');
+
+        // Функция для получения текущего режима поиска
+        function getCurrentSearchMode() {
+            const selectedRadio = document.querySelector('input[name="searchMode"]:checked');
+            return selectedRadio ? selectedRadio.value : 'general';
+        }
 
         // Функция поиска
         function searchProducts() {
             const query = searchInput.value.trim();
+            const searchMode = getCurrentSearchMode();
             
             if (!query) {
                 resultsContainer.style.display = 'none';
                 return;
             }
 
-            let searchMode = 'обычный';
             let results = [];
+            let displaySearchMode = '';
 
             // Проверяем, есть ли символ / для комбинированного поиска
-            if (query.includes('/')) {
+            if (query.includes('/') && searchMode === 'general') {
                 const parts = query.split('/').map(part => part.trim()).filter(part => part);
                 
                 if (parts.length >= 2) {
-                    searchMode = 'комбинированный';
+                    displaySearchMode = 'комбинированный';
                     results = performCombinedSearch(parts);
                 } else {
                     // Если только один параметр после /, ищем обычным способом
-                    results = performSimpleSearch(query.replace('/', ''));
+                    results = performSimpleSearch(query.replace('/',''), searchMode);
+                    displaySearchMode = getSearchModeDisplayName(searchMode);
                 }
             } else {
-                // Обычный поиск
-                results = performSimpleSearch(query);
+                // Поиск в зависимости от выбранного режима
+                results = performSimpleSearch(query, searchMode);
+                displaySearchMode = getSearchModeDisplayName(searchMode);
             }
 
-            displayResults(results, query, searchMode);
+            displayResults(results, query, displaySearchMode);
+        }
+
+        // Функция для получения отображаемого названия режима поиска
+        function getSearchModeDisplayName(mode) {
+            switch(mode) {
+                case 'general': return 'общий';
+                case 'article': return 'по артикулу';
+                case 'barcode': return 'по штрихкоду';
+                default: return 'обычный';
+            }
         }
 
         // Функция комбинированного поиска
@@ -20428,12 +20491,25 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         }
 
         // Функция простого поиска
-        function performSimpleSearch(searchTerm) {
-            return products.filter(product => 
-                product.article.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                product.barcode.includes(searchTerm) ||
-                product.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+        function performSimpleSearch(searchTerm, mode) {
+            return products.filter(product => {
+                switch(mode) {
+                    case 'article':
+                        // Поиск только по артикулу
+                        return product.article.toLowerCase().includes(searchTerm.toLowerCase());
+                    
+                    case 'barcode':
+                        // Поиск только по штрихкоду
+                        return product.barcode.includes(searchTerm);
+                    
+                    case 'general':
+                    default:
+                        // Общий поиск (по всем полям)
+                        return product.article.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                               product.barcode.includes(searchTerm) ||
+                               product.name.toLowerCase().includes(searchTerm.toLowerCase());
+                }
+            });
         }
 
         // Функция отображения результатов
@@ -20477,10 +20553,18 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                         // Штрихкод не подсвечиваем при комбинированном поиске
                     }
                 } else {
-                    // Обычная подсветка
-                    highlightedName = highlightMatch(product.name, query);
-                    highlightedArticle = highlightMatch(product.article, query);
-                    highlightedBarcode = highlightMatch(product.barcode, query);
+                    // Обычная подсветка в зависимости от режима
+                    const currentMode = getCurrentSearchMode();
+                    
+                    if (currentMode === 'general' || currentMode === 'article') {
+                        highlightedArticle = highlightMatch(product.article, query);
+                    }
+                    if (currentMode === 'general' || currentMode === 'barcode') {
+                        highlightedBarcode = highlightMatch(product.barcode, query);
+                    }
+                    if (currentMode === 'general') {
+                        highlightedName = highlightMatch(product.name, query);
+                    }
                 }
                 
                 productCard.innerHTML = `
@@ -20520,6 +20604,16 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             }
         });
 
+        // Обработчик изменения режима поиска
+        searchModeRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Если есть результаты поиска, обновляем их при смене режима
+                if (searchInput.value.trim()) {
+                    searchProducts();
+                }
+            });
+        });
+
         // Фокусировка на поле поиска при загрузке
         window.addEventListener('load', function() {
             searchInput.focus();
@@ -20545,4 +20639,3 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
     </script>
 </body>
 </html>
-
