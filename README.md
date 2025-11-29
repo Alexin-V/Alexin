@@ -1,4 +1,4 @@
-# Alexin Обновление от 29.11.2025 
+# Alexin
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -125,7 +125,7 @@
 </head>
 <body>
     <div class="search-container">
-        <h2>Поиск товаров</h2>
+        <h2>Поиск товаров (29.11.2025)</h2>
         <input type="text" 
                class="search-input" 
                id="searchInput" 
