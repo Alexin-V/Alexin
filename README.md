@@ -1,4 +1,4 @@
-# Alexin
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -36,6 +36,14 @@
             outline: none;
         }
         
+        .buttons-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
         .search-button {
             background-color: #4CAF50;
             color: white;
@@ -45,14 +53,45 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
+            flex-grow: 1;
+            max-width: 200px;
+        }
+        
+        .scan-button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-grow: 1;
+            max-width: 200px;
         }
         
         .search-button:hover {
             background-color: #45a049;
         }
         
+        .scan-button:hover {
+            background-color: #0b7dda;
+        }
+        
         .search-button:active {
             background-color: #3d8b40;
+        }
+        
+        .scan-button:active {
+            background-color: #0a6ebd;
+        }
+        
+        .scan-icon {
+            font-size: 18px;
         }
         
         .search-hint {
@@ -146,7 +185,129 @@
             margin-top: 5px;
             text-align: left;
         }
+        
+        .scan-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .scan-frame {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .scan-instruction {
+            margin: 15px 0;
+            color: #333;
+        }
+        
+        .scan-options {
+            margin: 15px 0;
+        }
+        
+        .scan-option-btn {
+            display: block;
+            width: 100%;
+            margin: 8px 0;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .close-scan {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .video-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 20px auto;
+            position: relative;
+            display: none;
+        }
+        
+        #cameraVideo {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        
+        .camera-controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .camera-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .manual-input {
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .manual-input input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .manual-input button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .info-message {
+            background-color: #e7f3fe;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 10px 0;
+            text-align: left;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+        
+        .hidden {
+            display: none;
+        }
     </style>
+    <!-- Подключаем библиотеку для распознавания QR-кодов -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 </head>
 <body>
     <div class="search-container">
@@ -173,12 +334,63 @@
             </div>
         </div>
         
-        <button class="search-button" id="searchButton">Найти</button>
+        <!-- Контейнер для кнопок -->
+        <div class="buttons-container">
+            <button class="search-button" id="searchButton">Найти</button>
+            <button class="scan-button" id="scanButton">
+                <span class="scan-icon">📷</span> Сканировать штрихкод
+            </button>
+        </div>
+        
         <div class="search-hint">Поиск по артикулу, штрихкоду и наименованию товара</div>
         <div class="search-hint">Для комбинированного поиска используйте символ / (например: маркер/423) - первая часть в наименовании, вторая в артикуле</div>
         
         <div class="results-container" id="resultsContainer">
             <!-- Результаты поиска будут здесь -->
+        </div>
+    </div>
+
+    <!-- Оверлей для сканирования -->
+    <div class="scan-overlay" id="scanOverlay">
+        <div class="scan-frame">
+            <h3>Сканирование штрихкода</h3>
+            
+            <div id="scanMethodSelection">
+                <p class="scan-instruction">Выберите способ сканирования:</p>
+                
+                <div class="scan-options">
+                    <button class="scan-option-btn" id="useBrowserCamera">
+                        📱 Использовать камеру браузера
+                    </button>
+                    <button class="scan-option-btn" id="useScannerApp">
+                        📲 Открыть приложение сканера
+                    </button>
+                    <button class="scan-option-btn" id="manualInputBtn">
+                        ⌨️ Ввести вручную
+                    </button>
+                </div>
+                
+                <div class="info-message">
+                    <strong>Совет:</strong> Используйте камеру браузера для быстрого сканирования без установки дополнительных приложений.
+                </div>
+            </div>
+            
+            <!-- Контейнер для камеры браузера -->
+            <div class="video-container" id="videoContainer">
+                <video id="cameraVideo" playsinline></video>
+                <div class="camera-controls">
+                    <button class="camera-btn" id="switchCamera">Переключить камеру</button>
+                    <button class="camera-btn" id="stopCamera">Остановить</button>
+                </div>
+            </div>
+            
+            <!-- Ручной ввод -->
+            <div class="manual-input" id="manualInputSection">
+                <input type="text" id="manualBarcodeInput" placeholder="Введите штрихкод вручную">
+                <button id="submitManualBarcode">Найти товар</button>
+            </div>
+            
+            <button class="close-scan" id="closeScan">Закрыть</button>
         </div>
     </div>
 
@@ -20421,8 +20633,203 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         // Элементы DOM
         const searchInput = document.getElementById('searchInput');
         const searchButton = document.getElementById('searchButton');
+        const scanButton = document.getElementById('scanButton');
         const resultsContainer = document.getElementById('resultsContainer');
         const searchModeRadios = document.querySelectorAll('input[name="searchMode"]');
+        const scanOverlay = document.getElementById('scanOverlay');
+        const closeScan = document.getElementById('closeScan');
+        const useBrowserCamera = document.getElementById('useBrowserCamera');
+        const useScannerApp = document.getElementById('useScannerApp');
+        const manualInputBtn = document.getElementById('manualInputBtn');
+        const videoContainer = document.getElementById('videoContainer');
+        const cameraVideo = document.getElementById('cameraVideo');
+        const switchCamera = document.getElementById('switchCamera');
+        const stopCamera = document.getElementById('stopCamera');
+        const manualInputSection = document.getElementById('manualInputSection');
+        const manualBarcodeInput = document.getElementById('manualBarcodeInput');
+        const submitManualBarcode = document.getElementById('submitManualBarcode');
+        const scanMethodSelection = document.getElementById('scanMethodSelection');
+
+        // Переменные для работы с камерой
+        let stream = null;
+        let currentFacingMode = 'environment'; // 'environment' для задней камеры
+        let scanInterval = null;
+
+        // Проверяем, мобильное ли устройство
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        // Проверяем Android или iOS
+        function isAndroid() {
+            return /Android/i.test(navigator.userAgent);
+        }
+
+        // Функция для открытия сканирования
+        function openScanDialog() {
+            if (!isMobileDevice()) {
+                alert('Сканирование доступно только на мобильных устройствах. Пожалуйста, введите штрихкод вручную.');
+                return;
+            }
+            
+            scanOverlay.style.display = 'flex';
+            resetScanInterface();
+        }
+
+        // Сброс интерфейса сканирования
+        function resetScanInterface() {
+            scanMethodSelection.style.display = 'block';
+            videoContainer.style.display = 'none';
+            manualInputSection.style.display = 'none';
+            stopCameraStream();
+        }
+
+        // Остановка потока камеры
+        function stopCameraStream() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            if (scanInterval) {
+                clearInterval(scanInterval);
+                scanInterval = null;
+            }
+            cameraVideo.srcObject = null;
+        }
+
+        // Запуск камеры браузера
+        async function startBrowserCamera() {
+            try {
+                stopCameraStream();
+                
+                // Запрашиваем доступ к камере
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: currentFacingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+                
+                cameraVideo.srcObject = stream;
+                videoContainer.style.display = 'block';
+                scanMethodSelection.style.display = 'none';
+                
+                // Ждем загрузки видео
+                await cameraVideo.play();
+                
+                // Начинаем сканирование
+                startQRCodeScanning();
+                
+            } catch (error) {
+                console.error('Ошибка доступа к камере:', error);
+                alert('Не удалось получить доступ к камере. Пожалуйста, проверьте разрешения или используйте другой метод.');
+                resetScanInterface();
+            }
+        }
+
+        // Запуск распознавания QR-кода
+        function startQRCodeScanning() {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            scanInterval = setInterval(() => {
+                if (cameraVideo.readyState === cameraVideo.HAVE_ENOUGH_DATA) {
+                    canvas.width = cameraVideo.videoWidth;
+                    canvas.height = cameraVideo.videoHeight;
+                    
+                    // Рисуем текущий кадр видео на canvas
+                    context.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+                    
+                    // Получаем данные изображения
+                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    
+                    // Распознаем QR-код
+                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                        inversionAttempts: "dontInvert",
+                    });
+                    
+                    // Если QR-код найден
+                    if (code) {
+                        handleScannedCode(code.data);
+                    }
+                }
+            }, 100); // Проверяем каждые 100мс
+        }
+
+        // Обработка отсканированного кода
+        function handleScannedCode(code) {
+            console.log('Отсканирован код:', code);
+            
+            // Останавливаем камеру
+            stopCameraStream();
+            
+            // Закрываем оверлей
+            scanOverlay.style.display = 'none';
+            
+            // Устанавливаем режим поиска по штрихкоду
+            document.getElementById('modeBarcode').checked = true;
+            
+            // Вводим отсканированный код
+            searchInput.value = code.trim();
+            
+            // Выполняем поиск
+            searchProducts();
+        }
+
+        // Открытие внешнего приложения сканера
+        function openExternalScanner() {
+            // Универсальный Intent для Android
+            if (isAndroid()) {
+                // Попробуем несколько вариантов
+                const scannerUrls = [
+                    'intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;end',
+                    'intent://scan/#Intent;scheme=zxing;end',
+                    'https://zxing.appspot.com/scan'
+                ];
+                
+                // Попробуем первый вариант
+                window.location.href = scannerUrls[0];
+                
+                // Fallback через 1 секунду
+                setTimeout(() => {
+                    if (document.hasFocus()) {
+                        // Если первый не сработал, пробуем второй
+                        window.location.href = scannerUrls[1];
+                        
+                        // Еще один fallback через 1 секунду
+                        setTimeout(() => {
+                            if (document.hasFocus()) {
+                                // Веб-сканер как последний вариант
+                                window.location.href = scannerUrls[2];
+                            }
+                        }, 1000);
+                    }
+                }, 1000);
+                
+            } else {
+                // Для iOS
+                const scannerUrls = [
+                    'qrreader://scan',
+                    'scanner://',
+                    'https://scanapp.org/'
+                ];
+                
+                window.location.href = scannerUrls[0];
+                
+                setTimeout(() => {
+                    if (document.hasFocus()) {
+                        window.location.href = scannerUrls[2];
+                    }
+                }, 1000);
+            }
+            
+            // Закрываем оверлей через короткое время
+            setTimeout(() => {
+                scanOverlay.style.display = 'none';
+            }, 300);
+        }
 
         // Функция для получения текущего режима поиска
         function getCurrentSearchMode() {
@@ -20594,6 +21001,8 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
+        // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
+
         // Обработчик клика на кнопку "Найти"
         searchButton.addEventListener('click', searchProducts);
 
@@ -20602,6 +21011,66 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             if (e.key === 'Enter') {
                 searchProducts();
             }
+        });
+
+        // Обработчик клика на кнопку сканирования
+        scanButton.addEventListener('click', openScanDialog);
+
+        // Обработчик закрытия оверлея сканирования
+        closeScan.addEventListener('click', function() {
+            stopCameraStream();
+            scanOverlay.style.display = 'none';
+        });
+
+        // Закрытие оверлея при клике вне его
+        scanOverlay.addEventListener('click', function(e) {
+            if (e.target === scanOverlay) {
+                stopCameraStream();
+                scanOverlay.style.display = 'none';
+            }
+        });
+
+        // Использовать камеру браузера
+        useBrowserCamera.addEventListener('click', startBrowserCamera);
+
+        // Использовать приложение сканера
+        useScannerApp.addEventListener('click', openExternalScanner);
+
+        // Ручной ввод
+        manualInputBtn.addEventListener('click', function() {
+            scanMethodSelection.style.display = 'none';
+            manualInputSection.style.display = 'block';
+            manualBarcodeInput.focus();
+        });
+
+        // Отправка ручного ввода
+        submitManualBarcode.addEventListener('click', function() {
+            const barcode = manualBarcodeInput.value.trim();
+            if (barcode) {
+                handleScannedCode(barcode);
+            }
+        });
+
+        // Ввод по Enter в ручном режиме
+        manualBarcodeInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const barcode = manualBarcodeInput.value.trim();
+                if (barcode) {
+                    handleScannedCode(barcode);
+                }
+            }
+        });
+
+        // Переключение камеры
+        switchCamera.addEventListener('click', function() {
+            currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+            startBrowserCamera();
+        });
+
+        // Остановка камеры
+        stopCamera.addEventListener('click', function() {
+            stopCameraStream();
+            resetScanInterface();
         });
 
         // Обработчик изменения режима поиска
@@ -20634,6 +21103,14 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                 e.preventDefault();
                 searchInput.focus();
                 searchInput.select();
+            }
+        });
+
+        // Обработчик изменения видимости страницы (возврат из приложения)
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && searchInput.value.trim()) {
+                // Если вернулись на страницу и есть текст, обновляем поиск
+                searchProducts();
             }
         });
     </script>
