@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -302,8 +301,45 @@
             border-radius: 4px;
         }
         
+        .error-message {
+            background-color: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 12px;
+            margin: 10px 0;
+            text-align: left;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+        
         .hidden {
             display: none;
+        }
+        
+        .https-warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 10px 0;
+            text-align: left;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+        
+        .file-input-container {
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .file-input-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #9c27b0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
         }
     </style>
     <!-- Подключаем библиотеку для распознавания QR-кодов -->
@@ -355,12 +391,21 @@
         <div class="scan-frame">
             <h3>Сканирование штрихкода</h3>
             
+            <!-- Предупреждение о HTTPS -->
+            <div class="https-warning" id="httpsWarning" style="display: none;">
+                <strong>Внимание:</strong> Для использования камеры браузера требуется HTTPS соединение. 
+                Пожалуйста, используйте другие методы сканирования или загрузите страницу по HTTPS.
+            </div>
+            
             <div id="scanMethodSelection">
                 <p class="scan-instruction">Выберите способ сканирования:</p>
                 
                 <div class="scan-options">
                     <button class="scan-option-btn" id="useBrowserCamera">
-                        📱 Использовать камеру браузера
+                        📱 Камера браузера (требуется HTTPS)
+                    </button>
+                    <button class="scan-option-btn" id="uploadImageBtn">
+                        📤 Загрузить фото со штрихкодом
                     </button>
                     <button class="scan-option-btn" id="useScannerApp">
                         📲 Открыть приложение сканера
@@ -371,7 +416,7 @@
                 </div>
                 
                 <div class="info-message">
-                    <strong>Совет:</strong> Используйте камеру браузера для быстрого сканирования без установки дополнительных приложений.
+                    <strong>Рекомендация:</strong> Для быстрого сканирования используйте приложение сканера или загрузите фото.
                 </div>
             </div>
             
@@ -382,6 +427,16 @@
                     <button class="camera-btn" id="switchCamera">Переключить камеру</button>
                     <button class="camera-btn" id="stopCamera">Остановить</button>
                 </div>
+            </div>
+            
+            <!-- Загрузка файла -->
+            <div class="file-input-container" id="fileInputContainer">
+                <input type="file" id="imageFileInput" accept="image/*" capture="environment" style="display: none;">
+                <button class="file-input-btn" id="triggerFileInput">📁 Выбрать фото со штрихкодом</button>
+                <p class="scan-instruction">или сделайте фото прямо сейчас:</p>
+                <button class="scan-option-btn" id="takePhotoBtn">
+                    📸 Сделать фото
+                </button>
             </div>
             
             <!-- Ручной ввод -->
@@ -20639,6 +20694,7 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         const scanOverlay = document.getElementById('scanOverlay');
         const closeScan = document.getElementById('closeScan');
         const useBrowserCamera = document.getElementById('useBrowserCamera');
+        const uploadImageBtn = document.getElementById('uploadImageBtn');
         const useScannerApp = document.getElementById('useScannerApp');
         const manualInputBtn = document.getElementById('manualInputBtn');
         const videoContainer = document.getElementById('videoContainer');
@@ -20649,11 +20705,33 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         const manualBarcodeInput = document.getElementById('manualBarcodeInput');
         const submitManualBarcode = document.getElementById('submitManualBarcode');
         const scanMethodSelection = document.getElementById('scanMethodSelection');
+        const fileInputContainer = document.getElementById('fileInputContainer');
+        const imageFileInput = document.getElementById('imageFileInput');
+        const triggerFileInput = document.getElementById('triggerFileInput');
+        const takePhotoBtn = document.getElementById('takePhotoBtn');
+        const httpsWarning = document.getElementById('httpsWarning');
 
         // Переменные для работы с камерой
         let stream = null;
-        let currentFacingMode = 'environment'; // 'environment' для задней камеры
+        let currentFacingMode = 'environment';
         let scanInterval = null;
+
+        // Проверяем, работает ли на HTTPS
+        function isHTTPS() {
+            return window.location.protocol === 'https:';
+        }
+
+        // Проверяем localhost
+        function isLocalhost() {
+            return window.location.hostname === 'localhost' || 
+                   window.location.hostname === '127.0.0.1' ||
+                   window.location.hostname === '';
+        }
+
+        // Проверяем, можно ли использовать камеру
+        function canUseCamera() {
+            return isHTTPS() || isLocalhost();
+        }
 
         // Проверяем, мобильное ли устройство
         function isMobileDevice() {
@@ -20674,6 +20752,19 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             
             scanOverlay.style.display = 'flex';
             resetScanInterface();
+            
+            // Показываем предупреждение, если не HTTPS
+            if (!canUseCamera()) {
+                httpsWarning.style.display = 'block';
+                useBrowserCamera.disabled = true;
+                useBrowserCamera.style.opacity = '0.5';
+                useBrowserCamera.style.cursor = 'not-allowed';
+            } else {
+                httpsWarning.style.display = 'none';
+                useBrowserCamera.disabled = false;
+                useBrowserCamera.style.opacity = '1';
+                useBrowserCamera.style.cursor = 'pointer';
+            }
         }
 
         // Сброс интерфейса сканирования
@@ -20681,6 +20772,7 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             scanMethodSelection.style.display = 'block';
             videoContainer.style.display = 'none';
             manualInputSection.style.display = 'none';
+            fileInputContainer.style.display = 'none';
             stopCameraStream();
         }
 
@@ -20699,32 +20791,57 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
 
         // Запуск камеры браузера
         async function startBrowserCamera() {
+            if (!canUseCamera()) {
+                alert('Для использования камеры браузера требуется HTTPS соединение. Пожалуйста, используйте другой метод сканирования.');
+                return;
+            }
+            
             try {
                 stopCameraStream();
                 
                 // Запрашиваем доступ к камере
-                stream = await navigator.mediaDevices.getUserMedia({
+                const constraints = {
                     video: {
                         facingMode: currentFacingMode,
                         width: { ideal: 1280 },
                         height: { ideal: 720 }
                     },
                     audio: false
-                });
+                };
+                
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
                 
                 cameraVideo.srcObject = stream;
                 videoContainer.style.display = 'block';
                 scanMethodSelection.style.display = 'none';
                 
                 // Ждем загрузки видео
-                await cameraVideo.play();
+                await new Promise((resolve) => {
+                    cameraVideo.onloadedmetadata = () => {
+                        cameraVideo.play();
+                        resolve();
+                    };
+                });
                 
                 // Начинаем сканирование
                 startQRCodeScanning();
                 
             } catch (error) {
                 console.error('Ошибка доступа к камере:', error);
-                alert('Не удалось получить доступ к камере. Пожалуйста, проверьте разрешения или используйте другой метод.');
+                
+                let errorMessage = 'Не удалось получить доступ к камере. ';
+                
+                if (error.name === 'NotAllowedError') {
+                    errorMessage += 'Пожалуйста, разрешите доступ к камере в настройках браузера.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage += 'Камера не найдена.';
+                } else if (error.name === 'NotSupportedError') {
+                    errorMessage += 'Ваш браузер не поддерживает доступ к камере.';
+                } else if (error.name === 'NotReadableError') {
+                    errorMessage += 'Камера уже используется другим приложением.';
+                }
+                
+                alert(errorMessage);
                 resetScanInterface();
             }
         }
@@ -20746,16 +20863,82 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
                     
                     // Распознаем QR-код
-                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
-                        inversionAttempts: "dontInvert",
-                    });
-                    
-                    // Если QR-код найден
-                    if (code) {
-                        handleScannedCode(code.data);
+                    try {
+                        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                            inversionAttempts: "dontInvert",
+                        });
+                        
+                        // Если QR-код найден
+                        if (code) {
+                            handleScannedCode(code.data);
+                        }
+                    } catch (e) {
+                        console.error('Ошибка распознавания:', e);
                     }
                 }
-            }, 100); // Проверяем каждые 100мс
+            }, 200); // Проверяем каждые 200мс
+        }
+
+        // Обработка загруженного изображения
+        function processImageFile(file) {
+            if (!file) return;
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const img = new Image();
+                
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    
+                    // Ограничиваем размер для производительности
+                    const maxSize = 1000;
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > height && width > maxSize) {
+                        height = (height * maxSize) / width;
+                        width = maxSize;
+                    } else if (height > maxSize) {
+                        width = (width * maxSize) / height;
+                        height = maxSize;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // Рисуем изображение на canvas
+                    context.drawImage(img, 0, 0, width, height);
+                    
+                    // Получаем данные изображения
+                    const imageData = context.getImageData(0, 0, width, height);
+                    
+                    // Распознаем QR-код
+                    try {
+                        const code = jsQR(imageData.data, width, height, {
+                            inversionAttempts: "dontInvert",
+                        });
+                        
+                        if (code) {
+                            handleScannedCode(code.data);
+                        } else {
+                            alert('Штрихкод не найден на изображении. Попробуйте другое фото.');
+                        }
+                    } catch (error) {
+                        console.error('Ошибка распознавания:', error);
+                        alert('Ошибка при обработке изображения. Попробуйте еще раз.');
+                    }
+                };
+                
+                img.src = e.target.result;
+            };
+            
+            reader.onerror = function() {
+                alert('Ошибка при чтении файла. Попробуйте еще раз.');
+            };
+            
+            reader.readAsDataURL(file);
         }
 
         // Обработка отсканированного кода
@@ -20778,57 +20961,32 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             searchProducts();
         }
 
-        // Открытие внешнего приложения сканера
+        // Открытие внешнего приложения сканера (упрощенная версия)
         function openExternalScanner() {
-            // Универсальный Intent для Android
             if (isAndroid()) {
-                // Попробуем несколько вариантов
-                const scannerUrls = [
-                    'intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;end',
-                    'intent://scan/#Intent;scheme=zxing;end',
-                    'https://zxing.appspot.com/scan'
-                ];
-                
-                // Попробуем первый вариант
-                window.location.href = scannerUrls[0];
-                
-                // Fallback через 1 секунду
-                setTimeout(() => {
-                    if (document.hasFocus()) {
-                        // Если первый не сработал, пробуем второй
-                        window.location.href = scannerUrls[1];
-                        
-                        // Еще один fallback через 1 секунду
-                        setTimeout(() => {
-                            if (document.hasFocus()) {
-                                // Веб-сканер как последний вариант
-                                window.location.href = scannerUrls[2];
-                            }
-                        }, 1000);
-                    }
-                }, 1000);
-                
+                // Простой способ - открыть приложение для сканирования
+                // Многие сканеры поддерживают этот intent
+                const scannerUrl = 'intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;S.browser_fallback_url=https%3A%2F%2Fzxing.appspot.com%2Fscan;end';
+                window.location.href = scannerUrl;
             } else {
                 // Для iOS
-                const scannerUrls = [
-                    'qrreader://scan',
-                    'scanner://',
-                    'https://scanapp.org/'
-                ];
-                
-                window.location.href = scannerUrls[0];
-                
-                setTimeout(() => {
-                    if (document.hasFocus()) {
-                        window.location.href = scannerUrls[2];
-                    }
-                }, 1000);
+                window.location.href = 'https://scanapp.org/';
             }
             
             // Закрываем оверлей через короткое время
             setTimeout(() => {
                 scanOverlay.style.display = 'none';
+                showScanHint();
             }, 300);
+        }
+
+        // Показать подсказку после открытия сканера
+        function showScanHint() {
+            setTimeout(() => {
+                if (confirm('После сканирования скопируйте штрихкод и вставьте его в поле поиска. Показать инструкцию?')) {
+                    alert('1. Отсканируйте штрихкод\n2. Скопируйте результат\n3. Вернитесь в это окно\n4. Вставьте штрихкод в поле поиска\n5. Нажмите "Найти"');
+                }
+            }, 1000);
         }
 
         // Функция для получения текущего режима поиска
@@ -21033,6 +21191,41 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         // Использовать камеру браузера
         useBrowserCamera.addEventListener('click', startBrowserCamera);
 
+        // Загрузить изображение
+        uploadImageBtn.addEventListener('click', function() {
+            scanMethodSelection.style.display = 'none';
+            fileInputContainer.style.display = 'block';
+        });
+
+        // Выбрать файл
+        triggerFileInput.addEventListener('click', function() {
+            imageFileInput.click();
+        });
+
+        // Сделать фото
+        takePhotoBtn.addEventListener('click', function() {
+            // Используем input с capture для фото
+            const photoInput = document.createElement('input');
+            photoInput.type = 'file';
+            photoInput.accept = 'image/*';
+            photoInput.capture = 'environment';
+            
+            photoInput.onchange = function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    processImageFile(e.target.files[0]);
+                }
+            };
+            
+            photoInput.click();
+        });
+
+        // Обработка выбора файла
+        imageFileInput.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                processImageFile(e.target.files[0]);
+            }
+        });
+
         // Использовать приложение сканера
         useScannerApp.addEventListener('click', openExternalScanner);
 
@@ -21103,14 +21296,6 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                 e.preventDefault();
                 searchInput.focus();
                 searchInput.select();
-            }
-        });
-
-        // Обработчик изменения видимости страницы (возврат из приложения)
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden && searchInput.value.trim()) {
-                // Если вернулись на страницу и есть текст, обновляем поиск
-                searchProducts();
             }
         });
     </script>
