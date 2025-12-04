@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -239,11 +240,11 @@
             margin-top: 10px;
         }
         
-        .video-container {
+        .video-wrapper {
+            position: relative;
             width: 100%;
             max-width: 400px;
             margin: 20px auto;
-            position: relative;
             display: none;
         }
         
@@ -251,6 +252,7 @@
             width: 100%;
             height: auto;
             border-radius: 8px;
+            transform: scaleX(-1); /* Зеркальное отображение для фронтальной камеры */
         }
         
         .camera-controls {
@@ -266,6 +268,8 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
+            background-color: #2196F3;
+            color: white;
         }
         
         .manual-input {
@@ -311,10 +315,6 @@
             border-radius: 4px;
         }
         
-        .hidden {
-            display: none;
-        }
-        
         .https-warning {
             background-color: #fff3cd;
             border-left: 4px solid #ffc107;
@@ -340,6 +340,93 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+        }
+        
+        .scan-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 150px;
+            border: 3px solid #4CAF50;
+            border-radius: 10px;
+            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #4CAF50;
+            animation: scan 2s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+        
+        .scan-hint {
+            position: absolute;
+            bottom: -40px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            z-index: 2;
+        }
+        
+        .debug-info {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #666;
+            display: none;
+            text-align: left;
+        }
+        
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(76, 175, 80, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            flex-direction: column;
+        }
+        
+        .success-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .success-text {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
         }
     </style>
     <!-- Подключаем библиотеку для распознавания QR-кодов -->
@@ -416,16 +503,30 @@
                 </div>
                 
                 <div class="info-message">
-                    <strong>Рекомендация:</strong> Для быстрого сканирования используйте приложение сканера или загрузите фото.
+                    <strong>Совет:</strong> Для быстрого сканирования используйте приложение сканера или загрузите фото.
+                </div>
+                
+                <!-- Отладочная информация -->
+                <div class="debug-info" id="debugInfo">
+                    <strong>Отладка:</strong>
+                    <div id="debugStatus">Статус: Ожидание...</div>
+                    <div id="debugCode">Код: Не найден</div>
+                    <div id="debugFPS">FPS: 0</div>
+                    <div id="debugBrightness">Яркость: 0</div>
                 </div>
             </div>
             
             <!-- Контейнер для камеры браузера -->
-            <div class="video-container" id="videoContainer">
+            <div class="video-wrapper" id="videoContainer">
+                <div class="scan-box">
+                    <div class="scan-line"></div>
+                </div>
+                <div class="scan-hint">Наведите камеру на штрихкод</div>
                 <video id="cameraVideo" playsinline></video>
                 <div class="camera-controls">
                     <button class="camera-btn" id="switchCamera">Переключить камеру</button>
                     <button class="camera-btn" id="stopCamera">Остановить</button>
+                    <button class="camera-btn" id="toggleDebug">Отладка</button>
                 </div>
             </div>
             
@@ -447,6 +548,12 @@
             
             <button class="close-scan" id="closeScan">Закрыть</button>
         </div>
+    </div>
+
+    <!-- Оверлей успешного сканирования -->
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-icon">✅</div>
+        <div class="success-text" id="successText">Штрихкод успешно отсканирован!</div>
     </div>
 
     <script>
@@ -20710,11 +20817,24 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         const triggerFileInput = document.getElementById('triggerFileInput');
         const takePhotoBtn = document.getElementById('takePhotoBtn');
         const httpsWarning = document.getElementById('httpsWarning');
+        const debugInfo = document.getElementById('debugInfo');
+        const debugStatus = document.getElementById('debugStatus');
+        const debugCode = document.getElementById('debugCode');
+        const debugFPS = document.getElementById('debugFPS');
+        const debugBrightness = document.getElementById('debugBrightness');
+        const toggleDebug = document.getElementById('toggleDebug');
+        const successOverlay = document.getElementById('successOverlay');
+        const successText = document.getElementById('successText');
 
         // Переменные для работы с камерой
         let stream = null;
-        let currentFacingMode = 'environment';
+        let currentFacingMode = 'environment'; // 'environment' для задней камеры, 'user' для фронтальной
         let scanInterval = null;
+        let lastScanTime = 0;
+        let scanCount = 0;
+        let debugMode = false;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
 
         // Проверяем, работает ли на HTTPS
         function isHTTPS() {
@@ -20787,6 +20907,8 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                 scanInterval = null;
             }
             cameraVideo.srcObject = null;
+            frameCount = 0;
+            lastFpsUpdate = 0;
         }
 
         // Запуск камеры браузера
@@ -20824,7 +20946,7 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                 });
                 
                 // Начинаем сканирование
-                startQRCodeScanning();
+                startBarcodeScanning();
                 
             } catch (error) {
                 console.error('Ошибка доступа к камере:', error);
@@ -20846,37 +20968,205 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             }
         }
 
-        // Запуск распознавания QR-кода
-        function startQRCodeScanning() {
+        // Запуск распознавания штрихкодов
+        function startBarcodeScanning() {
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
             
             scanInterval = setInterval(() => {
                 if (cameraVideo.readyState === cameraVideo.HAVE_ENOUGH_DATA) {
+                    const now = performance.now();
+                    frameCount++;
+                    
+                    // Обновляем FPS каждую секунду
+                    if (now - lastFpsUpdate >= 1000) {
+                        const fps = Math.round((frameCount * 1000) / (now - lastFpsUpdate));
+                        debugFPS.textContent = `FPS: ${fps}`;
+                        frameCount = 0;
+                        lastFpsUpdate = now;
+                    }
+                    
+                    // Устанавливаем размер canvas по размеру видео
                     canvas.width = cameraVideo.videoWidth;
                     canvas.height = cameraVideo.videoHeight;
                     
                     // Рисуем текущий кадр видео на canvas
                     context.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
                     
-                    // Получаем данные изображения
-                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                    
-                    // Распознаем QR-код
+                    // Пробуем распознать QR-код
                     try {
-                        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                        
+                        // Проверяем яркость изображения
+                        const brightness = calculateBrightness(imageData);
+                        debugBrightness.textContent = `Яркость: ${Math.round(brightness)}%`;
+                        
+                        if (brightness < 20) {
+                            debugStatus.textContent = 'Статус: Слишком темно';
+                            return;
+                        }
+                        
+                        const qrCode = jsQR(imageData.data, imageData.width, imageData.height, {
                             inversionAttempts: "dontInvert",
                         });
                         
-                        // Если QR-код найден
-                        if (code) {
-                            handleScannedCode(code.data);
+                        if (qrCode) {
+                            debugStatus.textContent = 'Статус: QR-код найден';
+                            debugCode.textContent = `Код: ${qrCode.data}`;
+                            handleScannedCode(qrCode.data);
+                            return;
                         }
+                        
+                        // Пробуем найти линейный штрихкод
+                        const barcode = tryDetectLinearBarcode(context, canvas.width, canvas.height);
+                        
+                        if (barcode) {
+                            debugStatus.textContent = 'Статус: Штрихкод найден';
+                            debugCode.textContent = `Код: ${barcode}`;
+                            handleScannedCode(barcode);
+                            return;
+                        }
+                        
+                        debugStatus.textContent = 'Статус: Поиск...';
+                        debugCode.textContent = 'Код: Не найден';
+                        
                     } catch (e) {
-                        console.error('Ошибка распознавания:', e);
+                        console.error('Ошибка обработки изображения:', e);
+                        debugStatus.textContent = `Статус: Ошибка - ${e.message}`;
                     }
                 }
-            }, 200); // Проверяем каждые 200мс
+            }, 100); // Проверяем каждые 100мс
+        }
+
+        // Расчет яркости изображения
+        function calculateBrightness(imageData) {
+            const data = imageData.data;
+            let sum = 0;
+            
+            // Берем каждый 10-й пиксель для производительности
+            for (let i = 0; i < data.length; i += 40) {
+                sum += (data[i] + data[i + 1] + data[i + 2]) / 3;
+            }
+            
+            const avg = sum / (data.length / 40);
+            return (avg / 255) * 100;
+        }
+
+        // Попытка найти линейный штрихкод
+        function tryDetectLinearBarcode(context, width, height) {
+            // Создаем уменьшенное изображение для производительности
+            const smallWidth = 320;
+            const smallHeight = Math.round(height * (smallWidth / width));
+            const smallCanvas = document.createElement('canvas');
+            const smallContext = smallCanvas.getContext('2d');
+            
+            smallCanvas.width = smallWidth;
+            smallCanvas.height = smallHeight;
+            
+            // Копируем и уменьшаем изображение
+            smallContext.drawImage(context.canvas, 0, 0, width, height, 0, 0, smallWidth, smallHeight);
+            
+            // Получаем данные изображения
+            const imageData = smallContext.getImageData(0, 0, smallWidth, smallHeight);
+            const data = imageData.data;
+            
+            // Преобразуем в оттенки серого и находим контрастные области
+            const grayData = new Array(smallWidth * smallHeight);
+            
+            for (let y = 0; y < smallHeight; y++) {
+                for (let x = 0; x < smallWidth; x++) {
+                    const idx = (y * smallWidth + x) * 4;
+                    const gray = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+                    grayData[y * smallWidth + x] = gray;
+                }
+            }
+            
+            // Ищем горизонтальные линии с высокой контрастностью
+            for (let y = 0; y < smallHeight; y += 10) {
+                const lineData = grayData.slice(y * smallWidth, (y + 1) * smallWidth);
+                
+                // Находим резкие перепады яркости
+                const edges = findEdges(lineData);
+                
+                if (edges.length > 10) {
+                    // Пытаемся декодировать как штрихкод
+                    const binary = edges.map(edge => edge > 0 ? '1' : '0').join('');
+                    const possibleCode = decodeBinaryBarcode(binary);
+                    
+                    if (possibleCode && possibleCode.length >= 8) {
+                        return possibleCode;
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        // Нахождение границ в линии
+        function findEdges(lineData) {
+            const edges = [];
+            const threshold = 30;
+            
+            for (let i = 1; i < lineData.length; i++) {
+                const diff = Math.abs(lineData[i] - lineData[i - 1]);
+                edges.push(diff > threshold ? 1 : 0);
+            }
+            
+            return edges;
+        }
+
+        // Декодирование бинарного штрихкода
+        function decodeBinaryBarcode(binary) {
+            // Простая эвристика для поиска чисел
+            // Ищем последовательности из 7 бит, похожие на цифры EAN-13
+            const ean13Patterns = {
+                '0001101': '0', '0011001': '1', '0010011': '2', '0111101': '3',
+                '0100011': '4', '0110001': '5', '0101111': '6', '0111011': '7',
+                '0110111': '8', '0001011': '9'
+            };
+            
+            let result = '';
+            let i = 0;
+            
+            while (i < binary.length - 6) {
+                const chunk = binary.substr(i, 7);
+                
+                if (ean13Patterns[chunk]) {
+                    result += ean13Patterns[chunk];
+                    i += 7;
+                } else {
+                    i++;
+                }
+            }
+            
+            // Проверяем контрольную сумму EAN-13
+            if (result.length === 13) {
+                if (validateEAN13(result)) {
+                    return result;
+                }
+            } else if (result.length === 8) {
+                // EAN-8
+                return result;
+            } else if (result.length >= 8) {
+                // Возможно, это другой формат
+                return result;
+            }
+            
+            return null;
+        }
+
+        // Проверка контрольной суммы EAN-13
+        function validateEAN13(code) {
+            if (code.length !== 13) return false;
+            
+            let sum = 0;
+            for (let i = 0; i < 12; i++) {
+                const digit = parseInt(code[i]);
+                sum += digit * (i % 2 === 0 ? 1 : 3);
+            }
+            
+            const checksum = (10 - (sum % 10)) % 10;
+            return checksum === parseInt(code[12]);
         }
 
         // Обработка загруженного изображения
@@ -20911,23 +21201,24 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                     // Рисуем изображение на canvas
                     context.drawImage(img, 0, 0, width, height);
                     
-                    // Получаем данные изображения
+                    // Пробуем распознать QR-код
                     const imageData = context.getImageData(0, 0, width, height);
+                    const qrCode = jsQR(imageData.data, width, height, {
+                        inversionAttempts: "dontInvert",
+                    });
                     
-                    // Распознаем QR-код
-                    try {
-                        const code = jsQR(imageData.data, width, height, {
-                            inversionAttempts: "dontInvert",
-                        });
-                        
-                        if (code) {
-                            handleScannedCode(code.data);
-                        } else {
-                            alert('Штрихкод не найден на изображении. Попробуйте другое фото.');
-                        }
-                    } catch (error) {
-                        console.error('Ошибка распознавания:', error);
-                        alert('Ошибка при обработке изображения. Попробуйте еще раз.');
+                    if (qrCode) {
+                        handleScannedCode(qrCode.data);
+                        return;
+                    }
+                    
+                    // Пробуем найти линейный штрихкод
+                    const barcode = tryDetectLinearBarcode(context, width, height);
+                    
+                    if (barcode) {
+                        handleScannedCode(barcode);
+                    } else {
+                        alert('Штрихкод не найден на изображении. Попробуйте другое фото.');
                     }
                 };
                 
@@ -20941,9 +21232,24 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             reader.readAsDataURL(file);
         }
 
+        // Показать успешное сканирование
+        function showSuccess(message) {
+            successText.textContent = message;
+            successOverlay.style.display = 'flex';
+            
+            setTimeout(() => {
+                successOverlay.style.display = 'none';
+            }, 1500);
+        }
+
         // Обработка отсканированного кода
         function handleScannedCode(code) {
             console.log('Отсканирован код:', code);
+            
+            // Проверяем, что код не пустой
+            if (!code || code.trim().length === 0) {
+                return;
+            }
             
             // Останавливаем камеру
             stopCameraStream();
@@ -20951,21 +21257,28 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             // Закрываем оверлей
             scanOverlay.style.display = 'none';
             
+            // Показываем анимацию успеха
+            showSuccess('Штрихкод успешно отсканирован!');
+            
             // Устанавливаем режим поиска по штрихкоду
             document.getElementById('modeBarcode').checked = true;
             
+            // Очищаем код от лишних символов, оставляем только цифры
+            const cleanCode = code.toString().trim().replace(/[^0-9]/g, '');
+            
             // Вводим отсканированный код
-            searchInput.value = code.trim();
+            searchInput.value = cleanCode;
             
             // Выполняем поиск
-            searchProducts();
+            setTimeout(() => {
+                searchProducts();
+            }, 100);
         }
 
-        // Открытие внешнего приложения сканера (упрощенная версия)
+        // Открытие внешнего приложения сканера
         function openExternalScanner() {
             if (isAndroid()) {
-                // Простой способ - открыть приложение для сканирования
-                // Многие сканеры поддерживают этот intent
+                // Универсальный Intent для Android
                 const scannerUrl = 'intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;S.browser_fallback_url=https%3A%2F%2Fzxing.appspot.com%2Fscan;end';
                 window.location.href = scannerUrl;
             } else {
@@ -20973,20 +21286,10 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                 window.location.href = 'https://scanapp.org/';
             }
             
-            // Закрываем оверлей через короткое время
+            // Закрываем оверлей
             setTimeout(() => {
                 scanOverlay.style.display = 'none';
-                showScanHint();
             }, 300);
-        }
-
-        // Показать подсказку после открытия сканера
-        function showScanHint() {
-            setTimeout(() => {
-                if (confirm('После сканирования скопируйте штрихкод и вставьте его в поле поиска. Показать инструкцию?')) {
-                    alert('1. Отсканируйте штрихкод\n2. Скопируйте результат\n3. Вернитесь в это окно\n4. Вставьте штрихкод в поле поиска\n5. Нажмите "Найти"');
-                }
-            }, 1000);
         }
 
         // Функция для получения текущего режима поиска
@@ -21264,6 +21567,13 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         stopCamera.addEventListener('click', function() {
             stopCameraStream();
             resetScanInterface();
+        });
+
+        // Переключение режима отладки
+        toggleDebug.addEventListener('click', function() {
+            debugMode = !debugMode;
+            debugInfo.style.display = debugMode ? 'block' : 'none';
+            this.textContent = debugMode ? 'Скрыть отладку' : 'Отладка';
         });
 
         // Обработчик изменения режима поиска
