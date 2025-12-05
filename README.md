@@ -21191,6 +21191,20 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             }
         }
 
+// Функция для сброса анимации сканирования
+function resetScanAnimation() {
+    const scanLine = document.querySelector('.scan-line');
+    if (scanLine) {
+        // Сбрасываем анимацию
+        scanLine.style.animation = 'none';
+        // Принудительно вызываем перерисовку
+        void scanLine.offsetWidth; // Эта строка заставляет браузер перерисовать элемент
+        // Восстанавливаем анимацию
+        scanLine.style.animation = 'scan 2s linear infinite';
+    }
+}
+
+
         // Сброс интерфейса сканирования
         function resetScanInterface() {
             scanMethodSelection.style.display = 'block';
@@ -21203,27 +21217,60 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             stopCameraStream();
         }
 
-        // Остановка потока камеры
-        function stopCameraStream() {
-            if (stream) {
-                if (torchActive) {
-                    toggleTorch();
-                }
-                
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
-            if (scanInterval) {
-                clearInterval(scanInterval);
-                scanInterval = null;
-            }
-            cameraVideo.srcObject = null;
-            frameCount = 0;
-            lastFpsUpdate = 0;
+// Остановка потока камеры
+function stopCameraStream() {
+    // Останавливаем поток камеры
+    if (stream) {
+        // Выключаем фонарик
+        if (torchActive) {
+            toggleTorch();
         }
+        
+        // Останавливаем все треки
+        stream.getTracks().forEach(track => {
+            track.stop(); // Останавливаем трек
+            track.enabled = false; // Отключаем трек
+        });
+        stream = null;
+    }
+    
+    // Останавливаем интервал сканирования
+    if (scanInterval) {
+        clearInterval(scanInterval);
+        scanInterval = null;
+    }
+    
+    // Очищаем видео элемент
+    if (cameraVideo) {
+        cameraVideo.srcObject = null;
+        cameraVideo.pause();
+    }
+    
+    // Сбрасываем счетчики
+    frameCount = 0;
+    lastFpsUpdate = 0;
+    
+    // Сбрасываем анимацию
+    resetScanAnimation();
+}
 
         // Запуск камеры браузера с BarcodeDetector (для Android Chrome)
-        async function startBrowserCamera() {
+async function startBrowserCamera() {
+    // Сбрасываем анимацию перед запуском
+    resetScanAnimation();
+    
+    // Останавливаем предыдущий поток (если есть)
+    stopCameraStream();
+    
+    // Сбрасываем видео элемент
+    cameraVideo.srcObject = null;
+    cameraVideo.style.transform = 'scaleX(1)';
+    
+    // Гарантируем, что видео контейнер виден
+    videoContainer.style.display = 'block';
+
+
+
             if (!canUseCamera()) {
                 alert('Для использования камеры браузера требуется HTTPS соединение. Пожалуйста, используйте другой метод сканирования.');
                 return;
@@ -21703,19 +21750,25 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         // Обработчик клика на кнопку сканирования
         scanButton.addEventListener('click', openScanDialog);
 
-        // Закрытие модального окна сканирования
-        closeScanModal.addEventListener('click', function() {
-            stopCameraStream();
-            scanModal.style.display = 'none';
-        });
+// Закрытие модального окна сканирования
+closeScanModal.addEventListener('click', function() {
+    // Полная очистка перед закрытием
+    stopCameraStream();
+    resetScanAnimation();
+    videoContainer.style.display = 'none';
+    scanModal.style.display = 'none';
+});
 
-        // Закрытие модального окна при клике вне его
-        scanModal.addEventListener('click', function(e) {
-            if (e.target === scanModal) {
-                stopCameraStream();
-                scanModal.style.display = 'none';
-            }
-        });
+// Закрытие модального окна при клике вне его
+scanModal.addEventListener('click', function(e) {
+    if (e.target === scanModal) {
+        // Полная очистка перед закрытием
+        stopCameraStream();
+        resetScanAnimation();
+        videoContainer.style.display = 'none';
+        scanModal.style.display = 'none';
+    }
+});
 
         // Использовать камеру браузера (Android Chrome)
         useBrowserCamera.addEventListener('click', startBrowserCamera);
@@ -21803,21 +21856,42 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
 
 // Продолжить сканирование
 continueScanBtn.addEventListener('click', function() {
-    // Закрываем окно результатов
+    // 1. Закрываем окно результатов
     resultModal.style.display = 'none';
     
-    // Даем время на анимацию закрытия (300мс)
+    // 2. Сбрасываем анимацию сразу
+    resetScanAnimation();
+    
+    // 3. Полностью останавливаем камеру
+    stopCameraStream();
+    
+    // 4. Даем время на анимацию закрытия (300мс - стандартное время CSS transition)
     setTimeout(() => {
-        // Открываем окно сканирования
+        // 5. Открываем окно сканирования
         scanModal.style.display = 'flex';
         
-        // Сразу скрываем меню выбора
+        // 6. Скрываем ВСЕ элементы выбора методов
         scanMethodSelection.style.display = 'none';
         iosInstructions.style.display = 'none';
         httpsWarning.style.display = 'none';
+        fileInputContainer.style.display = 'none';
+        manualInputSection.style.display = 'none';
+        debugInfo.style.display = 'none';
         
-        // Запускаем камеру
-        startBrowserCamera();
+        // 7. Очищаем отладочную информацию
+        debugStatus.textContent = 'Статус: Ожидание...';
+        debugCode.textContent = 'Код: Не найден';
+        debugFormat.textContent = 'Формат: -';
+        debugFPS.textContent = 'FPS: 0';
+        
+        // 8. Показываем видео контейнер (важно!)
+        videoContainer.style.display = 'block';
+        
+        // 9. Ждем один кадр анимации браузера
+        requestAnimationFrame(() => {
+            // 10. Запускаем камеру
+            startBrowserCamera();
+        });
     }, 300);
 });
 
