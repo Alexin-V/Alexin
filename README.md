@@ -647,6 +647,12 @@
                     <button class="scan-option-btn" id="useScannerApp">
                         📲 Открыть приложение сканера
                     </button>
+
+    <button class="scan-option-btn" id="searchAppStore" style="background-color: #9c27b0;">
+        🔍 Поиск в App Store
+    </button>
+
+
                     <button class="scan-option-btn" id="manualInputBtn">
                         ⌨️ Ввести вручную
                     </button>
@@ -21049,6 +21055,54 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             }
         }
 
+// Определяем версию iOS
+function getIOSVersion() {
+    if (!isIOS()) return null;
+    
+    const userAgent = navigator.userAgent;
+    const match = userAgent.match(/OS (\d+)_(\d+)_?(\d+)?/);
+    
+    if (match && match[1]) {
+        return parseFloat(match[1] + '.' + (match[2] || 0));
+    }
+    
+    return null;
+}
+
+// Приложения сканеров для iOS (с поддержкой разных версий)
+const iosScannerApps = [
+    {
+        name: "QR Code Reader & Scanner",
+        url: "https://apps.apple.com/app/id1200318119",
+        minIOS: 11.0,
+        features: ["QR", "Штрихкоды", "История"]
+    },
+    {
+        name: "QR Scanner - QR Code Reader",
+        url: "https://apps.apple.com/app/id1048473097", 
+        minIOS: 10.0,
+        features: ["Быстрое сканирование", "Подсветка"]
+    },
+    {
+        name: "QR Code Reader Pro",
+        url: "https://apps.apple.com/app/id1125259173",
+        minIOS: 12.0,
+        features: ["Пакетное сканирование", "PDF417"]
+    },
+    {
+        name: "Barcode Scanner • QR Reader",
+        url: "https://apps.apple.com/app/id1447723457",
+        minIOS: 13.0,
+        features: ["EAN-13", "CODE-39", "Без рекламы"]
+    },
+    {
+        name: "Сканер QR-кодов (Касперский)",
+        url: "https://apps.apple.com/ru/app/id1477293720",
+        minIOS: 14.0,
+        features: ["Безопасно", "Русский язык"]
+    }
+];
+
         // Определяем браузер
         function getBrowser() {
             const userAgent = navigator.userAgent;
@@ -21146,14 +21200,25 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
 if (isIOS()) {
     iosInstructions.style.display = 'block';
     useBrowserCamera.style.display = 'none';
-    useNativeCamera.innerHTML = '📸 Сделать фото + ручной ввод'; // Меняем текст кнопки
     
-    let iosMessage = '<strong>Для iPhone/iPad доступно:</strong><br>';
-    iosMessage += '1. <strong>📸 Сделать фото</strong> → ввести код вручную<br>';
-    iosMessage += '2. <strong>📤 Загрузить фото</strong> из галереи<br>';
-    iosMessage += '3. <strong>📲 Установить приложение</strong> сканера<br>';
-    iosMessage += '4. <strong>⌨️ Ввести код вручную</strong><br><br>';
-    iosMessage += '<em>Рекомендуем установить приложение для лучших результатов</em>';
+    const iosVersion = getIOSVersion();
+    let iosMessage = '<strong>📱 Для iPhone/iPad iOS ' + (iosVersion || '?') + ':</strong><br><br>';
+    
+    if (iosVersion && iosVersion < 14.0) {
+        iosMessage += '⚠️ <strong>Внимание:</strong> Ваша версия iOS (' + iosVersion + ') устарела.<br>';
+        iosMessage += 'Рекомендуем обновить iOS для лучшей работы.<br><br>';
+    }
+    
+    iosMessage += '<strong>Рекомендуем:</strong><br>';
+    iosMessage += '1. <strong>📲 Приложение сканера</strong> - лучший результат<br>';
+    iosMessage += '2. <strong>🔍 Поиск в App Store</strong> - больше вариантов<br>';
+    iosMessage += '3. <strong>📸 Фото + ручной ввод</strong> - если нет приложения<br>';
+    iosMessage += '4. <strong>⌨️ Ручной ввод</strong> - самый простой способ<br><br>';
+    
+    if (iosVersion && iosVersion >= 14.0) {
+        iosMessage += '✅ Ваш iOS ' + iosVersion + ' поддерживает все современные приложения.';
+    }
+    
     platformInfo.innerHTML = iosMessage;
     platformInfo.className = 'info-message';
 } else if (isAndroid()) {
@@ -21468,6 +21533,32 @@ if (isIOS()) {
             const results = performSimpleSearch(cleanCode, 'barcode');
             showScanResults(cleanCode, results);
         }
+
+
+// Поиск в App Store
+document.getElementById('searchAppStore').addEventListener('click', function() {
+    if (isIOS()) {
+        // Открываем поиск в App Store
+        const searchQueries = [
+            'qr%20scanner',
+            'barcode%20scanner',
+            'штрихкод%20сканер',
+            'qr%20код%20сканер'
+        ];
+        
+        const randomQuery = searchQueries[Math.floor(Math.random() * searchQueries.length)];
+        window.location.href = 'https://apps.apple.com/search?term=' + randomQuery;
+    } else if (isAndroid()) {
+        window.location.href = 'https://play.google.com/store/search?q=qr%20scanner&c=apps';
+    } else {
+        window.location.href = 'https://www.google.com/search?q=qr+scanner+app';
+    }
+    
+    setTimeout(() => {
+        scanModal.style.display = 'none';
+    }, 300);
+});
+
 
         // Открытие внешнего приложения сканера
         function openExternalScanner() {
@@ -21951,8 +22042,69 @@ takePhotoBtn.addEventListener('click', function() {
     cameraInput.click();
 });
 
-        // Использовать приложение сканера
-        useScannerApp.addEventListener('click', openExternalScanner);
+// Использовать приложение сканера
+useScannerApp.addEventListener('click', function() {
+    if (isIOS()) {
+        showIOSScannerSelector();
+    } else if (isAndroid()) {
+        // Для Android используем Intent
+        const scannerUrl = 'intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;S.browser_fallback_url=https%3A%2F%2Fzxing.appspot.com%2Fscan;end';
+        window.location.href = scannerUrl;
+    } else {
+        // Для десктопа
+        window.location.href = 'https://scanapp.org/';
+    }
+    
+    // Закрываем окно сканирования
+    setTimeout(() => {
+        scanModal.style.display = 'none';
+    }, 300);
+});
+
+// Показать выбор приложения для iOS
+function showIOSScannerSelector() {
+    const iosVersion = getIOSVersion();
+    
+    // Фильтруем приложения по версии iOS
+    const compatibleApps = iosScannerApps.filter(app => {
+        return !iosVersion || iosVersion >= app.minIOS;
+    });
+    
+    if (compatibleApps.length === 0) {
+        // Если нет совместимых приложений
+        alert(
+            'Для вашей версии iOS (' + (iosVersion || 'неизвестно') + ') нет рекомендованных приложений.\n\n' +
+            'Попробуйте:\n' +
+            '1. Обновить iOS до актуальной версии\n' +
+            '2. Использовать ручной ввод штрихкода\n' +
+            '3. Поискать "QR сканер" в App Store'
+        );
+        return;
+    }
+    
+    // Создаем сообщение с выбором
+    let message = '📱 Выберите приложение сканера для iOS ' + (iosVersion || '') + ':\n\n';
+    
+    compatibleApps.forEach((app, index) => {
+        message += (index + 1) + '. ' + app.name + '\n';
+        message += '   ✓ Версия iOS: ' + app.minIOS + '+\n';
+        message += '   ✓ Возможности: ' + app.features.join(', ') + '\n\n';
+    });
+    
+    message += 'Выберите номер приложения (1-' + compatibleApps.length + '):';
+    
+    const choice = prompt(message);
+    const choiceIndex = parseInt(choice) - 1;
+    
+    if (choiceIndex >= 0 && choiceIndex < compatibleApps.length) {
+        // Открываем выбранное приложение в App Store
+        window.location.href = compatibleApps[choiceIndex].url;
+    } else if (choice !== null) {
+        // Если ввели неправильный номер
+        alert('Пожалуйста, выберите номер от 1 до ' + compatibleApps.length);
+        showIOSScannerSelector(); // Показываем снова
+    }
+}
 
         // Ручной ввод
         manualInputBtn.addEventListener('click', function() {
