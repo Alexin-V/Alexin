@@ -21809,27 +21809,6 @@ useNativeCamera.addEventListener('click', function() {
     cameraInput.click();
 });
         
-        // Запускаем камеру
-        cameraInput.click();
-    } else {
-        // Для Android тоже используем этот метод как fallback
-        const cameraInput = document.createElement('input');
-        cameraInput.type = 'file';
-        cameraInput.accept = 'image/*';
-        cameraInput.capture = 'environment';
-        
-        cameraInput.onchange = function(e) {
-            if (e.target.files && e.target.files[0]) {
-                handleImageFile(e.target.files[0]);
-                scanModal.style.display = 'none';
-            }
-            this.value = '';
-        };
-        
-        cameraInput.click();
-    }
-});
-
 
 
         // Переключение камеры
