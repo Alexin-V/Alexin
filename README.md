@@ -1,16 +1,520 @@
+
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Поиск товаров</title>
     <style>
-        body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px;background-color:#f5f5f5}.search-container{background:#fff;padding:30px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.1);text-align:center}.search-input{width:100%;padding:15px;font-size:16px;border:2px solid #ddd;border-radius:5px;box-sizing:border-box;margin-bottom:10px}.search-input:focus{border-color:#4caf50;outline:0}.buttons-container{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;justify-content:center}.search-button{background-color:#4caf50;color:#fff;border:0;padding:15px 30px;font-size:16px;border-radius:5px;cursor:pointer;transition:background-color .3s;flex-grow:1;max-width:200px}.scan-button{background-color:#2196f3;color:#fff;border:0;padding:15px 30px;font-size:16px;border-radius:5px;cursor:pointer;transition:background-color .3s;display:flex;align-items:center;justify-content:center;gap:8px;flex-grow:1;max-width:200px}.search-button:hover{background-color:#45a049}.scan-button:hover{background-color:#0b7dda}.search-button:active{background-color:#3d8b40}.scan-button:active{background-color:#0a6ebd}.scan-icon{font-size:18px}.search-hint{color:#666;font-size:14px;margin-top:5px;text-align:left}.search-mode-selector{display:flex;justify-content:center;gap:20px;margin:15px 0;flex-wrap:wrap}.mode-option{display:flex;align-items:center;cursor:pointer}.mode-radio{margin-right:8px;cursor:pointer}.mode-label{font-size:14px;color:#333;cursor:pointer}.results-container{margin-top:20px;display:none}.product-card{background:#fff;padding:20px;margin-bottom:10px;border-radius:5px;box-shadow:0 1px 5px rgba(0,0,0,.1);border-left:4px solid #4caf50}.product-field{margin-bottom:5px}.barcode{color:#666;font-size:14px}.article{font-weight:700;color:#333}.name{font-size:16px;color:#222;margin:10px 0}.price{color:#e74c3c;font-weight:700}.no-results{text-align:center;padding:20px;color:#666;font-style:italic}.results-count{color:#666;font-size:14px;margin-bottom:10px;text-align:left}.search-mode{color:#4caf50;font-size:12px;margin-top:5px;text-align:left}.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.8);display:none;justify-content:center;align-items:center;z-index:1000}.modal-frame{background:#fff;padding:30px;border-radius:15px;text-align:center;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,.3)}.video-wrapper{position:relative;width:100%;max-width:400px;margin:20px auto}#cameraVideo{width:100%;height:auto;border-radius:8px}.camera-controls{margin-top:10px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.camera-btn{padding:10px 15px;border:0;border-radius:5px;cursor:pointer;font-size:14px;background-color:#2196f3;color:#fff;flex:1;min-width:120px}.close-modal{background-color:#f44336;color:#fff;border:0;padding:10px 20px;border-radius:5px;cursor:pointer;margin-top:10px}.scan-box{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80%;height:150px;border:3px solid #4caf50;border-radius:10px;z-index:1;pointer-events:none}.scan-line{position:absolute;top:0;left:0;width:100%;height:3px;background-color:#4caf50;animation:scan 2s linear infinite}@keyframes scan{0%{top:0}50%{top:100%}100%{top:0}}.scan-hint{position:absolute;bottom:-40px;left:0;width:100%;text-align:center;color:#fff;font-size:14px;text-shadow:1px 1px 2px rgba(0,0,0,.8);z-index:2}.barcode-supported{margin-top:10px;font-size:12px;color:#666}.barcode-format{display:inline-block;background:#e8f5e9;color:#2e7d32;padding:2px 6px;border-radius:3px;margin:0 2px;font-size:11px}.scan-result-frame{max-width:450px;animation:successSlide .5s ease-out}@keyframes successSlide{0%{transform:translateY(-30px);opacity:0}100%{transform:translateY(0);opacity:1}}.scan-result-title{font-size:24px;color:#4caf50;margin-bottom:20px;font-weight:700}.scan-result-barcode{font-size:20px;font-weight:700;color:#333;background:#f5f5f5;padding:10px 15px;border-radius:8px;margin:15px 0;font-family:monospace;letter-spacing:1px}.scan-result-count{color:#666;font-size:14px;margin-bottom:20px}.scan-result-products{max-height:300px;overflow-y:auto;margin:15px 0;text-align:left}.scan-result-card{background:#f9f9f9;padding:15px;margin-bottom:10px;border-radius:8px;border-left:4px solid #2196f3}.scan-result-actions{display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap}.action-btn{padding:12px 25px;border:0;border-radius:8px;cursor:pointer;font-size:16px;font-weight:700;transition:all .3s;flex:1;min-width:140px}.continue-scan-btn{background-color:#2196f3;color:#fff}.continue-scan-btn:hover{background-color:#0b7dda;transform:translateY(-2px)}.close-result-btn{background-color:#4caf50;color:#fff}.close-result-btn:hover{background-color:#45a049;transform:translateY(-2px)}.new-search-btn{background-color:#ff9800;color:#fff}.new-search-btn:hover{background-color:#e68900;transform:translateY(-2px)}
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .search-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+        
+        .search-input:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+        
+        .buttons-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .search-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            flex-grow: 1;
+            max-width: 200px;
+        }
+        
+        .scan-button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-grow: 1;
+            max-width: 200px;
+        }
+        
+        .search-button:hover {
+            background-color: #45a049;
+        }
+        
+        .scan-button:hover {
+            background-color: #0b7dda;
+        }
+        
+        .search-button:active {
+            background-color: #3d8b40;
+        }
+        
+        .scan-button:active {
+            background-color: #0a6ebd;
+        }
+        
+        .scan-icon {
+            font-size: 18px;
+        }
+        
+        .search-hint {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+            text-align: left;
+        }
+        
+        .search-mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .mode-option {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .mode-radio {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+        
+        .mode-label {
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+        }
+        
+        .results-container {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .product-card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .product-field {
+            margin-bottom: 5px;
+        }
+        
+        .barcode {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .article {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .name {
+            font-size: 16px;
+            color: #222;
+            margin: 10px 0;
+        }
+        
+        .price {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .results-count {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        
+        .search-mode {
+            color: #4CAF50;
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: left;
+        }
+        
+        /* Модальное окно камеры */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-frame {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        
+        #cameraVideo {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        
+        .camera-controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .camera-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            background-color: #2196F3;
+            color: white;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .close-modal {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .scan-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 150px;
+            border: 3px solid #4CAF50;
+            border-radius: 10px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #4CAF50;
+            animation: scan 2s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+        
+        .scan-hint {
+            position: absolute;
+            bottom: -40px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            z-index: 2;
+        }
+        
+        .barcode-supported {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .barcode-format {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin: 0 2px;
+            font-size: 11px;
+        }
+        
+        /* Модальное окно результатов */
+        .scan-result-frame {
+            max-width: 450px;
+            animation: successSlide 0.5s ease-out;
+        }
+        
+        @keyframes successSlide {
+            0% { transform: translateY(-30px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        
+        .scan-result-title {
+            font-size: 24px;
+            color: #4CAF50;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .scan-result-barcode {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+        
+        .scan-result-count {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .scan-result-products {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+            text-align: left;
+        }
+        
+        .scan-result-card {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .scan-result-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 140px;
+        }
+        
+        .continue-scan-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .continue-scan-btn:hover {
+            background-color: #0b7dda;
+            transform: translateY(-2px);
+        }
+        
+        .close-result-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .close-result-btn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        .new-search-btn {
+            background-color: #ff9800;
+            color: white;
+        }
+        
+        .new-search-btn:hover {
+            background-color: #e68900;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
-    <div class=search-container><h2>Поиск товаров</h2><input type=text class=search-input id=searchInput placeholder="Введите артикул, штрихкод, наименование или комбинацию через / ..." autocomplete=off><div class=search-mode-selector><div class=mode-option><input type=radio id=modeGeneral name=searchMode class=mode-radio value=general checked><label for=modeGeneral class=mode-label>Общий</label></div><div class=mode-option><input type=radio id=modeArticle name=searchMode class=mode-radio value=article><label for=modeArticle class=mode-label>Артикул</label></div><div class=mode-option><input type=radio id=modeBarcode name=searchMode class=mode-radio value=barcode><label for=modeBarcode class=mode-label>Штрихкод</label></div></div><div class=buttons-container><button class=search-button id=searchButton>Найти</button><button class=scan-button id=scanButton style=display:none><span class=scan-icon>📷</span> Сканировать штрихкод</button></div><div class=search-hint>Поиск по артикулу, штрихкоду и наименованию товара</div><div class=search-hint>Для комбинированного поиска используйте символ / (например: маркер/423) - первая часть в наименовании, вторая в артикуле</div><div class=barcode-supported>Поддерживаемые форматы: <span class=barcode-format>EAN-13</span> <span class=barcode-format>CODE-39</span> <span class=barcode-format>UPC</span> <span class=barcode-format>CODE-128</span></div><div class=results-container id=resultsContainer></div></div><div class=modal-overlay id=cameraModal><div class=modal-frame><h3>Сканирование штрихкода</h3><div class=video-wrapper id=videoContainer><div class=scan-box><div class=scan-line></div></div><div class=scan-hint>Наведите камеру на штрихкод EAN-13 или CODE-39</div><video id=cameraVideo playsinline></video><div class=camera-controls><button class=camera-btn id=stopCamera>Остановить</button></div></div><button class=close-modal id=closeCameraModal>Закрыть</button></div></div><div class=modal-overlay id=resultModal><div class="modal-frame scan-result-frame"><div class=scan-result-products id=resultProducts></div><div class=scan-result-count id=resultCount></div><div class=scan-result-barcode id=resultBarcode></div><div class=scan-result-actions><button class="action-btn continue-scan-btn" id=continueScanBtn>🔄 Сканировать еще</button><button class="action-btn new-search-btn" id=newSearchBtn>🔍 Новый поиск</button><button class="action-btn close-result-btn" id=closeResultBtn>✓ Готово</button></div></div></div>
-<script>
-const productsData = `6014991490300;KS-14903;Шары воздушные для моделирования 23см;0.70;0.70;
+    <div class="search-container">
+        <h2>Поиск товаров</h2>
+        <input type="text" 
+               class="search-input" 
+               id="searchInput" 
+               placeholder="Введите артикул, штрихкод, наименование или комбинацию через / ..."
+               autocomplete="off">
+        
+        <!-- Блок выбора режима поиска -->
+        <div class="search-mode-selector">
+            <div class="mode-option">
+                <input type="radio" id="modeGeneral" name="searchMode" class="mode-radio" value="general" checked>
+                <label for="modeGeneral" class="mode-label">Общий</label>
+            </div>
+            <div class="mode-option">
+                <input type="radio" id="modeArticle" name="searchMode" class="mode-radio" value="article">
+                <label for="modeArticle" class="mode-label">Артикул</label>
+            </div>
+            <div class="mode-option">
+                <input type="radio" id="modeBarcode" name="searchMode" class="mode-radio" value="barcode">
+                <label for="modeBarcode" class="mode-label">Штрихкод</label>
+            </div>
+        </div>
+        
+        <!-- Контейнер для кнопок -->
+        <div class="buttons-container">
+            <button class="search-button" id="searchButton">Найти</button>
+            <!-- Кнопка для Android - скрыта на iOS -->
+            <button class="scan-button" id="scanButton" style="display: none;">
+                <span class="scan-icon">📷</span> Сканировать штрихкод
+            </button>
+        </div>
+        
+        <div class="search-hint">Поиск по артикулу, штрихкоду и наименованию товара</div>
+        <div class="search-hint">Для комбинированного поиска используйте символ / (например: маркер/423) - первая часть в наименовании, вторая в артикуле</div>
+        <div class="barcode-supported">
+            Поддерживаемые форматы: 
+            <span class="barcode-format">EAN-13</span>
+            <span class="barcode-format">CODE-39</span>
+            <span class="barcode-format">UPC</span>
+            <span class="barcode-format">CODE-128</span>
+        </div>
+        
+        <div class="results-container" id="resultsContainer">
+            <!-- Результаты поиска будут здесь -->
+        </div>
+    </div>
+
+    <!-- Модальное окно камеры (только для Android) -->
+    <div class="modal-overlay" id="cameraModal">
+        <div class="modal-frame">
+            <h3>Сканирование штрихкода</h3>
+            
+            <div class="video-wrapper" id="videoContainer">
+                <div class="scan-box">
+                    <div class="scan-line"></div>
+                </div>
+                <div class="scan-hint">Наведите камеру на штрихкод EAN-13 или CODE-39</div>
+                <video id="cameraVideo" playsinline></video>
+                <div class="camera-controls">
+                    <button class="camera-btn" id="stopCamera">Остановить</button>
+                </div>
+            </div>
+            
+            <button class="close-modal" id="closeCameraModal">Закрыть</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно результатов сканирования -->
+    <div class="modal-overlay" id="resultModal">
+        <div class="modal-frame scan-result-frame">
+            <div class="scan-result-products" id="resultProducts">
+                <!-- Список товаров будет здесь -->
+            </div>
+ 
+            <div class="scan-result-count" id="resultCount">
+                <!-- Количество найденных товаров -->
+            </div>
+            
+            <div class="scan-result-barcode" id="resultBarcode">
+                <!-- Штрихкод будет здесь -->
+            </div>
+
+            <div class="scan-result-actions">
+                <button class="action-btn continue-scan-btn" id="continueScanBtn">
+                    🔄 Сканировать еще
+                </button>
+                <button class="action-btn new-search-btn" id="newSearchBtn">
+                    🔍 Новый поиск
+                </button>
+                <button class="action-btn close-result-btn" id="closeResultBtn">
+                    ✓ Готово
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Пример данных (замените на загрузку из вашего файла)
+        const productsData = `6014991490300;KS-14903;Шары воздушные для моделирования 23см;0.70;0.70;
 2000000002675;KS-95-12;Простые карандаши.(Дешёвые,);1.00;1.00;
 2005000001215;KS-95-12;Простые карандаши.(Дешёвые,);1.00;1.00;
 2000000008868;KS-95-12;Простые карандаши.(Дешёвые,);1.00;1.00;
@@ -20226,7 +20730,547 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
 ЦБ010010653;TS-2019888;Ходунки  паровозик Музыкальный Лев;6710.00;6710.00;
 ОК000000767;KS-N010;Сосна искусственная, высота 300 см, 750 веточек;7550.00;7550.00;`;
 
-function parseProductsData(a){const b=a.trim().split('\n');return b.map(c=>{const d=c.split(';');return{barcode:d[0],article:d[1],name:d[2],wholesalePrice:d[3],retailPrice:d[4]}})}const products=parseProductsData(productsData),searchInput=document.getElementById('searchInput'),searchButton=document.getElementById('searchButton'),scanButton=document.getElementById('scanButton'),resultsContainer=document.getElementById('resultsContainer'),searchModeRadios=document.querySelectorAll('input[name="searchMode"]'),cameraModal=document.getElementById('cameraModal'),resultModal=document.getElementById('resultModal'),closeCameraModal=document.getElementById('closeCameraModal'),cameraVideo=document.getElementById('cameraVideo'),stopCameraBtn=document.getElementById('stopCamera'),videoContainer=document.getElementById('videoContainer'),resultBarcode=document.getElementById('resultBarcode'),resultCount=document.getElementById('resultCount'),resultProducts=document.getElementById('resultProducts'),continueScanBtn=document.getElementById('continueScanBtn'),newSearchBtn=document.getElementById('newSearchBtn'),closeResultBtn=document.getElementById('closeResultBtn');let stream=null,barcodeDetector=null,scanInterval=null,lastScannedCode='';function isIOS(){return/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream}function isAndroid(){return/Android/.test(navigator.userAgent)}function isBarcodeDetectorSupported(){return'BarcodeDetector'in window}async function initBarcodeDetector(){if(!isBarcodeDetectorSupported()){console.warn('BarcodeDetector API не поддерживается в этом браузере');return null}try{const a=await BarcodeDetector.getSupportedFormats(),b=a.filter(c=>['ean_13','ean_8','upc_a','upc_e','code_39','code_128','codabar'].includes(c));if(b.length===0){console.warn('Нет поддержки нужных форматов штрихкодов');return null}barcodeDetector=new BarcodeDetector({formats:b});return barcodeDetector}catch(a){console.error('Ошибка инициализации BarcodeDetector:',a);return null}}function isHTTPS(){return window.location.protocol==='https:'}function isLocalhost(){return window.location.hostname==='localhost'||window.location.hostname==='127.0.0.1'||window.location.hostname===''}function canUseCamera(){return isHTTPS()||isLocalhost()}function setupPlatformUI(){if(isIOS()){scanButton.style.display='none';searchButton.style.maxWidth='300px'}else if(isAndroid()){scanButton.style.display='flex';initBarcodeDetector()}else{scanButton.style.display='none';searchButton.style.maxWidth='300px'}}async function openCamera(){if(!isAndroid())return;if(!canUseCamera()){alert('Для использования камеры браузера требуется HTTPS соединение.');return}if(!barcodeDetector){alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');return}try{stopCameraStream();const a={video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}},audio:false};stream=await navigator.mediaDevices.getUserMedia(a);cameraVideo.srcObject=stream;cameraModal.style.display='flex';await new Promise(b=>{cameraVideo.onloadedmetadata=()=>{cameraVideo.play();b()}});startBarcodeDetection()}catch(a){console.error('Ошибка доступа к камере:',a);let b='Не удалось получить доступ к камере. ';if(a.name==='NotAllowedError')b+='Пожалуйста, разрешите доступ к камере в настройках браузера.';else if(a.name==='NotFoundError')b+='Камера не найдена.';else if(a.name==='NotSupportedError')b+='Ваш браузер не поддерживает доступ к камере.';else if(a.name==='NotReadableError')b+='Камера уже используется другим приложением.';alert(b)}}function startBarcodeDetection(){const a=document.createElement('canvas'),b=a.getContext('2d');scanInterval=setInterval(async()=>{if(cameraVideo.readyState===cameraVideo.HAVE_ENOUGH_DATA){a.width=cameraVideo.videoWidth;a.height=cameraVideo.videoHeight;b.drawImage(cameraVideo,0,0,a.width,a.height);try{const c=await barcodeDetector.detect(a);if(c&&c.length>0){const d=c[0];handleScannedCode(d.rawValue);return}}catch(c){console.error('Ошибка детектирования штрихкода:',c)}}},300)}function stopCameraStream(){if(stream){stream.getTracks().forEach(a=>a.stop());stream=null}if(scanInterval){clearInterval(scanInterval);scanInterval=null}cameraVideo.srcObject=null}function showScanResults(a,b){lastScannedCode=a;resultBarcode.textContent=a;if(b.length===0){resultCount.textContent='Товары не найдены';resultCount.style.color='#f44336';resultProducts.innerHTML='<div class=scan-result-card style="text-align:center;color:#666;font-style:italic">По этому штрихкоду товары не найдены в базе данных</div>'}else{resultCount.textContent=`Найдено товаров: ${b.length}`;resultCount.style.color='#4caf50';resultProducts.innerHTML='';b.forEach(c=>{const d=document.createElement('div');d.className='scan-result-card';d.innerHTML=`<div style="font-size:12px;color:#666;margin-bottom:5px"><strong>Штрихкод:</strong> ${c.barcode}</div><div style="font-weight:bold;color:#333;margin-bottom:5px"><strong>Артикул:</strong> ${c.article}</div><div style="font-size:16px;color:#222;margin-bottom:8px">${c.name}</div><div style="font-size:40px;color:#e74c3c;font-weight:bold">Цена: ${c.wholesalePrice} руб.</div>`;resultProducts.appendChild(d)})}cameraModal.style.display='none';resultModal.style.display='flex'}function handleScannedCode(a){if(!a||a.trim().length===0)return;stopCameraStream();document.getElementById('modeBarcode').checked=!0;const b=a.toString().trim();searchInput.value=b;const c=performSimpleSearch(b,'barcode');showScanResults(b,c)}function getCurrentSearchMode(){const a=document.querySelector('input[name="searchMode"]:checked');return a?a.value:'general'}function searchProducts(){const a=searchInput.value.trim(),b=getCurrentSearchMode();if(!a){resultsContainer.style.display='none';return}let c=[],d='';if(a.includes('/')&&b==='general'){const e=a.split('/').map(f=>f.trim()).filter(f=>f);if(e.length>=2){d='комбинированный';c=performCombinedSearch(e)}else{c=performSimpleSearch(a.replace('/',''),b);d=getSearchModeDisplayName(b)}}else{c=performSimpleSearch(a,b);d=getSearchModeDisplayName(b)}displayResults(c,a,d)}function getSearchModeDisplayName(a){switch(a){case'general':return'общий';case'article':return'по артикулу';case'barcode':return'по штрихкоду';default:return'обычный'}}function performCombinedSearch(a){return products.filter(b=>{const c=a[0]?b.name.toLowerCase().includes(a[0].toLowerCase()):!1,d=a[1]?b.article.toLowerCase().includes(a[1].toLowerCase()):!1;return c&&d})}function performSimpleSearch(a,b){return products.filter(c=>{switch(b){case'article':return c.article.toLowerCase().includes(a.toLowerCase());case'barcode':return c.barcode.includes(a);case'general':default:return c.article.toLowerCase().includes(a.toLowerCase())||c.barcode.includes(a)||c.name.toLowerCase().includes(a.toLowerCase())}})}function displayResults(a,b,c){resultsContainer.innerHTML='';if(a.length===0){resultsContainer.innerHTML='<div class=no-results>Товары не найдены</div>';resultsContainer.style.display='block';return}const d=document.createElement('div');d.className='results-count';d.textContent=`Найдено товаров: ${a.length}`;resultsContainer.appendChild(d);const e=document.createElement('div');e.className='search-mode';e.textContent=`Режим поиска: ${c}`;resultsContainer.appendChild(e);a.forEach(f=>{const g=document.createElement('div');g.className='product-card';let h=f.name,i=f.article,j=f.barcode;if(c==='комбинированный'&&b.includes('/')){const k=b.split('/').map(l=>l.trim()).filter(l=>l);if(k[0])h=highlightMatch(f.name,k[0]);if(k[1])i=highlightMatch(f.article,k[1])}else{const k=getCurrentSearchMode();if(k==='general'||k==='article')i=highlightMatch(f.article,b);if(k==='general'||k==='barcode')j=highlightMatch(f.barcode,b);if(k==='general')h=highlightMatch(f.name,b)}g.innerHTML=`<div class="product-field barcode">Штрихкод: ${j}</div><div class="product-field article">Артикул: ${i}</div><div class="product-field name">${h}</div><div class="product-field price">Цена: ${f.wholesalePrice} руб.</div>`;resultsContainer.appendChild(g)});resultsContainer.style.display='block'}function highlightMatch(a,b){if(!b)return a;const c=new RegExp(`(${escapeRegExp(b)})`,'gi');return a.toString().replace(c,'<mark>$1</mark>')}function escapeRegExp(a){return a.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}searchButton.addEventListener('click',searchProducts);searchInput.addEventListener('keydown',function(a){if(a.key==='Enter')searchProducts()});scanButton.addEventListener('click',openCamera);closeCameraModal.addEventListener('click',function(){stopCameraStream();cameraModal.style.display='none'});cameraModal.addEventListener('click',function(a){if(a.target===cameraModal){stopCameraStream();cameraModal.style.display='none'}});stopCameraBtn.addEventListener('click',function(){stopCameraStream();cameraModal.style.display='none'});continueScanBtn.addEventListener('click',function(){resultModal.style.display='none';setTimeout(()=>{openCamera()},300)});newSearchBtn.addEventListener('click',function(){resultModal.style.display='none';searchInput.value=lastScannedCode;searchInput.focus();searchProducts()});closeResultBtn.addEventListener('click',function(){resultModal.style.display='none'});resultModal.addEventListener('click',function(a){if(a.target===resultModal)resultModal.style.display='none'});searchModeRadios.forEach(a=>{a.addEventListener('change',function(){if(searchInput.value.trim())searchProducts()})});window.addEventListener('load',function(){searchInput.focus();setupPlatformUI()});searchInput.addEventListener('keydown',function(a){if(a.key==='Escape'){this.value='';resultsContainer.style.display='none';this.focus()}});document.addEventListener('keydown',function(a){if((a.ctrlKey||a.metaKey)&&a.key==='f'){a.preventDefault();searchInput.focus();searchInput.select()}});
-</script>
+        // Функция для парсинга данных
+        function parseProductsData(data) {
+            const lines = data.trim().split('\n');
+            return lines.map(line => {
+                const parts = line.split(';');
+                return {
+                    barcode: parts[0],
+                    article: parts[1],
+                    name: parts[2],
+                    wholesalePrice: parts[3],
+                    retailPrice: parts[4]
+                };
+            });
+        }
+
+        // Парсим данные
+        const products = parseProductsData(productsData);
+
+        // Элементы DOM
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const scanButton = document.getElementById('scanButton');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const searchModeRadios = document.querySelectorAll('input[name="searchMode"]');
+        
+        // Модальные окна
+        const cameraModal = document.getElementById('cameraModal');
+        const resultModal = document.getElementById('resultModal');
+        const closeCameraModal = document.getElementById('closeCameraModal');
+        
+        // Элементы камеры
+        const cameraVideo = document.getElementById('cameraVideo');
+        const stopCameraBtn = document.getElementById('stopCamera');
+        const videoContainer = document.getElementById('videoContainer');
+        
+        // Элементы результатов
+        const resultBarcode = document.getElementById('resultBarcode');
+        const resultCount = document.getElementById('resultCount');
+        const resultProducts = document.getElementById('resultProducts');
+        const continueScanBtn = document.getElementById('continueScanBtn');
+        const newSearchBtn = document.getElementById('newSearchBtn');
+        const closeResultBtn = document.getElementById('closeResultBtn');
+
+        // Переменные для работы с камерой
+        let stream = null;
+        let barcodeDetector = null;
+        let scanInterval = null;
+        let lastScannedCode = '';
+
+        // Проверяем iOS
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        }
+
+        // Проверяем Android
+        function isAndroid() {
+            return /Android/.test(navigator.userAgent);
+        }
+
+        // Проверяем поддержку BarcodeDetector API
+        function isBarcodeDetectorSupported() {
+            return ('BarcodeDetector' in window);
+        }
+
+        // Инициализируем BarcodeDetector
+        async function initBarcodeDetector() {
+            if (!isBarcodeDetectorSupported()) {
+                console.warn('BarcodeDetector API не поддерживается в этом браузере');
+                return null;
+            }
+            
+            try {
+                const formats = await BarcodeDetector.getSupportedFormats();
+                console.log('Поддерживаемые форматы:', formats);
+                
+                const supportedFormats = formats.filter(format => 
+                    ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_39', 'code_128', 'codabar'].includes(format)
+                );
+                
+                if (supportedFormats.length === 0) {
+                    console.warn('Нет поддержки нужных форматов штрихкодов');
+                    return null;
+                }
+                
+                barcodeDetector = new BarcodeDetector({ formats: supportedFormats });
+                return barcodeDetector;
+            } catch (error) {
+                console.error('Ошибка инициализации BarcodeDetector:', error);
+                return null;
+            }
+        }
+
+        // Проверяем, работает ли на HTTPS
+        function isHTTPS() {
+            return window.location.protocol === 'https:';
+        }
+
+        // Проверяем localhost
+        function isLocalhost() {
+            return window.location.hostname === 'localhost' || 
+                   window.location.hostname === '127.0.0.1' ||
+                   window.location.hostname === '';
+        }
+
+        // Проверяем, можно ли использовать камеру
+        function canUseCamera() {
+            return isHTTPS() || isLocalhost();
+        }
+
+        // Настройка интерфейса в зависимости от платформы
+        function setupPlatformUI() {
+            if (isIOS()) {
+                // Для iOS скрываем кнопку сканирования
+                scanButton.style.display = 'none';
+                searchButton.style.maxWidth = '300px';
+            } else if (isAndroid()) {
+                // Для Android показываем кнопку сканирования
+                scanButton.style.display = 'flex';
+                
+                // Инициализируем BarcodeDetector для Android
+                initBarcodeDetector();
+            } else {
+                // Для Desktop скрываем кнопку сканирования
+                scanButton.style.display = 'none';
+                searchButton.style.maxWidth = '300px';
+            }
+        }
+
+        // Открытие камеры для Android
+        async function openCamera() {
+            if (!isAndroid()) return;
+            
+            if (!canUseCamera()) {
+                alert('Для использования камеры браузера требуется HTTPS соединение.');
+                return;
+            }
+            
+            if (!barcodeDetector) {
+                alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
+                return;
+            }
+            
+            try {
+                stopCameraStream();
+                
+                const constraints = {
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                };
+                
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                cameraVideo.srcObject = stream;
+                cameraModal.style.display = 'flex';
+                
+                await new Promise((resolve) => {
+                    cameraVideo.onloadedmetadata = () => {
+                        cameraVideo.play();
+                        resolve();
+                    };
+                });
+                
+                startBarcodeDetection();
+                
+            } catch (error) {
+                console.error('Ошибка доступа к камере:', error);
+                
+                let errorMessage = 'Не удалось получить доступ к камере. ';
+                
+                if (error.name === 'NotAllowedError') {
+                    errorMessage += 'Пожалуйста, разрешите доступ к камере в настройках браузера.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage += 'Камера не найдена.';
+                } else if (error.name === 'NotSupportedError') {
+                    errorMessage += 'Ваш браузер не поддерживает доступ к камере.';
+                } else if (error.name === 'NotReadableError') {
+                    errorMessage += 'Камера уже используется другим приложением.';
+                }
+                
+                alert(errorMessage);
+            }
+        }
+
+        // Запуск распознавания штрихкодов
+        function startBarcodeDetection() {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            scanInterval = setInterval(async () => {
+                if (cameraVideo.readyState === cameraVideo.HAVE_ENOUGH_DATA) {
+                    canvas.width = cameraVideo.videoWidth;
+                    canvas.height = cameraVideo.videoHeight;
+                    
+                    context.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+                    
+                    try {
+                        const barcodes = await barcodeDetector.detect(canvas);
+                        
+                        if (barcodes && barcodes.length > 0) {
+                            const barcode = barcodes[0];
+                            handleScannedCode(barcode.rawValue);
+                            return;
+                        }
+                        
+                    } catch (error) {
+                        console.error('Ошибка детектирования штрихкода:', error);
+                    }
+                }
+            }, 300);
+        }
+
+        // Остановка потока камеры
+        function stopCameraStream() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            if (scanInterval) {
+                clearInterval(scanInterval);
+                scanInterval = null;
+            }
+            cameraVideo.srcObject = null;
+        }
+
+        // Показать результаты сканирования
+        function showScanResults(code, results) {
+            lastScannedCode = code;
+            
+            resultBarcode.textContent = code;
+            
+            if (results.length === 0) {
+                resultCount.textContent = 'Товары не найдены';
+                resultCount.style.color = '#f44336';
+                resultProducts.innerHTML = '<div class="scan-result-card" style="text-align: center; color: #666; font-style: italic;">По этому штрихкоду товары не найдены в базе данных</div>';
+            } else {
+                resultCount.textContent = `Найдено товаров: ${results.length}`;
+                resultCount.style.color = '#4CAF50';
+                
+                resultProducts.innerHTML = '';
+                
+                results.forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'scan-result-card';
+                    
+                    productCard.innerHTML = `
+                        <div style="font-size: 12px; color: #666; margin-bottom: 5px;">
+                            <strong>Штрихкод:</strong> ${product.barcode}
+                        </div>
+                        <div style="font-weight: bold; color: #333; margin-bottom: 5px;">
+                            <strong>Артикул:</strong> ${product.article}
+                        </div>
+                        <div style="font-size: 16px; color: #222; margin-bottom: 8px;">
+                            ${product.name}
+                        </div>
+                        <div style="font-size: 40px; color: #e74c3c; font-weight: bold;">
+                            Цена: ${product.wholesalePrice} руб.
+                        </div>
+                    `;
+                    
+                    resultProducts.appendChild(productCard);
+                });
+            }
+            
+            cameraModal.style.display = 'none';
+            resultModal.style.display = 'flex';
+        }
+
+        // Обработка отсканированного кода
+        function handleScannedCode(code) {
+            if (!code || code.trim().length === 0) {
+                return;
+            }
+            
+            stopCameraStream();
+            document.getElementById('modeBarcode').checked = true;
+            
+            const cleanCode = code.toString().trim();
+            searchInput.value = cleanCode;
+            
+            const results = performSimpleSearch(cleanCode, 'barcode');
+            showScanResults(cleanCode, results);
+        }
+
+        // Функция для получения текущего режима поиска
+        function getCurrentSearchMode() {
+            const selectedRadio = document.querySelector('input[name="searchMode"]:checked');
+            return selectedRadio ? selectedRadio.value : 'general';
+        }
+
+        // Функция поиска
+        function searchProducts() {
+            const query = searchInput.value.trim();
+            const searchMode = getCurrentSearchMode();
+            
+            if (!query) {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+
+            let results = [];
+            let displaySearchMode = '';
+
+            if (query.includes('/') && searchMode === 'general') {
+                const parts = query.split('/').map(part => part.trim()).filter(part => part);
+                
+                if (parts.length >= 2) {
+                    displaySearchMode = 'комбинированный';
+                    results = performCombinedSearch(parts);
+                } else {
+                    results = performSimpleSearch(query.replace('/',''), searchMode);
+                    displaySearchMode = getSearchModeDisplayName(searchMode);
+                }
+            } else {
+                results = performSimpleSearch(query, searchMode);
+                displaySearchMode = getSearchModeDisplayName(searchMode);
+            }
+
+            displayResults(results, query, displaySearchMode);
+        }
+
+        // Функция для получения отображаемого названия режима поиска
+        function getSearchModeDisplayName(mode) {
+            switch(mode) {
+                case 'general': return 'общий';
+                case 'article': return 'по артикулу';
+                case 'barcode': return 'по штрихкоду';
+                default: return 'обычный';
+            }
+        }
+
+        // Функция комбинированного поиска
+        function performCombinedSearch(parts) {
+            return products.filter(product => {
+                const nameMatch = parts[0] ? 
+                    product.name.toLowerCase().includes(parts[0].toLowerCase()) : false;
+                
+                const articleMatch = parts[1] ? 
+                    product.article.toLowerCase().includes(parts[1].toLowerCase()) : false;
+
+                return nameMatch && articleMatch;
+            });
+        }
+
+        // Функция простого поиска
+        function performSimpleSearch(searchTerm, mode) {
+            return products.filter(product => {
+                switch(mode) {
+                    case 'article':
+                        return product.article.toLowerCase().includes(searchTerm.toLowerCase());
+                    
+                    case 'barcode':
+                        return product.barcode.includes(searchTerm);
+                    
+                    case 'general':
+                    default:
+                        return product.article.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                               product.barcode.includes(searchTerm) ||
+                               product.name.toLowerCase().includes(searchTerm.toLowerCase());
+                }
+            });
+        }
+
+        // Функция отображения результатов
+        function displayResults(results, query, searchMode) {
+            resultsContainer.innerHTML = '';
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<div class="no-results">Товары не найдены</div>';
+                resultsContainer.style.display = 'block';
+                return;
+            }
+
+            const countElement = document.createElement('div');
+            countElement.className = 'results-count';
+            countElement.textContent = `Найдено товаров: ${results.length}`;
+            resultsContainer.appendChild(countElement);
+
+            const modeElement = document.createElement('div');
+            modeElement.className = 'search-mode';
+            modeElement.textContent = `Режим поиска: ${searchMode}`;
+            resultsContainer.appendChild(modeElement);
+
+            results.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                
+                let highlightedName = product.name;
+                let highlightedArticle = product.article;
+                let highlightedBarcode = product.barcode;
+
+                if (searchMode === 'комбинированный' && query.includes('/')) {
+                    const parts = query.split('/').map(part => part.trim()).filter(part => part);
+                    
+                    if (parts[0]) {
+                        highlightedName = highlightMatch(product.name, parts[0]);
+                    }
+                    if (parts[1]) {
+                        highlightedArticle = highlightMatch(product.article, parts[1]);
+                    }
+                } else {
+                    const currentMode = getCurrentSearchMode();
+                    
+                    if (currentMode === 'general' || currentMode === 'article') {
+                        highlightedArticle = highlightMatch(product.article, query);
+                    }
+                    if (currentMode === 'general' || currentMode === 'barcode') {
+                        highlightedBarcode = highlightMatch(product.barcode, query);
+                    }
+                    if (currentMode === 'general') {
+                        highlightedName = highlightMatch(product.name, query);
+                    }
+                }
+                
+                productCard.innerHTML = `
+                    <div class="product-field barcode">Штрихкод: ${highlightedBarcode}</div>
+                    <div class="product-field article">Артикул: ${highlightedArticle}</div>
+                    <div class="product-field name">${highlightedName}</div>
+                    <div class="product-field price">
+                        Цена: ${product.wholesalePrice} руб.
+                    </div>
+                `;
+                resultsContainer.appendChild(productCard);
+            });
+
+            resultsContainer.style.display = 'block';
+        }
+
+        // Функция для подсветки совпадений
+        function highlightMatch(text, searchTerm) {
+            if (!searchTerm) return text;
+            
+            const regex = new RegExp(`(${escapeRegExp(searchTerm)})`, 'gi');
+            return text.toString().replace(regex, '<mark>$1</mark>');
+        }
+
+        // Экранирование специальных символов для RegExp
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
+
+        // Обработчик клика на кнопку "Найти"
+        searchButton.addEventListener('click', searchProducts);
+
+        // Обработчик нажатия Enter в поле ввода
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                searchProducts();
+            }
+        });
+
+        // Обработчик клика на кнопку сканирования (только для Android)
+        scanButton.addEventListener('click', openCamera);
+
+        // Закрытие модального окна камеры
+        closeCameraModal.addEventListener('click', function() {
+            stopCameraStream();
+            cameraModal.style.display = 'none';
+        });
+
+        // Закрытие модального окна камеры при клике вне его
+        cameraModal.addEventListener('click', function(e) {
+            if (e.target === cameraModal) {
+                stopCameraStream();
+                cameraModal.style.display = 'none';
+            }
+        });
+
+        // Остановка камеры
+        stopCameraBtn.addEventListener('click', function() {
+            stopCameraStream();
+            cameraModal.style.display = 'none';
+        });
+
+        // Обработчики для модального окна результатов
+
+        // Продолжить сканирование
+        continueScanBtn.addEventListener('click', function() {
+            resultModal.style.display = 'none';
+            setTimeout(() => {
+                openCamera();
+            }, 300);
+        });
+
+        // Новый поиск
+        newSearchBtn.addEventListener('click', function() {
+            resultModal.style.display = 'none';
+            searchInput.value = lastScannedCode;
+            searchInput.focus();
+            searchProducts();
+        });
+
+        // Закрыть результаты
+        closeResultBtn.addEventListener('click', function() {
+            resultModal.style.display = 'none';
+        });
+
+        // Закрытие модального окна результатов при клике вне его
+        resultModal.addEventListener('click', function(e) {
+            if (e.target === resultModal) {
+                resultModal.style.display = 'none';
+            }
+        });
+
+        // Обработчик изменения режима поиска
+        searchModeRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (searchInput.value.trim()) {
+                    searchProducts();
+                }
+            });
+        });
+
+        // Фокусировка на поле поиска при загрузке
+        window.addEventListener('load', function() {
+            searchInput.focus();
+            setupPlatformUI();
+        });
+
+        // Обработчик клавиши Escape для очистки поиска
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                this.value = '';
+                resultsContainer.style.display = 'none';
+                this.focus();
+            }
+        });
+
+        // Обработчик Ctrl+F для быстрого перехода к поиску
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                e.preventDefault();
+                searchInput.focus();
+                searchInput.select();
+            }
+        });
+    </script>
 </body>
 </html>
