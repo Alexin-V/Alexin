@@ -699,7 +699,7 @@
             </div>
             
             <!-- Скрытый input для iOS камеры -->
-            <input type="file" id="iosCameraInput" accept="image/*" capture="environment" class="ios-camera-input">
+
             
             <button class="close-modal" id="closeScanModal">Закрыть</button>
         </div>
@@ -21139,18 +21139,18 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             // Обновляем информацию о платформе
             debugPlatform.textContent = `Платформа: ${platform} / ${browser}`;
             
-            // Показываем инструкции для iOS
-            if (isIOS()) {
-                iosInstructions.style.display = 'block';
-                useBrowserCamera.style.display = 'none';
-                
-                let iosMessage = '<strong>Для iPhone/iPad:</strong><br>';
-                iosMessage += '• Используйте кнопку "📸 Сделать фото"<br>';
-                iosMessage += '• Или установите приложение сканера<br>';
-                iosMessage += '• Safari не поддерживает прямое сканирование';
-                platformInfo.innerHTML = iosMessage;
-                platformInfo.className = 'info-message';
-            } else if (isAndroid()) {
+// Показываем инструкции для iOS
+if (isIOS()) {
+    iosInstructions.style.display = 'block';
+    useBrowserCamera.style.display = 'none';
+    
+    let iosMessage = '<strong>Для iPhone/iPad:</strong><br>';
+    iosMessage += '• Используйте "📸 Сделать фото" для сканирования через камеру<br>';
+    iosMessage += '• Или "📤 Загрузить фото" из галереи<br>';
+    iosMessage += '• Приложение сканера даст лучший результат';
+    platformInfo.innerHTML = iosMessage;
+    platformInfo.className = 'info-message';
+} else if (isAndroid()) {
                 iosInstructions.style.display = 'none';
                 useBrowserCamera.style.display = 'block';
                 
@@ -21487,49 +21487,118 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             }, 300);
         }
 
-        // Обработка выбора файла с фото
-        function handleImageFile(file) {
-            if (!file) return;
+// Обработка выбора файла с фото
+function handleImageFile(file) {
+    if (!file) return;
+    
+    // Для всех устройств пробуем обработать фото через BarcodeDetector
+    if (barcodeDetector) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const img = new Image();
             
-            if (isIOS()) {
-                alert('На iOS рекомендуется:\n1. Установить приложение сканера из App Store\n2. Или ввести штрихкод вручную\n\nДля Android: используйте камеру браузера.');
-                return;
-            }
-            
-            if (isAndroid() && barcodeDetector) {
-                const reader = new FileReader();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
                 
-                reader.onload = function(e) {
-                    const img = new Image();
-                    
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
-                        
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        context.drawImage(img, 0, 0);
-                        
-                        barcodeDetector.detect(canvas)
-                            .then(barcodes => {
-                                if (barcodes && barcodes.length > 0) {
-                                    handleScannedCode(barcodes[0].rawValue);
-                                } else {
-                                    alert('Штрихкод не найден на изображении. Попробуйте другое фото или используйте камеру.');
+                // Оптимальный размер для обработки
+                const maxSize = 800;
+                let width = img.width;
+                let height = img.height;
+                
+                if (width > height && width > maxSize) {
+                    height = (height * maxSize) / width;
+                    width = maxSize;
+                } else if (height > maxSize) {
+                    width = (width * maxSize) / height;
+                    height = maxSize;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                context.drawImage(img, 0, 0, width, height);
+                
+                // Пробуем найти штрихкод
+                barcodeDetector.detect(canvas)
+                    .then(barcodes => {
+                        if (barcodes && barcodes.length > 0) {
+                            // Нашли штрихкод
+                            handleScannedCode(barcodes[0].rawValue);
+                        } else {
+                            // Не нашли - предлагаем варианты
+                            if (isIOS()) {
+                                const choice = confirm(
+                                    'Штрихкод не найден на фото.\n\n' +
+                                    '1. Попробуйте сделать более четкое фото\n' +
+                                    '2. Ввести код вручную\n\n' +
+                                    'Открыть ручной ввод?'
+                                );
+                                if (choice) {
+                                    // Открываем ручной ввод
+                                    scanModal.style.display = 'flex';
+                                    scanMethodSelection.style.display = 'none';
+                                    manualInputSection.style.display = 'block';
+                                    manualBarcodeInput.focus();
                                 }
-                            })
-                            .catch(error => {
-                                console.error('Ошибка обработки фото:', error);
-                                alert('Не удалось обработать фото. Попробуйте другой метод.');
-                            });
-                    };
-                    
-                    img.src = e.target.result;
-                };
-                
-                reader.readAsDataURL(file);
-            }
+                            } else {
+                                alert('Штрихкод не найден на изображении. Попробуйте другое фото или используйте камеру.');
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка обработки фото:', error);
+                        showPhotoError();
+                    });
+            };
+            
+            img.src = e.target.result;
+        };
+        
+        reader.onerror = function() {
+            showPhotoError();
+        };
+        
+        reader.readAsDataURL(file);
+    } else {
+        // Если BarcodeDetector не доступен
+        showPhotoError();
+    }
+}
+
+// Функция показа ошибки обработки фото
+function showPhotoError() {
+    if (isIOS()) {
+        const choice = confirm(
+            'Не удалось обработать фото.\n\n' +
+            'Варианты:\n' +
+            '1. Установить приложение сканера из App Store\n' +
+            '2. Ввести штрихкод вручную\n\n' +
+            'Открыть ручной ввод?'
+        );
+        if (choice) {
+            scanModal.style.display = 'flex';
+            scanMethodSelection.style.display = 'none';
+            manualInputSection.style.display = 'block';
+            manualBarcodeInput.focus();
         }
+    } else {
+        alert('Не удалось обработать фото. Попробуйте другой метод.');
+    }
+}
+
+// Открыть ручной ввод после неудачного сканирования
+function openManualInputAfterFail() {
+    scanModal.style.display = 'flex';
+    scanMethodSelection.style.display = 'none';
+    manualInputSection.style.display = 'block';
+    manualBarcodeInput.focus();
+    
+    // Автоматически вставляем текст подсказки
+    manualBarcodeInput.placeholder = "Введите штрихкод вручную (после фото)";
+}
+
+
 
         // Функция для получения текущего режима поиска
         function getCurrentSearchMode() {
@@ -21720,16 +21789,49 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         // Использовать камеру браузера (Android Chrome)
         useBrowserCamera.addEventListener('click', startBrowserCamera);
 
-        // Использовать нативную камеру (iOS/все устройства)
-        useNativeCamera.addEventListener('click', startNativeCamera);
-
-        // Обработчик выбора файла iOS камеры
-        iosCameraInput.addEventListener('change', function(e) {
+// Использовать нативную камеру (iOS/все устройства)
+useNativeCamera.addEventListener('click', function() {
+    if (isIOS()) {
+        // Для iOS создаем input с камерой
+        const cameraInput = document.createElement('input');
+        cameraInput.type = 'file';
+        cameraInput.accept = 'image/*';
+        cameraInput.capture = 'environment'; // Используем заднюю камеру
+        
+        cameraInput.onchange = function(e) {
+            if (e.target.files && e.target.files[0]) {
+                // Обрабатываем фото
+                handleImageFile(e.target.files[0]);
+                
+                // Закрываем окно сканирования
+                scanModal.style.display = 'none';
+            }
+            // Очищаем input
+            this.value = '';
+        };
+        
+        // Запускаем камеру
+        cameraInput.click();
+    } else {
+        // Для Android тоже используем этот метод как fallback
+        const cameraInput = document.createElement('input');
+        cameraInput.type = 'file';
+        cameraInput.accept = 'image/*';
+        cameraInput.capture = 'environment';
+        
+        cameraInput.onchange = function(e) {
             if (e.target.files && e.target.files[0]) {
                 handleImageFile(e.target.files[0]);
-                this.value = '';
+                scanModal.style.display = 'none';
             }
-        });
+            this.value = '';
+        };
+        
+        cameraInput.click();
+    }
+});
+
+
 
         // Переключение камеры
         switchCamera.addEventListener('click', function() {
@@ -21768,8 +21870,29 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             }
         });
 
-        // Сделать фото
-        takePhotoBtn.addEventListener('click', takePhoto);
+// Сделать фото камерой (из меню галереи)
+takePhotoBtn.addEventListener('click', function() {
+    // Создаем input для фото с камеры
+    const cameraInput = document.createElement('input');
+    cameraInput.type = 'file';
+    cameraInput.accept = 'image/*';
+    cameraInput.capture = 'environment';
+    
+    cameraInput.onchange = function(e) {
+        if (e.target.files && e.target.files[0]) {
+            // Обрабатываем фото
+            handleImageFile(e.target.files[0]);
+            
+            // Закрываем окно галереи
+            fileInputContainer.style.display = 'none';
+            scanMethodSelection.style.display = 'block';
+        }
+        this.value = '';
+    };
+    
+    // Запускаем камеру
+    cameraInput.click();
+});
 
         // Использовать приложение сканера
         useScannerApp.addEventListener('click', openExternalScanner);
