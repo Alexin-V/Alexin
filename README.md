@@ -727,6 +727,9 @@
                 <button class="action-btn new-search-btn" id="newSearchBtn">
                     🔍 Новый поиск
                 </button>
+    <button class="action-btn manual-input-btn" id="manualInputFromResult" style="background-color: #9c27b0;">
+        ⌨️ Ввести другой код
+    </button>
                 <button class="action-btn close-result-btn" id="closeResultBtn">
                     ✓ Готово
                 </button>
@@ -21143,11 +21146,14 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
 if (isIOS()) {
     iosInstructions.style.display = 'block';
     useBrowserCamera.style.display = 'none';
+    useNativeCamera.innerHTML = '📸 Сделать фото + ручной ввод'; // Меняем текст кнопки
     
-    let iosMessage = '<strong>Для iPhone/iPad:</strong><br>';
-    iosMessage += '• Используйте "📸 Сделать фото" для сканирования через камеру<br>';
-    iosMessage += '• Или "📤 Загрузить фото" из галереи<br>';
-    iosMessage += '• Приложение сканера даст лучший результат';
+    let iosMessage = '<strong>Для iPhone/iPad доступно:</strong><br>';
+    iosMessage += '1. <strong>📸 Сделать фото</strong> → ввести код вручную<br>';
+    iosMessage += '2. <strong>📤 Загрузить фото</strong> из галереи<br>';
+    iosMessage += '3. <strong>📲 Установить приложение</strong> сканера<br>';
+    iosMessage += '4. <strong>⌨️ Ввести код вручную</strong><br><br>';
+    iosMessage += '<em>Рекомендуем установить приложение для лучших результатов</em>';
     platformInfo.innerHTML = iosMessage;
     platformInfo.className = 'info-message';
 } else if (isAndroid()) {
@@ -21487,9 +21493,19 @@ if (isIOS()) {
             }, 300);
         }
 
-// Обработка выбора файла с фото
+// Обработка выбора файла с фото 
 function handleImageFile(file) {
     if (!file) return;
+    
+    if (isIOS()) {
+        // Для iOS просто показываем сообщение и переходим к ручному вводу
+        scanModal.style.display = 'flex';
+        scanMethodSelection.style.display = 'none';
+        manualInputSection.style.display = 'block';
+        manualBarcodeInput.focus();
+        manualBarcodeInput.placeholder = "Введите штрихкод с фото";
+        return;
+    }
     
     // Для всех устройств пробуем обработать фото через BarcodeDetector
     if (barcodeDetector) {
@@ -21759,6 +21775,18 @@ function openManualInputAfterFail() {
 
         // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
 
+// Ввести другой код (из результатов)
+document.getElementById('manualInputFromResult').addEventListener('click', function() {
+    resultModal.style.display = 'none';
+    scanModal.style.display = 'flex';
+    scanMethodSelection.style.display = 'none';
+    manualInputSection.style.display = 'block';
+    manualBarcodeInput.focus();
+    manualBarcodeInput.value = ''; // Очищаем поле
+});
+
+
+
         // Обработчик клика на кнопку "Найти"
         searchButton.addEventListener('click', searchProducts);
 
@@ -21791,22 +21819,67 @@ function openManualInputAfterFail() {
 
 // Использовать нативную камеру (iOS/все устройства)
 useNativeCamera.addEventListener('click', function() {
-    const cameraInput = document.createElement('input');
-    cameraInput.type = 'file';
-    cameraInput.accept = 'image/*';
-    cameraInput.capture = 'environment';
-    
-    cameraInput.onchange = function(e) {
-        if (e.target.files && e.target.files[0]) {
-            // Сразу закрываем окно
-            scanModal.style.display = 'none';
-            // Обрабатываем фото
-            handleImageFile(e.target.files[0]);
+    if (isIOS()) {
+        // Показываем понятное сообщение для iOS
+        const userChoice = confirm(
+            '📱 Для iPhone/iPad:\n\n' +
+            'Вариант 1: Сделать фото камерой, затем ввести код вручную\n' +
+            'Вариант 2: Установить приложение сканера\n\n' +
+            'Хотите сделать фото и перейти к ручному вводу?'
+        );
+        
+        if (userChoice) {
+            // Вариант 1: Делаем фото и переходим к ручному вводу
+            const cameraInput = document.createElement('input');
+            cameraInput.type = 'file';
+            cameraInput.accept = 'image/*';
+            cameraInput.capture = 'environment';
+            
+            cameraInput.onchange = function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    // После фото сразу переходим к ручному вводу
+                    scanMethodSelection.style.display = 'none';
+                    manualInputSection.style.display = 'block';
+                    manualBarcodeInput.focus();
+                    manualBarcodeInput.placeholder = "Сделайте фото, затем введите штрихкод здесь";
+                    
+                    // Можно добавить подсказку
+                    setTimeout(() => {
+                        alert('Сфотографируйте штрихкод, затем введите цифры в поле выше.');
+                    }, 500);
+                }
+                this.value = '';
+            };
+            
+            cameraInput.click();
+        } else {
+            // Вариант 2: Предлагаем приложение
+            const installChoice = confirm(
+                'Установить приложение сканера штрихкодов?\n\n' +
+                'Приложение даст лучший результат и удобнее для сканирования.'
+            );
+            
+            if (installChoice) {
+                // Открываем App Store с популярными сканерами
+                window.location.href = 'https://apps.apple.com/app/id1200318119'; // QR Code Reader
+            }
         }
-        this.value = '';
-    };
-    
-    cameraInput.click();
+    } else {
+        // Для Android используем обычный метод
+        const cameraInput = document.createElement('input');
+        cameraInput.type = 'file';
+        cameraInput.accept = 'image/*';
+        cameraInput.capture = 'environment';
+        
+        cameraInput.onchange = function(e) {
+            if (e.target.files && e.target.files[0]) {
+                handleImageFile(e.target.files[0]);
+            }
+            this.value = '';
+        };
+        
+        cameraInput.click();
+    }
 });
         
 
@@ -21850,6 +21923,10 @@ useNativeCamera.addEventListener('click', function() {
 
 // Сделать фото камерой (из меню галереи)
 takePhotoBtn.addEventListener('click', function() {
+    if (isIOS()) {
+        alert('Для iOS: Сделайте фото штрихкода, затем введите код вручную в поле ниже.');
+    }
+    
     const cameraInput = document.createElement('input');
     cameraInput.type = 'file';
     cameraInput.accept = 'image/*';
@@ -21857,10 +21934,16 @@ takePhotoBtn.addEventListener('click', function() {
     
     cameraInput.onchange = function(e) {
         if (e.target.files && e.target.files[0]) {
-            // Сразу закрываем окно
-            scanModal.style.display = 'none';
-            // Обрабатываем фото
-            handleImageFile(e.target.files[0]);
+            if (isIOS()) {
+                // Для iOS: переходим к ручному вводу
+                fileInputContainer.style.display = 'none';
+                manualInputSection.style.display = 'block';
+                manualBarcodeInput.focus();
+                manualBarcodeInput.placeholder = "Введите штрихкод с фото";
+            } else {
+                // Для Android: обрабатываем фото
+                handleImageFile(e.target.files[0]);
+            }
         }
         this.value = '';
     };
