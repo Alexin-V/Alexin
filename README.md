@@ -1,3 +1,4 @@
+
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -185,7 +186,8 @@
             text-align: left;
         }
         
-        .scan-overlay {
+        /* Оверлеи */
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -198,13 +200,128 @@
             z-index: 1000;
         }
         
-        .scan-frame {
+        .modal-frame {
             background: white;
-            padding: 20px;
-            border-radius: 10px;
+            padding: 30px;
+            border-radius: 15px;
             text-align: center;
-            max-width: 400px;
+            max-width: 500px;
             width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        /* Скан-модалка */
+        .scan-frame {
+            max-width: 400px;
+        }
+        
+        /* Результаты сканирования */
+        .scan-result-frame {
+            max-width: 450px;
+        }
+        
+        .scan-success-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: pulse 1s;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .scan-result-title {
+            font-size: 24px;
+            color: #4CAF50;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .scan-result-barcode {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+        
+        .scan-result-count {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .scan-result-products {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+            text-align: left;
+        }
+        
+        .scan-result-card {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .scan-result-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 140px;
+        }
+        
+        .continue-scan-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .continue-scan-btn:hover {
+            background-color: #0b7dda;
+            transform: translateY(-2px);
+        }
+        
+        .close-result-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .close-result-btn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        .new-search-btn {
+            background-color: #ff9800;
+            color: white;
+        }
+        
+        .new-search-btn:hover {
+            background-color: #e68900;
+            transform: translateY(-2px);
         }
         
         .scan-instruction {
@@ -229,7 +346,7 @@
             font-size: 16px;
         }
         
-        .close-scan {
+        .close-modal {
             background-color: #f44336;
             color: white;
             border: none;
@@ -396,39 +513,6 @@
             text-align: left;
         }
         
-        .success-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(76, 175, 80, 0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1001;
-            flex-direction: column;
-        }
-        
-        .success-icon {
-            font-size: 80px;
-            margin-bottom: 20px;
-            animation: pulse 1s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        .success-text {
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-        }
-        
         .barcode-supported {
             margin-top: 10px;
             font-size: 12px;
@@ -471,6 +555,16 @@
         
         .native-camera-btn {
             background-color: #ff9800 !important;
+        }
+        
+        /* Анимация успеха */
+        @keyframes successSlide {
+            0% { transform: translateY(-30px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        
+        .scan-result-frame {
+            animation: successSlide 0.5s ease-out;
         }
     </style>
 </head>
@@ -522,9 +616,9 @@
         </div>
     </div>
 
-    <!-- Оверлей для сканирования -->
-    <div class="scan-overlay" id="scanOverlay">
-        <div class="scan-frame">
+    <!-- Модальное окно сканирования -->
+    <div class="modal-overlay" id="scanModal">
+        <div class="modal-frame scan-frame">
             <h3>Сканирование штрихкода</h3>
             
             <!-- Инструкции для iOS -->
@@ -613,14 +707,40 @@
             <!-- Скрытый input для iOS камеры -->
             <input type="file" id="iosCameraInput" accept="image/*" capture="environment" class="ios-camera-input">
             
-            <button class="close-scan" id="closeScan">Закрыть</button>
+            <button class="close-modal" id="closeScanModal">Закрыть</button>
         </div>
     </div>
 
-    <!-- Оверлей успешного сканирования -->
-    <div class="success-overlay" id="successOverlay">
-        <div class="success-icon">✅</div>
-        <div class="success-text" id="successText">Штрихкод успешно отсканирован!</div>
+    <!-- Модальное окно результатов сканирования -->
+    <div class="modal-overlay" id="resultModal">
+        <div class="modal-frame scan-result-frame">
+            <div class="scan-success-icon">✅</div>
+            <div class="scan-result-title">Штрихкод отсканирован!</div>
+            
+            <div class="scan-result-barcode" id="resultBarcode">
+                <!-- Штрихкод будет здесь -->
+            </div>
+            
+            <div class="scan-result-count" id="resultCount">
+                <!-- Количество найденных товаров -->
+            </div>
+            
+            <div class="scan-result-products" id="resultProducts">
+                <!-- Список товаров будет здесь -->
+            </div>
+            
+            <div class="scan-result-actions">
+                <button class="action-btn continue-scan-btn" id="continueScanBtn">
+                    🔄 Сканировать еще
+                </button>
+                <button class="action-btn new-search-btn" id="newSearchBtn">
+                    🔍 Новый поиск
+                </button>
+                <button class="action-btn close-result-btn" id="closeResultBtn">
+                    ✓ Готово
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -20865,8 +20985,13 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         const scanButton = document.getElementById('scanButton');
         const resultsContainer = document.getElementById('resultsContainer');
         const searchModeRadios = document.querySelectorAll('input[name="searchMode"]');
-        const scanOverlay = document.getElementById('scanOverlay');
-        const closeScan = document.getElementById('closeScan');
+        
+        // Модальные окна
+        const scanModal = document.getElementById('scanModal');
+        const resultModal = document.getElementById('resultModal');
+        const closeScanModal = document.getElementById('closeScanModal');
+        
+        // Элементы сканирования
         const useBrowserCamera = document.getElementById('useBrowserCamera');
         const useNativeCamera = document.getElementById('useNativeCamera');
         const uploadImageBtn = document.getElementById('uploadImageBtn');
@@ -20893,11 +21018,17 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         const debugFPS = document.getElementById('debugFPS');
         const debugPlatform = document.getElementById('debugPlatform');
         const toggleDebug = document.getElementById('toggleDebug');
-        const successOverlay = document.getElementById('successOverlay');
-        const successText = document.getElementById('successText');
         const iosInstructions = document.getElementById('iosInstructions');
         const iosCameraInput = document.getElementById('iosCameraInput');
         const platformInfo = document.getElementById('platformInfo');
+        
+        // Элементы результатов
+        const resultBarcode = document.getElementById('resultBarcode');
+        const resultCount = document.getElementById('resultCount');
+        const resultProducts = document.getElementById('resultProducts');
+        const continueScanBtn = document.getElementById('continueScanBtn');
+        const newSearchBtn = document.getElementById('newSearchBtn');
+        const closeResultBtn = document.getElementById('closeResultBtn');
 
         // Переменные для работы с камерой
         let stream = null;
@@ -20909,6 +21040,7 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         let barcodeDetector = null;
         let torchSupported = false;
         let torchActive = false;
+        let lastScannedCode = '';
 
         // Определяем платформу
         function getPlatform() {
@@ -20945,11 +21077,6 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             return ('BarcodeDetector' in window);
         }
 
-        // Проверяем поддержку getUserMedia
-        function isGetUserMediaSupported() {
-            return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-        }
-
         // Инициализируем BarcodeDetector
         async function initBarcodeDetector() {
             if (!isBarcodeDetectorSupported()) {
@@ -20958,11 +21085,9 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             }
             
             try {
-                // Получаем список поддерживаемых форматов
                 const formats = await BarcodeDetector.getSupportedFormats();
                 console.log('Поддерживаемые форматы:', formats);
                 
-                // Создаем детектор для нужных форматов
                 const supportedFormats = formats.filter(format => 
                     ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_39', 'code_128', 'codabar'].includes(format)
                 );
@@ -21012,17 +21137,12 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             return /Android/.test(navigator.userAgent);
         }
 
-        // Проверяем Safari
-        function isSafari() {
-            return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-        }
-
         // Функция для открытия сканирования
         async function openScanDialog() {
             const platform = getPlatform();
             const browser = getBrowser();
             
-            scanOverlay.style.display = 'flex';
+            scanModal.style.display = 'flex';
             resetScanInterface();
             
             // Обновляем информацию о платформе
@@ -21095,7 +21215,6 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         // Остановка потока камеры
         function stopCameraStream() {
             if (stream) {
-                // Выключаем фонарик перед остановкой
                 if (torchActive) {
                     toggleTorch();
                 }
@@ -21112,7 +21231,7 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             lastFpsUpdate = 0;
         }
 
-        // Метод 1: Камера браузера с BarcodeDetector (для Android Chrome)
+        // Запуск камеры браузера с BarcodeDetector (для Android Chrome)
         async function startBrowserCamera() {
             if (!canUseCamera()) {
                 alert('Для использования камеры браузера требуется HTTPS соединение. Пожалуйста, используйте другой метод сканирования.');
@@ -21127,7 +21246,6 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             try {
                 stopCameraStream();
                 
-                // Запрашиваем доступ к камере
                 const constraints = {
                     video: {
                         facingMode: currentFacingMode,
@@ -21139,7 +21257,6 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                 
                 stream = await navigator.mediaDevices.getUserMedia(constraints);
                 
-                // Проверяем поддержку фонарика
                 const videoTrack = stream.getVideoTracks()[0];
                 if (videoTrack && videoTrack.getCapabilities) {
                     const capabilities = videoTrack.getCapabilities();
@@ -21151,12 +21268,10 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                 videoContainer.style.display = 'block';
                 scanMethodSelection.style.display = 'none';
                 
-                // Исправляем ориентацию для мобильных устройств
                 if (isMobileDevice()) {
                     cameraVideo.style.transform = 'scaleX(1)';
                 }
                 
-                // Ждем загрузки видео
                 await new Promise((resolve) => {
                     cameraVideo.onloadedmetadata = () => {
                         cameraVideo.play();
@@ -21164,7 +21279,6 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                     };
                 });
                 
-                // Начинаем сканирование
                 startBarcodeDetection();
                 
             } catch (error) {
@@ -21187,7 +21301,7 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             }
         }
 
-        // Метод 2: Нативная камера iOS через input (работает везде)
+        // Метод 2: Нативная камера iOS через input
         function startNativeCamera() {
             iosCameraInput.click();
         }
@@ -21208,7 +21322,6 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             photoInput.onchange = function(e) {
                 if (e.target.files && e.target.files[0]) {
                     alert('Для iOS: после фото штрихкод будет в буфере обмена. Вернитесь сюда и вставьте код в поле поиска.');
-                    // Здесь можно добавить обработку фото через серверный API
                 }
             };
             
@@ -21225,7 +21338,6 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                     const now = performance.now();
                     frameCount++;
                     
-                    // Обновляем FPS каждую секунду
                     if (now - lastFpsUpdate >= 1000) {
                         const fps = Math.round((frameCount * 1000) / (now - lastFpsUpdate));
                         debugFPS.textContent = `FPS: ${fps}`;
@@ -21233,25 +21345,20 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                         lastFpsUpdate = now;
                     }
                     
-                    // Устанавливаем размер canvas по размеру видео
                     canvas.width = cameraVideo.videoWidth;
                     canvas.height = cameraVideo.videoHeight;
                     
-                    // Рисуем текущий кадр видео на canvas
                     context.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
                     
                     try {
-                        // Используем BarcodeDetector для поиска штрихкодов
                         const barcodes = await barcodeDetector.detect(canvas);
                         
                         if (barcodes && barcodes.length > 0) {
-                            // Берем первый найденный штрихкод
                             const barcode = barcodes[0];
                             debugStatus.textContent = 'Статус: Штрихкод найден';
                             debugCode.textContent = `Код: ${barcode.rawValue}`;
                             debugFormat.textContent = `Формат: ${barcode.format}`;
                             
-                            // Обрабатываем найденный штрихкод
                             handleScannedCode(barcode.rawValue);
                             return;
                         }
@@ -21292,21 +21399,58 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             }
         }
 
-        // Показать успешное сканирование
-        function showSuccess(message) {
-            successText.textContent = message;
-            successOverlay.style.display = 'flex';
+        // Показать результаты сканирования в модальном окне
+        function showScanResults(code, results) {
+            // Сохраняем последний отсканированный код
+            lastScannedCode = code;
             
-            setTimeout(() => {
-                successOverlay.style.display = 'none';
-            }, 1500);
+            // Обновляем интерфейс результатов
+            resultBarcode.textContent = code;
+            
+            if (results.length === 0) {
+                resultCount.textContent = 'Товары не найдены';
+                resultCount.style.color = '#f44336';
+                resultProducts.innerHTML = '<div class="scan-result-card" style="text-align: center; color: #666; font-style: italic;">По этому штрихкоду товары не найдены в базе данных</div>';
+            } else {
+                resultCount.textContent = `Найдено товаров: ${results.length}`;
+                resultCount.style.color = '#4CAF50';
+                
+                // Очищаем контейнер
+                resultProducts.innerHTML = '';
+                
+                // Добавляем найденные товары
+                results.forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'scan-result-card';
+                    
+                    productCard.innerHTML = `
+                        <div style="font-size: 12px; color: #666; margin-bottom: 5px;">
+                            <strong>Штрихкод:</strong> ${product.barcode}
+                        </div>
+                        <div style="font-weight: bold; color: #333; margin-bottom: 5px;">
+                            <strong>Артикул:</strong> ${product.article}
+                        </div>
+                        <div style="font-size: 16px; color: #222; margin-bottom: 8px;">
+                            ${product.name}
+                        </div>
+                        <div style="color: #e74c3c; font-weight: bold;">
+                            Цена: ${product.wholesalePrice} руб.
+                        </div>
+                    `;
+                    
+                    resultProducts.appendChild(productCard);
+                });
+            }
+            
+            // Закрываем окно сканирования и открываем окно результатов
+            scanModal.style.display = 'none';
+            resultModal.style.display = 'flex';
         }
 
         // Обработка отсканированного кода
         function handleScannedCode(code) {
             console.log('Отсканирован код:', code);
             
-            // Проверяем, что код не пустой
             if (!code || code.trim().length === 0) {
                 return;
             }
@@ -21314,67 +21458,53 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             // Останавливаем камеру
             stopCameraStream();
             
-            // Закрываем оверлей
-            scanOverlay.style.display = 'none';
-            
-            // Показываем анимацию успеха
-            showSuccess('Штрихкод успешно отсканирован!');
-            
             // Устанавливаем режим поиска по штрихкоду
             document.getElementById('modeBarcode').checked = true;
             
-            // Очищаем код от лишних символов
+            // Очищаем код
             const cleanCode = code.toString().trim();
             
-            // Вводим отсканированный код
+            // Вводим код в поле поиска
             searchInput.value = cleanCode;
             
-            // Выполняем поиск
-            setTimeout(() => {
-                searchProducts();
-            }, 100);
+            // Выполняем поиск и показываем результаты
+            const results = performSimpleSearch(cleanCode, 'barcode');
+            showScanResults(cleanCode, results);
         }
 
-        // Открытие внешнего приложения сканера (оптимизировано для iOS)
+        // Открытие внешнего приложения сканера
         function openExternalScanner() {
             if (isIOS()) {
-                // Для iOS используем ссылки на App Store с популярными сканерами
                 const scannerUrls = [
-                    'https://apps.apple.com/app/id1200318119', // QR Code Reader
-                    'https://apps.apple.com/app/id1048473097', // QR Scanner
-                    'https://apps.apple.com/app/id1125259173'  // QR Code Reader Pro
+                    'https://apps.apple.com/app/id1200318119',
+                    'https://apps.apple.com/app/id1048473097',
+                    'https://apps.apple.com/app/id1125259173'
                 ];
                 
-                // Показываем выбор приложения
                 if (confirm('Открыть App Store для установки сканера штрихкодов?')) {
                     window.location.href = scannerUrls[0];
                 }
             } else if (isAndroid()) {
-                // Универсальный Intent для Android
                 const scannerUrl = 'intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;S.browser_fallback_url=https%3A%2F%2Fzxing.appspot.com%2Fscan;end';
                 window.location.href = scannerUrl;
             } else {
-                // Для десктопа
                 window.location.href = 'https://scanapp.org/';
             }
             
-            // Закрываем оверлей
             setTimeout(() => {
-                scanOverlay.style.display = 'none';
+                scanModal.style.display = 'none';
             }, 300);
         }
 
-        // Обработка выбора файла с фото (для iOS)
+        // Обработка выбора файла с фото
         function handleImageFile(file) {
             if (!file) return;
             
-            // Для iOS просто показываем сообщение
             if (isIOS()) {
                 alert('На iOS рекомендуется:\n1. Установить приложение сканера из App Store\n2. Или ввести штрихкод вручную\n\nДля Android: используйте камеру браузера.');
                 return;
             }
             
-            // Для Android можно попробовать обработать фото
             if (isAndroid() && barcodeDetector) {
                 const reader = new FileReader();
                 
@@ -21389,7 +21519,6 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                         canvas.height = img.height;
                         context.drawImage(img, 0, 0);
                         
-                        // Пробуем найти штрихкод
                         barcodeDetector.detect(canvas)
                             .then(barcodes => {
                                 if (barcodes && barcodes.length > 0) {
@@ -21430,7 +21559,6 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             let results = [];
             let displaySearchMode = '';
 
-            // Проверяем, есть ли символ / для комбинированного поиска
             if (query.includes('/') && searchMode === 'general') {
                 const parts = query.split('/').map(part => part.trim()).filter(part => part);
                 
@@ -21438,12 +21566,10 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                     displaySearchMode = 'комбинированный';
                     results = performCombinedSearch(parts);
                 } else {
-                    // Если только один параметр после /, ищем обычным способом
                     results = performSimpleSearch(query.replace('/',''), searchMode);
                     displaySearchMode = getSearchModeDisplayName(searchMode);
                 }
             } else {
-                // Поиск в зависимости от выбранного режима
                 results = performSimpleSearch(query, searchMode);
                 displaySearchMode = getSearchModeDisplayName(searchMode);
             }
@@ -21464,15 +21590,12 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         // Функция комбинированного поиска
         function performCombinedSearch(parts) {
             return products.filter(product => {
-                // Первая часть ищется ТОЛЬКО в наименовании
                 const nameMatch = parts[0] ? 
                     product.name.toLowerCase().includes(parts[0].toLowerCase()) : false;
                 
-                // Вторая часть ищется ТОЛЬКО в артикуле (не в штрихкоде!)
                 const articleMatch = parts[1] ? 
                     product.article.toLowerCase().includes(parts[1].toLowerCase()) : false;
 
-                // Оба условия должны выполняться одновременно
                 return nameMatch && articleMatch;
             });
         }
@@ -21482,16 +21605,13 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             return products.filter(product => {
                 switch(mode) {
                     case 'article':
-                        // Поиск только по артикулу
                         return product.article.toLowerCase().includes(searchTerm.toLowerCase());
                     
                     case 'barcode':
-                        // Поиск только по штрихкоду
                         return product.barcode.includes(searchTerm);
                     
                     case 'general':
                     default:
-                        // Общий поиск (по всем полям)
                         return product.article.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                product.barcode.includes(searchTerm) ||
                                product.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -21499,7 +21619,7 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             });
         }
 
-        // Функция отображения результатов
+        // Функция отображения результатов в основном интерфейсе
         function displayResults(results, query, searchMode) {
             resultsContainer.innerHTML = '';
 
@@ -21509,7 +21629,6 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                 return;
             }
 
-            // Добавляем счетчик результатов и информацию о режиме поиска
             const countElement = document.createElement('div');
             countElement.className = 'results-count';
             countElement.textContent = `Найдено товаров: ${results.length}`;
@@ -21528,7 +21647,6 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                 let highlightedArticle = product.article;
                 let highlightedBarcode = product.barcode;
 
-                // Подсветка для комбинированного поиска
                 if (searchMode === 'комбинированный' && query.includes('/')) {
                     const parts = query.split('/').map(part => part.trim()).filter(part => part);
                     
@@ -21537,10 +21655,8 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                     }
                     if (parts[1]) {
                         highlightedArticle = highlightMatch(product.article, parts[1]);
-                        // Штрихкод не подсвечиваем при комбинированном поиске
                     }
                 } else {
-                    // Обычная подсветка в зависимости от режима
                     const currentMode = getCurrentSearchMode();
                     
                     if (currentMode === 'general' || currentMode === 'article') {
@@ -21596,17 +21712,17 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         // Обработчик клика на кнопку сканирования
         scanButton.addEventListener('click', openScanDialog);
 
-        // Обработчик закрытия оверлея сканирования
-        closeScan.addEventListener('click', function() {
+        // Закрытие модального окна сканирования
+        closeScanModal.addEventListener('click', function() {
             stopCameraStream();
-            scanOverlay.style.display = 'none';
+            scanModal.style.display = 'none';
         });
 
-        // Закрытие оверлея при клике вне его
-        scanOverlay.addEventListener('click', function(e) {
-            if (e.target === scanOverlay) {
+        // Закрытие модального окна при клике вне его
+        scanModal.addEventListener('click', function(e) {
+            if (e.target === scanModal) {
                 stopCameraStream();
-                scanOverlay.style.display = 'none';
+                scanModal.style.display = 'none';
             }
         });
 
@@ -21620,7 +21736,7 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         iosCameraInput.addEventListener('change', function(e) {
             if (e.target.files && e.target.files[0]) {
                 handleImageFile(e.target.files[0]);
-                this.value = ''; // Сбрасываем input
+                this.value = '';
             }
         });
 
@@ -21692,10 +21808,37 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
             }
         });
 
+        // Обработчики для модального окна результатов
+
+        // Продолжить сканирование
+        continueScanBtn.addEventListener('click', function() {
+            resultModal.style.display = 'none';
+            openScanDialog();
+        });
+
+        // Новый поиск
+        newSearchBtn.addEventListener('click', function() {
+            resultModal.style.display = 'none';
+            searchInput.value = lastScannedCode;
+            searchInput.focus();
+            searchProducts();
+        });
+
+        // Закрыть результаты
+        closeResultBtn.addEventListener('click', function() {
+            resultModal.style.display = 'none';
+        });
+
+        // Закрытие модального окна результатов при клике вне его
+        resultModal.addEventListener('click', function(e) {
+            if (e.target === resultModal) {
+                resultModal.style.display = 'none';
+            }
+        });
+
         // Обработчик изменения режима поиска
         searchModeRadios.forEach(radio => {
             radio.addEventListener('change', function() {
-                // Если есть результаты поиска, обновляем их при смене режима
                 if (searchInput.value.trim()) {
                     searchProducts();
                 }
@@ -21706,7 +21849,6 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         window.addEventListener('load', function() {
             searchInput.focus();
             
-            // Показываем подсказку для iOS пользователей
             if (isIOS()) {
                 setTimeout(() => {
                     if (!localStorage.getItem('iosTipShown')) {
@@ -21739,8 +21881,11 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         searchInput.addEventListener('paste', function(e) {
             if (isIOS()) {
                 setTimeout(() => {
-                    showSuccess('Код вставлен!');
-                    searchProducts();
+                    const code = this.value.trim();
+                    if (code) {
+                        const results = performSimpleSearch(code, 'barcode');
+                        showScanResults(code, results);
+                    }
                 }, 100);
             }
         });
