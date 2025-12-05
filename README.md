@@ -21791,24 +21791,23 @@ function openManualInputAfterFail() {
 
 // Использовать нативную камеру (iOS/все устройства)
 useNativeCamera.addEventListener('click', function() {
-    if (isIOS()) {
-        // Для iOS создаем input с камерой
-        const cameraInput = document.createElement('input');
-        cameraInput.type = 'file';
-        cameraInput.accept = 'image/*';
-        cameraInput.capture = 'environment'; // Используем заднюю камеру
-        
-        cameraInput.onchange = function(e) {
-            if (e.target.files && e.target.files[0]) {
-                // Обрабатываем фото
-                handleImageFile(e.target.files[0]);
-                
-                // Закрываем окно сканирования
-                scanModal.style.display = 'none';
-            }
-            // Очищаем input
-            this.value = '';
-        };
+    const cameraInput = document.createElement('input');
+    cameraInput.type = 'file';
+    cameraInput.accept = 'image/*';
+    cameraInput.capture = 'environment';
+    
+    cameraInput.onchange = function(e) {
+        if (e.target.files && e.target.files[0]) {
+            // Сразу закрываем окно
+            scanModal.style.display = 'none';
+            // Обрабатываем фото
+            handleImageFile(e.target.files[0]);
+        }
+        this.value = '';
+    };
+    
+    cameraInput.click();
+});
         
         // Запускаем камеру
         cameraInput.click();
@@ -21872,7 +21871,6 @@ useNativeCamera.addEventListener('click', function() {
 
 // Сделать фото камерой (из меню галереи)
 takePhotoBtn.addEventListener('click', function() {
-    // Создаем input для фото с камеры
     const cameraInput = document.createElement('input');
     cameraInput.type = 'file';
     cameraInput.accept = 'image/*';
@@ -21880,17 +21878,14 @@ takePhotoBtn.addEventListener('click', function() {
     
     cameraInput.onchange = function(e) {
         if (e.target.files && e.target.files[0]) {
+            // Сразу закрываем окно
+            scanModal.style.display = 'none';
             // Обрабатываем фото
             handleImageFile(e.target.files[0]);
-            
-            // Закрываем окно галереи
-            fileInputContainer.style.display = 'none';
-            scanMethodSelection.style.display = 'block';
         }
         this.value = '';
     };
     
-    // Запускаем камеру
     cameraInput.click();
 });
 
