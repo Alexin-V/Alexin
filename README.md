@@ -222,12 +222,6 @@
             max-width: 450px;
         }
         
-        .scan-success-icon {
-            font-size: 40px;
-            margin-bottom: 20px;
-            animation: pulse 1s;
-        }
-        
         @keyframes pulse {
             0% { transform: scale(0.5); opacity: 0; }
             70% { transform: scale(1.1); }
@@ -721,9 +715,6 @@
             <div class="scan-result-count" id="resultCount">
                 <!-- Количество найденных товаров -->
             </div>
-
-            <div class="scan-success-icon">✅</div>
-            <div class="scan-result-title">Штрихкод отсканирован!</div>
             
             <div class="scan-result-barcode" id="resultBarcode">
                 <!-- Штрихкод будет здесь -->
@@ -21433,7 +21424,7 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
                         <div style="font-size: 16px; color: #222; margin-bottom: 8px;">
                             ${product.name}
                         </div>
-                        <div style="font-size: 20px; color: #e74c3c; font-weight: bold;">
+                        <div style="font-size: 40px; color: #e74c3c; font-weight: bold;">
                             Цена: ${product.wholesalePrice} руб.
                         </div>
                     `;
