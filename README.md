@@ -21801,11 +21801,25 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
 
         // Обработчики для модального окна результатов
 
-        // Продолжить сканирование
-	continueScanBtn.addEventListener('click', function() {
-    		resultModal.style.display = 'none';
-    		startBrowserCamera();
-	});
+// Продолжить сканирование
+continueScanBtn.addEventListener('click', function() {
+    // Закрываем окно результатов
+    resultModal.style.display = 'none';
+    
+    // Даем время на анимацию закрытия (300мс)
+    setTimeout(() => {
+        // Открываем окно сканирования
+        scanModal.style.display = 'flex';
+        
+        // Сразу скрываем меню выбора
+        scanMethodSelection.style.display = 'none';
+        iosInstructions.style.display = 'none';
+        httpsWarning.style.display = 'none';
+        
+        // Запускаем камеру
+        startBrowserCamera();
+    }, 300);
+});
 
 
         // Новый поиск
