@@ -186,7 +186,7 @@
             text-align: left;
         }
         
-        /* Оверлеи */
+        /* Модальное окно камеры */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -212,20 +212,115 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         
-        /* Скан-модалка */
-        .scan-frame {
+        .video-wrapper {
+            position: relative;
+            width: 100%;
             max-width: 400px;
+            margin: 20px auto;
         }
         
-        /* Результаты сканирования */
+        #cameraVideo {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        
+        .camera-controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .camera-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            background-color: #2196F3;
+            color: white;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .close-modal {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .scan-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 150px;
+            border: 3px solid #4CAF50;
+            border-radius: 10px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #4CAF50;
+            animation: scan 2s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+        
+        .scan-hint {
+            position: absolute;
+            bottom: -40px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            z-index: 2;
+        }
+        
+        .barcode-supported {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .barcode-format {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin: 0 2px;
+            font-size: 11px;
+        }
+        
+        /* Модальное окно результатов */
         .scan-result-frame {
             max-width: 450px;
+            animation: successSlide 0.5s ease-out;
         }
         
-        @keyframes pulse {
-            0% { transform: scale(0.5); opacity: 0; }
-            70% { transform: scale(1.1); }
-            100% { transform: scale(1); opacity: 1; }
+        @keyframes successSlide {
+            0% { transform: translateY(-30px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
         }
         
         .scan-result-title {
@@ -317,249 +412,6 @@
             background-color: #e68900;
             transform: translateY(-2px);
         }
-        
-        .scan-instruction {
-            margin: 15px 0;
-            color: #333;
-        }
-        
-        .scan-options {
-            margin: 15px 0;
-        }
-        
-        .scan-option-btn {
-            display: block;
-            width: 100%;
-            margin: 8px 0;
-            padding: 12px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        
-        .close-modal {
-            background-color: #f44336;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-            margin: 20px auto;
-            display: none;
-        }
-        
-        #cameraVideo {
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
-        }
-        
-        .camera-controls {
-            margin-top: 10px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .camera-btn {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            background-color: #2196F3;
-            color: white;
-            flex: 1;
-            min-width: 120px;
-        }
-        
-        .manual-input {
-            margin-top: 15px;
-            display: none;
-        }
-        
-        .manual-input input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        
-        .manual-input button {
-            width: 100%;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        
-        .info-message {
-            background-color: #e7f3fe;
-            border-left: 4px solid #2196F3;
-            padding: 12px;
-            margin: 10px 0;
-            text-align: left;
-            font-size: 14px;
-            border-radius: 4px;
-        }
-        
-        .error-message {
-            background-color: #ffebee;
-            border-left: 4px solid #f44336;
-            padding: 12px;
-            margin: 10px 0;
-            text-align: left;
-            font-size: 14px;
-            border-radius: 4px;
-        }
-        
-        .https-warning {
-            background-color: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 12px;
-            margin: 10px 0;
-            text-align: left;
-            font-size: 14px;
-            border-radius: 4px;
-        }
-        
-        .file-input-container {
-            margin: 15px 0;
-            display: none;
-        }
-        
-        .file-input-btn {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            background-color: #9c27b0;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        
-        .scan-box {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            height: 150px;
-            border: 3px solid #4CAF50;
-            border-radius: 10px;
-            z-index: 1;
-            pointer-events: none;
-        }
-        
-        .scan-line {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background-color: #4CAF50;
-            animation: scan 2s linear infinite;
-        }
-        
-        @keyframes scan {
-            0% { top: 0; }
-            50% { top: 100%; }
-            100% { top: 0; }
-        }
-        
-        .scan-hint {
-            position: absolute;
-            bottom: -40px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            color: white;
-            font-size: 14px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-            z-index: 2;
-        }
-        
-        .debug-info {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            font-size: 12px;
-            color: #666;
-            display: none;
-            text-align: left;
-        }
-        
-        .barcode-supported {
-            margin-top: 10px;
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .barcode-format {
-            display: inline-block;
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 2px 6px;
-            border-radius: 3px;
-            margin: 0 2px;
-            font-size: 11px;
-        }
-        
-        .torch-btn {
-            background-color: #ff9800 !important;
-        }
-        
-        .torch-btn.active {
-            background-color: #ff5722 !important;
-            box-shadow: 0 0 10px rgba(255, 87, 34, 0.7);
-        }
-        
-        .ios-instructions {
-            background-color: #e3f2fd;
-            border-left: 4px solid #2196F3;
-            padding: 12px;
-            margin: 10px 0;
-            text-align: left;
-            font-size: 14px;
-            border-radius: 4px;
-            display: none;
-        }
-        
-        .ios-camera-input {
-            display: none;
-        }
-        
-        .native-camera-btn {
-            background-color: #ff9800 !important;
-        }
-        
-        /* Анимация успеха */
-        @keyframes successSlide {
-            0% { transform: translateY(-30px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
-        }
-        
-        .scan-result-frame {
-            animation: successSlide 0.5s ease-out;
-        }
     </style>
 </head>
 <body>
@@ -590,7 +442,8 @@
         <!-- Контейнер для кнопок -->
         <div class="buttons-container">
             <button class="search-button" id="searchButton">Найти</button>
-            <button class="scan-button" id="scanButton">
+            <!-- Кнопка для Android - скрыта на iOS -->
+            <button class="scan-button" id="scanButton" style="display: none;">
                 <span class="scan-icon">📷</span> Сканировать штрихкод
             </button>
         </div>
@@ -610,70 +463,11 @@
         </div>
     </div>
 
-    <!-- Модальное окно сканирования -->
-    <div class="modal-overlay" id="scanModal">
-        <div class="modal-frame scan-frame">
+    <!-- Модальное окно камеры (только для Android) -->
+    <div class="modal-overlay" id="cameraModal">
+        <div class="modal-frame">
             <h3>Сканирование штрихкода</h3>
             
-            <!-- Инструкции для iOS -->
-            <div class="ios-instructions" id="iosInstructions">
-                <strong>Для iOS (iPhone/iPad):</strong><br>
-                1. Нажмите кнопку "📸 Сделать фото" ниже<br>
-                2. Разрешите доступ к камере<br>
-                3. Сфотографируйте штрихкод<br>
-                4. После фото, нажмите "Использовать фото"<br>
-                5. Результат появится автоматически
-            </div>
-            
-            <!-- Предупреждение о HTTPS -->
-            <div class="https-warning" id="httpsWarning" style="display: none;">
-                <strong>Внимание:</strong> Для использования камеры браузера требуется HTTPS соединение. 
-                Пожалуйста, используйте другие методы сканирования или загрузите страницу по HTTPS.
-            </div>
-            
-            <div id="scanMethodSelection">
-                <p class="scan-instruction">Выберите способ сканирования:</p>
-                
-                <div class="scan-options">
-                    <button class="scan-option-btn" id="useBrowserCamera">
-                        📱 Камера браузера (Android Chrome)
-                    </button>
-                    <button class="scan-option-btn native-camera-btn" id="useNativeCamera">
-                        📸 Сделать фото (iOS/все устройства)
-                    </button>
-                    <button class="scan-option-btn" id="uploadImageBtn">
-                        📤 Загрузить фото из галереи
-                    </button>
-                    <button class="scan-option-btn" id="useScannerApp">
-                        📲 Открыть приложение сканера
-                    </button>
-
-    <button class="scan-option-btn" id="searchAppStore" style="background-color: #9c27b0;">
-        🔍 Поиск в App Store
-    </button>
-
-
-                    <button class="scan-option-btn" id="manualInputBtn">
-                        ⌨️ Ввести вручную
-                    </button>
-                </div>
-                
-                <div class="info-message" id="platformInfo">
-                    <!-- Информация о платформе будет добавлена динамически -->
-                </div>
-                
-                <!-- Отладочная информация -->
-                <div class="debug-info" id="debugInfo">
-                    <strong>Отладка:</strong>
-                    <div id="debugStatus">Статус: Ожидание...</div>
-                    <div id="debugCode">Код: Не найден</div>
-                    <div id="debugFormat">Формат: -</div>
-                    <div id="debugFPS">FPS: 0</div>
-                    <div id="debugPlatform">Платформа: -</div>
-                </div>
-            </div>
-            
-            <!-- Контейнер для камеры браузера -->
             <div class="video-wrapper" id="videoContainer">
                 <div class="scan-box">
                     <div class="scan-line"></div>
@@ -681,33 +475,11 @@
                 <div class="scan-hint">Наведите камеру на штрихкод EAN-13 или CODE-39</div>
                 <video id="cameraVideo" playsinline></video>
                 <div class="camera-controls">
-                    <button class="camera-btn" id="switchCamera">Переключить камеру</button>
-                    <button class="camera-btn" id="torchBtn" style="display: none;">🔦 Фонарик</button>
                     <button class="camera-btn" id="stopCamera">Остановить</button>
-                    <button class="camera-btn" id="toggleDebug">Отладка</button>
                 </div>
             </div>
             
-            <!-- Загрузка файла -->
-            <div class="file-input-container" id="fileInputContainer">
-                <input type="file" id="imageFileInput" accept="image/*" style="display: none;">
-                <button class="file-input-btn" id="triggerFileInput">📁 Выбрать фото из галереи</button>
-                <p class="scan-instruction">или сделайте фото камерой:</p>
-                <button class="scan-option-btn" id="takePhotoBtn">
-                    📸 Сделать фото камерой
-                </button>
-            </div>
-            
-            <!-- Ручной ввод -->
-            <div class="manual-input" id="manualInputSection">
-                <input type="text" id="manualBarcodeInput" placeholder="Введите штрихкод вручную">
-                <button id="submitManualBarcode">Найти товар</button>
-            </div>
-            
-            <!-- Скрытый input для iOS камеры -->
-
-            
-            <button class="close-modal" id="closeScanModal">Закрыть</button>
+            <button class="close-modal" id="closeCameraModal">Закрыть</button>
         </div>
     </div>
 
@@ -733,9 +505,6 @@
                 <button class="action-btn new-search-btn" id="newSearchBtn">
                     🔍 Новый поиск
                 </button>
-    <button class="action-btn manual-input-btn" id="manualInputFromResult" style="background-color: #9c27b0;">
-        ⌨️ Ввести другой код
-    </button>
                 <button class="action-btn close-result-btn" id="closeResultBtn">
                     ✓ Готово
                 </button>
@@ -20987,40 +20756,14 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
         const searchModeRadios = document.querySelectorAll('input[name="searchMode"]');
         
         // Модальные окна
-        const scanModal = document.getElementById('scanModal');
+        const cameraModal = document.getElementById('cameraModal');
         const resultModal = document.getElementById('resultModal');
-        const closeScanModal = document.getElementById('closeScanModal');
+        const closeCameraModal = document.getElementById('closeCameraModal');
         
-        // Элементы сканирования
-        const useBrowserCamera = document.getElementById('useBrowserCamera');
-        const useNativeCamera = document.getElementById('useNativeCamera');
-        const uploadImageBtn = document.getElementById('uploadImageBtn');
-        const useScannerApp = document.getElementById('useScannerApp');
-        const manualInputBtn = document.getElementById('manualInputBtn');
-        const videoContainer = document.getElementById('videoContainer');
+        // Элементы камеры
         const cameraVideo = document.getElementById('cameraVideo');
-        const switchCamera = document.getElementById('switchCamera');
-        const torchBtn = document.getElementById('torchBtn');
-        const stopCamera = document.getElementById('stopCamera');
-        const manualInputSection = document.getElementById('manualInputSection');
-        const manualBarcodeInput = document.getElementById('manualBarcodeInput');
-        const submitManualBarcode = document.getElementById('submitManualBarcode');
-        const scanMethodSelection = document.getElementById('scanMethodSelection');
-        const fileInputContainer = document.getElementById('fileInputContainer');
-        const imageFileInput = document.getElementById('imageFileInput');
-        const triggerFileInput = document.getElementById('triggerFileInput');
-        const takePhotoBtn = document.getElementById('takePhotoBtn');
-        const httpsWarning = document.getElementById('httpsWarning');
-        const debugInfo = document.getElementById('debugInfo');
-        const debugStatus = document.getElementById('debugStatus');
-        const debugCode = document.getElementById('debugCode');
-        const debugFormat = document.getElementById('debugFormat');
-        const debugFPS = document.getElementById('debugFPS');
-        const debugPlatform = document.getElementById('debugPlatform');
-        const toggleDebug = document.getElementById('toggleDebug');
-        const iosInstructions = document.getElementById('iosInstructions');
-        const iosCameraInput = document.getElementById('iosCameraInput');
-        const platformInfo = document.getElementById('platformInfo');
+        const stopCameraBtn = document.getElementById('stopCamera');
+        const videoContainer = document.getElementById('videoContainer');
         
         // Элементы результатов
         const resultBarcode = document.getElementById('resultBarcode');
@@ -21032,92 +20775,18 @@ HATBER;160ЗКс6В_16765;Записная книжка женщины 160л А6
 
         // Переменные для работы с камерой
         let stream = null;
-        let currentFacingMode = 'environment';
-        let scanInterval = null;
-        let debugMode = false;
-        let frameCount = 0;
-        let lastFpsUpdate = 0;
         let barcodeDetector = null;
-        let torchSupported = false;
-        let torchActive = false;
+        let scanInterval = null;
         let lastScannedCode = '';
 
-        // Определяем платформу
-        function getPlatform() {
-            const userAgent = navigator.userAgent;
-            
-            if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-                return 'iOS';
-            } else if (/Android/.test(userAgent)) {
-                return 'Android';
-            } else {
-                return 'Desktop';
-            }
+        // Проверяем iOS
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         }
 
-// Определяем версию iOS
-function getIOSVersion() {
-    if (!isIOS()) return null;
-    
-    const userAgent = navigator.userAgent;
-    const match = userAgent.match(/OS (\d+)_(\d+)_?(\d+)?/);
-    
-    if (match && match[1]) {
-        return parseFloat(match[1] + '.' + (match[2] || 0));
-    }
-    
-    return null;
-}
-
-// Приложения сканеров для iOS (с поддержкой разных версий)
-const iosScannerApps = [
-    {
-        name: "QR Code Reader & Scanner",
-        url: "https://apps.apple.com/app/id1200318119",
-        minIOS: 11.0,
-        features: ["QR", "Штрихкоды", "История"]
-    },
-    {
-        name: "QR Scanner - QR Code Reader",
-        url: "https://apps.apple.com/app/id1048473097", 
-        minIOS: 10.0,
-        features: ["Быстрое сканирование", "Подсветка"]
-    },
-    {
-        name: "QR Code Reader Pro",
-        url: "https://apps.apple.com/app/id1125259173",
-        minIOS: 12.0,
-        features: ["Пакетное сканирование", "PDF417"]
-    },
-    {
-        name: "Barcode Scanner • QR Reader",
-        url: "https://apps.apple.com/app/id1447723457",
-        minIOS: 13.0,
-        features: ["EAN-13", "CODE-39", "Без рекламы"]
-    },
-    {
-        name: "Сканер QR-кодов (Касперский)",
-        url: "https://apps.apple.com/ru/app/id1477293720",
-        minIOS: 14.0,
-        features: ["Безопасно", "Русский язык"]
-    }
-];
-
-        // Определяем браузер
-        function getBrowser() {
-            const userAgent = navigator.userAgent;
-            
-            if (userAgent.indexOf("Chrome") > -1) {
-                return "Chrome";
-            } else if (userAgent.indexOf("Safari") > -1) {
-                return "Safari";
-            } else if (userAgent.indexOf("Firefox") > -1) {
-                return "Firefox";
-            } else if (userAgent.indexOf("Edge") > -1) {
-                return "Edge";
-            } else {
-                return "Unknown";
-            }
+        // Проверяем Android
+        function isAndroid() {
+            return /Android/.test(navigator.userAgent);
         }
 
         // Проверяем поддержку BarcodeDetector API
@@ -21170,138 +20839,36 @@ const iosScannerApps = [
             return isHTTPS() || isLocalhost();
         }
 
-        // Проверяем, мобильное ли устройство
-        function isMobileDevice() {
-            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        }
-
-        // Проверяем iOS
-        function isIOS() {
-            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        }
-
-        // Проверяем Android
-        function isAndroid() {
-            return /Android/.test(navigator.userAgent);
-        }
-
-        // Функция для открытия сканирования
-        async function openScanDialog() {
-            const platform = getPlatform();
-            const browser = getBrowser();
-            
-            scanModal.style.display = 'flex';
-            resetScanInterface();
-            
-            // Обновляем информацию о платформе
-            debugPlatform.textContent = `Платформа: ${platform} / ${browser}`;
-            
-// Показываем инструкции для iOS
-if (isIOS()) {
-    iosInstructions.style.display = 'block';
-    useBrowserCamera.style.display = 'none';
-    
-    const iosVersion = getIOSVersion();
-    let iosMessage = '<strong>📱 Для iPhone/iPad iOS ' + (iosVersion || '?') + ':</strong><br><br>';
-    
-    if (iosVersion && iosVersion < 14.0) {
-        iosMessage += '⚠️ <strong>Внимание:</strong> Ваша версия iOS (' + iosVersion + ') устарела.<br>';
-        iosMessage += 'Рекомендуем обновить iOS для лучшей работы.<br><br>';
-    }
-    
-    iosMessage += '<strong>Рекомендуем:</strong><br>';
-    iosMessage += '1. <strong>📲 Приложение сканера</strong> - лучший результат<br>';
-    iosMessage += '2. <strong>🔍 Поиск в App Store</strong> - больше вариантов<br>';
-    iosMessage += '3. <strong>📸 Фото + ручной ввод</strong> - если нет приложения<br>';
-    iosMessage += '4. <strong>⌨️ Ручной ввод</strong> - самый простой способ<br><br>';
-    
-    if (iosVersion && iosVersion >= 14.0) {
-        iosMessage += '✅ Ваш iOS ' + iosVersion + ' поддерживает все современные приложения.';
-    }
-    
-    platformInfo.innerHTML = iosMessage;
-    platformInfo.className = 'info-message';
-} else if (isAndroid()) {
-                iosInstructions.style.display = 'none';
-                useBrowserCamera.style.display = 'block';
+        // Настройка интерфейса в зависимости от платформы
+        function setupPlatformUI() {
+            if (isIOS()) {
+                // Для iOS скрываем кнопку сканирования
+                scanButton.style.display = 'none';
+                searchButton.style.maxWidth = '300px';
+            } else if (isAndroid()) {
+                // Для Android показываем кнопку сканирования
+                scanButton.style.display = 'flex';
                 
-                let androidMessage = '<strong>Для Android:</strong><br>';
-                androidMessage += '• Используйте камеру браузера (Chrome 83+)<br>';
-                androidMessage += '• Или приложение сканера<br>';
-                androidMessage += '• Требуется HTTPS соединение';
-                platformInfo.innerHTML = androidMessage;
-                platformInfo.className = 'info-message';
-            }
-            
-            // Инициализируем BarcodeDetector для Android
-            if (isAndroid() && !barcodeDetector) {
-                barcodeDetector = await initBarcodeDetector();
-                if (!barcodeDetector) {
-                    useBrowserCamera.disabled = true;
-                    useBrowserCamera.innerHTML = '📱 Камера (не поддерживается)';
-                    useBrowserCamera.style.opacity = '0.5';
-                    useBrowserCamera.style.cursor = 'not-allowed';
-                    
-                    platformInfo.innerHTML += '<br><strong style="color: #f44336;">Внимание:</strong> Ваш браузер не поддерживает прямое сканирование. Используйте приложение сканера.';
-                }
-            }
-            
-            // Показываем предупреждение, если не HTTPS
-            if (!canUseCamera()) {
-                httpsWarning.style.display = 'block';
-                useBrowserCamera.disabled = true;
-                useBrowserCamera.style.opacity = '0.5';
-                useBrowserCamera.style.cursor = 'not-allowed';
+                // Инициализируем BarcodeDetector для Android
+                initBarcodeDetector();
             } else {
-                httpsWarning.style.display = 'none';
-                if (isAndroid() && barcodeDetector) {
-                    useBrowserCamera.disabled = false;
-                    useBrowserCamera.style.opacity = '1';
-                    useBrowserCamera.style.cursor = 'pointer';
-                }
+                // Для Desktop скрываем кнопку сканирования
+                scanButton.style.display = 'none';
+                searchButton.style.maxWidth = '300px';
             }
         }
 
-        // Сброс интерфейса сканирования
-        function resetScanInterface() {
-            scanMethodSelection.style.display = 'block';
-            videoContainer.style.display = 'none';
-            manualInputSection.style.display = 'none';
-            fileInputContainer.style.display = 'none';
-            torchBtn.style.display = 'none';
-            torchBtn.classList.remove('active');
-            torchActive = false;
-            stopCameraStream();
-        }
-
-        // Остановка потока камеры
-        function stopCameraStream() {
-            if (stream) {
-                if (torchActive) {
-                    toggleTorch();
-                }
-                
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
-            if (scanInterval) {
-                clearInterval(scanInterval);
-                scanInterval = null;
-            }
-            cameraVideo.srcObject = null;
-            frameCount = 0;
-            lastFpsUpdate = 0;
-        }
-
-        // Запуск камеры браузера с BarcodeDetector (для Android Chrome)
-        async function startBrowserCamera() {
+        // Открытие камеры для Android
+        async function openCamera() {
+            if (!isAndroid()) return;
+            
             if (!canUseCamera()) {
-                alert('Для использования камеры браузера требуется HTTPS соединение. Пожалуйста, используйте другой метод сканирования.');
+                alert('Для использования камеры браузера требуется HTTPS соединение.');
                 return;
             }
             
             if (!barcodeDetector) {
-                alert('Ваш браузер не поддерживает прямое сканирование штрихкодов. Используйте приложение сканера или сделайте фото.');
+                alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
                 return;
             }
             
@@ -21310,7 +20877,7 @@ if (isIOS()) {
                 
                 const constraints = {
                     video: {
-                        facingMode: currentFacingMode,
+                        facingMode: 'environment',
                         width: { ideal: 1280 },
                         height: { ideal: 720 }
                     },
@@ -21319,20 +20886,8 @@ if (isIOS()) {
                 
                 stream = await navigator.mediaDevices.getUserMedia(constraints);
                 
-                const videoTrack = stream.getVideoTracks()[0];
-                if (videoTrack && videoTrack.getCapabilities) {
-                    const capabilities = videoTrack.getCapabilities();
-                    torchSupported = capabilities.torch || false;
-                    torchBtn.style.display = torchSupported ? 'block' : 'none';
-                }
-                
                 cameraVideo.srcObject = stream;
-                videoContainer.style.display = 'block';
-                scanMethodSelection.style.display = 'none';
-                
-                if (isMobileDevice()) {
-                    cameraVideo.style.transform = 'scaleX(1)';
-                }
+                cameraModal.style.display = 'flex';
                 
                 await new Promise((resolve) => {
                     cameraVideo.onloadedmetadata = () => {
@@ -21359,54 +20914,16 @@ if (isIOS()) {
                 }
                 
                 alert(errorMessage);
-                resetScanInterface();
             }
         }
 
-        // Метод 2: Нативная камера iOS через input
-        function startNativeCamera() {
-            iosCameraInput.click();
-        }
-
-        // Метод 3: Загрузка фото из галереи
-        function openGallery() {
-            scanMethodSelection.style.display = 'none';
-            fileInputContainer.style.display = 'block';
-        }
-
-        // Метод 4: Сделать фото через input с capture
-        function takePhoto() {
-            const photoInput = document.createElement('input');
-            photoInput.type = 'file';
-            photoInput.accept = 'image/*';
-            photoInput.capture = 'environment';
-            
-            photoInput.onchange = function(e) {
-                if (e.target.files && e.target.files[0]) {
-                    alert('Для iOS: после фото штрихкод будет в буфере обмена. Вернитесь сюда и вставьте код в поле поиска.');
-                }
-            };
-            
-            photoInput.click();
-        }
-
-        // Запуск распознавания штрихкодов через BarcodeDetector
+        // Запуск распознавания штрихкодов
         function startBarcodeDetection() {
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
             
             scanInterval = setInterval(async () => {
                 if (cameraVideo.readyState === cameraVideo.HAVE_ENOUGH_DATA) {
-                    const now = performance.now();
-                    frameCount++;
-                    
-                    if (now - lastFpsUpdate >= 1000) {
-                        const fps = Math.round((frameCount * 1000) / (now - lastFpsUpdate));
-                        debugFPS.textContent = `FPS: ${fps}`;
-                        frameCount = 0;
-                        lastFpsUpdate = now;
-                    }
-                    
                     canvas.width = cameraVideo.videoWidth;
                     canvas.height = cameraVideo.videoHeight;
                     
@@ -21417,56 +20934,34 @@ if (isIOS()) {
                         
                         if (barcodes && barcodes.length > 0) {
                             const barcode = barcodes[0];
-                            debugStatus.textContent = 'Статус: Штрихкод найден';
-                            debugCode.textContent = `Код: ${barcode.rawValue}`;
-                            debugFormat.textContent = `Формат: ${barcode.format}`;
-                            
                             handleScannedCode(barcode.rawValue);
                             return;
                         }
                         
-                        debugStatus.textContent = 'Статус: Поиск...';
-                        debugCode.textContent = 'Код: Не найден';
-                        debugFormat.textContent = 'Формат: -';
-                        
                     } catch (error) {
                         console.error('Ошибка детектирования штрихкода:', error);
-                        debugStatus.textContent = `Статус: Ошибка - ${error.message}`;
                     }
                 }
             }, 300);
         }
 
-        // Переключение фонарика
-        function toggleTorch() {
-            if (!stream || !torchSupported) return;
-            
-            const videoTrack = stream.getVideoTracks()[0];
-            if (!videoTrack) return;
-            
-            torchActive = !torchActive;
-            
-            try {
-                videoTrack.applyConstraints({
-                    advanced: [{ torch: torchActive }]
-                });
-                
-                torchBtn.classList.toggle('active', torchActive);
-                torchBtn.innerHTML = torchActive ? '🔦 Выкл. фонарик' : '🔦 Фонарик';
-            } catch (error) {
-                console.error('Ошибка переключения фонарика:', error);
-                torchActive = false;
-                torchBtn.classList.remove('active');
-                torchBtn.innerHTML = '🔦 Фонарик';
+        // Остановка потока камеры
+        function stopCameraStream() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
             }
+            if (scanInterval) {
+                clearInterval(scanInterval);
+                scanInterval = null;
+            }
+            cameraVideo.srcObject = null;
         }
 
-        // Показать результаты сканирования в модальном окне
+        // Показать результаты сканирования
         function showScanResults(code, results) {
-            // Сохраняем последний отсканированный код
             lastScannedCode = code;
             
-            // Обновляем интерфейс результатов
             resultBarcode.textContent = code;
             
             if (results.length === 0) {
@@ -21477,10 +20972,8 @@ if (isIOS()) {
                 resultCount.textContent = `Найдено товаров: ${results.length}`;
                 resultCount.style.color = '#4CAF50';
                 
-                // Очищаем контейнер
                 resultProducts.innerHTML = '';
                 
-                // Добавляем найденные товары
                 results.forEach(product => {
                     const productCard = document.createElement('div');
                     productCard.className = 'scan-result-card';
@@ -21504,208 +20997,25 @@ if (isIOS()) {
                 });
             }
             
-            // Закрываем окно сканирования и открываем окно результатов
-            scanModal.style.display = 'none';
+            cameraModal.style.display = 'none';
             resultModal.style.display = 'flex';
         }
 
         // Обработка отсканированного кода
         function handleScannedCode(code) {
-            console.log('Отсканирован код:', code);
-            
             if (!code || code.trim().length === 0) {
                 return;
             }
             
-            // Останавливаем камеру
             stopCameraStream();
-            
-            // Устанавливаем режим поиска по штрихкоду
             document.getElementById('modeBarcode').checked = true;
             
-            // Очищаем код
             const cleanCode = code.toString().trim();
-            
-            // Вводим код в поле поиска
             searchInput.value = cleanCode;
             
-            // Выполняем поиск и показываем результаты
             const results = performSimpleSearch(cleanCode, 'barcode');
             showScanResults(cleanCode, results);
         }
-
-
-// Поиск в App Store
-document.getElementById('searchAppStore').addEventListener('click', function() {
-    if (isIOS()) {
-        // Открываем поиск в App Store
-        const searchQueries = [
-            'qr%20scanner',
-            'barcode%20scanner',
-            'штрихкод%20сканер',
-            'qr%20код%20сканер'
-        ];
-        
-        const randomQuery = searchQueries[Math.floor(Math.random() * searchQueries.length)];
-        window.location.href = 'https://apps.apple.com/search?term=' + randomQuery;
-    } else if (isAndroid()) {
-        window.location.href = 'https://play.google.com/store/search?q=qr%20scanner&c=apps';
-    } else {
-        window.location.href = 'https://www.google.com/search?q=qr+scanner+app';
-    }
-    
-    setTimeout(() => {
-        scanModal.style.display = 'none';
-    }, 300);
-});
-
-
-        // Открытие внешнего приложения сканера
-        function openExternalScanner() {
-            if (isIOS()) {
-                const scannerUrls = [
-                    'https://apps.apple.com/app/id1200318119',
-                    'https://apps.apple.com/app/id1048473097',
-                    'https://apps.apple.com/app/id1125259173'
-                ];
-                
-                if (confirm('Открыть App Store для установки сканера штрихкодов?')) {
-                    window.location.href = scannerUrls[0];
-                }
-            } else if (isAndroid()) {
-                const scannerUrl = 'intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;S.browser_fallback_url=https%3A%2F%2Fzxing.appspot.com%2Fscan;end';
-                window.location.href = scannerUrl;
-            } else {
-                window.location.href = 'https://scanapp.org/';
-            }
-            
-            setTimeout(() => {
-                scanModal.style.display = 'none';
-            }, 300);
-        }
-
-// Обработка выбора файла с фото 
-function handleImageFile(file) {
-    if (!file) return;
-    
-    if (isIOS()) {
-        // Для iOS просто показываем сообщение и переходим к ручному вводу
-        scanModal.style.display = 'flex';
-        scanMethodSelection.style.display = 'none';
-        manualInputSection.style.display = 'block';
-        manualBarcodeInput.focus();
-        manualBarcodeInput.placeholder = "Введите штрихкод с фото";
-        return;
-    }
-    
-    // Для всех устройств пробуем обработать фото через BarcodeDetector
-    if (barcodeDetector) {
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            const img = new Image();
-            
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                
-                // Оптимальный размер для обработки
-                const maxSize = 800;
-                let width = img.width;
-                let height = img.height;
-                
-                if (width > height && width > maxSize) {
-                    height = (height * maxSize) / width;
-                    width = maxSize;
-                } else if (height > maxSize) {
-                    width = (width * maxSize) / height;
-                    height = maxSize;
-                }
-                
-                canvas.width = width;
-                canvas.height = height;
-                context.drawImage(img, 0, 0, width, height);
-                
-                // Пробуем найти штрихкод
-                barcodeDetector.detect(canvas)
-                    .then(barcodes => {
-                        if (barcodes && barcodes.length > 0) {
-                            // Нашли штрихкод
-                            handleScannedCode(barcodes[0].rawValue);
-                        } else {
-                            // Не нашли - предлагаем варианты
-                            if (isIOS()) {
-                                const choice = confirm(
-                                    'Штрихкод не найден на фото.\n\n' +
-                                    '1. Попробуйте сделать более четкое фото\n' +
-                                    '2. Ввести код вручную\n\n' +
-                                    'Открыть ручной ввод?'
-                                );
-                                if (choice) {
-                                    // Открываем ручной ввод
-                                    scanModal.style.display = 'flex';
-                                    scanMethodSelection.style.display = 'none';
-                                    manualInputSection.style.display = 'block';
-                                    manualBarcodeInput.focus();
-                                }
-                            } else {
-                                alert('Штрихкод не найден на изображении. Попробуйте другое фото или используйте камеру.');
-                            }
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Ошибка обработки фото:', error);
-                        showPhotoError();
-                    });
-            };
-            
-            img.src = e.target.result;
-        };
-        
-        reader.onerror = function() {
-            showPhotoError();
-        };
-        
-        reader.readAsDataURL(file);
-    } else {
-        // Если BarcodeDetector не доступен
-        showPhotoError();
-    }
-}
-
-// Функция показа ошибки обработки фото
-function showPhotoError() {
-    if (isIOS()) {
-        const choice = confirm(
-            'Не удалось обработать фото.\n\n' +
-            'Варианты:\n' +
-            '1. Установить приложение сканера из App Store\n' +
-            '2. Ввести штрихкод вручную\n\n' +
-            'Открыть ручной ввод?'
-        );
-        if (choice) {
-            scanModal.style.display = 'flex';
-            scanMethodSelection.style.display = 'none';
-            manualInputSection.style.display = 'block';
-            manualBarcodeInput.focus();
-        }
-    } else {
-        alert('Не удалось обработать фото. Попробуйте другой метод.');
-    }
-}
-
-// Открыть ручной ввод после неудачного сканирования
-function openManualInputAfterFail() {
-    scanModal.style.display = 'flex';
-    scanMethodSelection.style.display = 'none';
-    manualInputSection.style.display = 'block';
-    manualBarcodeInput.focus();
-    
-    // Автоматически вставляем текст подсказки
-    manualBarcodeInput.placeholder = "Введите штрихкод вручную (после фото)";
-}
-
-
 
         // Функция для получения текущего режима поиска
         function getCurrentSearchMode() {
@@ -21786,7 +21096,7 @@ function openManualInputAfterFail() {
             });
         }
 
-        // Функция отображения результатов в основном интерфейсе
+        // Функция отображения результатов
         function displayResults(results, query, searchMode) {
             resultsContainer.innerHTML = '';
 
@@ -21866,18 +21176,6 @@ function openManualInputAfterFail() {
 
         // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
 
-// Ввести другой код (из результатов)
-document.getElementById('manualInputFromResult').addEventListener('click', function() {
-    resultModal.style.display = 'none';
-    scanModal.style.display = 'flex';
-    scanMethodSelection.style.display = 'none';
-    manualInputSection.style.display = 'block';
-    manualBarcodeInput.focus();
-    manualBarcodeInput.value = ''; // Очищаем поле
-});
-
-
-
         // Обработчик клика на кнопку "Найти"
         searchButton.addEventListener('click', searchProducts);
 
@@ -21888,291 +21186,38 @@ document.getElementById('manualInputFromResult').addEventListener('click', funct
             }
         });
 
-        // Обработчик клика на кнопку сканирования
-        scanButton.addEventListener('click', openScanDialog);
+        // Обработчик клика на кнопку сканирования (только для Android)
+        scanButton.addEventListener('click', openCamera);
 
-        // Закрытие модального окна сканирования
-        closeScanModal.addEventListener('click', function() {
+        // Закрытие модального окна камеры
+        closeCameraModal.addEventListener('click', function() {
             stopCameraStream();
-            scanModal.style.display = 'none';
+            cameraModal.style.display = 'none';
         });
 
-        // Закрытие модального окна при клике вне его
-        scanModal.addEventListener('click', function(e) {
-            if (e.target === scanModal) {
+        // Закрытие модального окна камеры при клике вне его
+        cameraModal.addEventListener('click', function(e) {
+            if (e.target === cameraModal) {
                 stopCameraStream();
-                scanModal.style.display = 'none';
+                cameraModal.style.display = 'none';
             }
         });
-
-        // Использовать камеру браузера (Android Chrome)
-        useBrowserCamera.addEventListener('click', startBrowserCamera);
-
-// Использовать нативную камеру (iOS/все устройства)
-useNativeCamera.addEventListener('click', function() {
-    if (isIOS()) {
-        // Показываем понятное сообщение для iOS
-        const userChoice = confirm(
-            '📱 Для iPhone/iPad:\n\n' +
-            'Вариант 1: Сделать фото камерой, затем ввести код вручную\n' +
-            'Вариант 2: Установить приложение сканера\n\n' +
-            'Хотите сделать фото и перейти к ручному вводу?'
-        );
-        
-        if (userChoice) {
-            // Вариант 1: Делаем фото и переходим к ручному вводу
-            const cameraInput = document.createElement('input');
-            cameraInput.type = 'file';
-            cameraInput.accept = 'image/*';
-            cameraInput.capture = 'environment';
-            
-            cameraInput.onchange = function(e) {
-                if (e.target.files && e.target.files[0]) {
-                    // После фото сразу переходим к ручному вводу
-                    scanMethodSelection.style.display = 'none';
-                    manualInputSection.style.display = 'block';
-                    manualBarcodeInput.focus();
-                    manualBarcodeInput.placeholder = "Сделайте фото, затем введите штрихкод здесь";
-                    
-                    // Можно добавить подсказку
-                    setTimeout(() => {
-                        alert('Сфотографируйте штрихкод, затем введите цифры в поле выше.');
-                    }, 500);
-                }
-                this.value = '';
-            };
-            
-            cameraInput.click();
-        } else {
-            // Вариант 2: Предлагаем приложение
-            const installChoice = confirm(
-                'Установить приложение сканера штрихкодов?\n\n' +
-                'Приложение даст лучший результат и удобнее для сканирования.'
-            );
-            
-            if (installChoice) {
-                // Открываем App Store с популярными сканерами
-                window.location.href = 'https://apps.apple.com/app/id1200318119'; // QR Code Reader
-            }
-        }
-    } else {
-        // Для Android используем обычный метод
-        const cameraInput = document.createElement('input');
-        cameraInput.type = 'file';
-        cameraInput.accept = 'image/*';
-        cameraInput.capture = 'environment';
-        
-        cameraInput.onchange = function(e) {
-            if (e.target.files && e.target.files[0]) {
-                handleImageFile(e.target.files[0]);
-            }
-            this.value = '';
-        };
-        
-        cameraInput.click();
-    }
-});
-        
-
-
-        // Переключение камеры
-        switchCamera.addEventListener('click', function() {
-            currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
-            startBrowserCamera();
-        });
-
-        // Управление фонариком
-        torchBtn.addEventListener('click', toggleTorch);
 
         // Остановка камеры
-        stopCamera.addEventListener('click', function() {
+        stopCameraBtn.addEventListener('click', function() {
             stopCameraStream();
-            resetScanInterface();
-        });
-
-        // Переключение режима отладки
-        toggleDebug.addEventListener('click', function() {
-            debugMode = !debugMode;
-            debugInfo.style.display = debugMode ? 'block' : 'none';
-            this.textContent = debugMode ? 'Скрыть отладку' : 'Отладка';
-        });
-
-        // Загрузить изображение из галереи
-        uploadImageBtn.addEventListener('click', openGallery);
-
-        // Выбрать файл из галереи
-        triggerFileInput.addEventListener('click', function() {
-            imageFileInput.click();
-        });
-
-        // Обработка выбора файла из галереи
-        imageFileInput.addEventListener('change', function(e) {
-            if (e.target.files && e.target.files[0]) {
-                handleImageFile(e.target.files[0]);
-            }
-        });
-
-// Сделать фото камерой (из меню галереи)
-takePhotoBtn.addEventListener('click', function() {
-    if (isIOS()) {
-        alert('Для iOS: Сделайте фото штрихкода, затем введите код вручную в поле ниже.');
-    }
-    
-    const cameraInput = document.createElement('input');
-    cameraInput.type = 'file';
-    cameraInput.accept = 'image/*';
-    cameraInput.capture = 'environment';
-    
-    cameraInput.onchange = function(e) {
-        if (e.target.files && e.target.files[0]) {
-            if (isIOS()) {
-                // Для iOS: переходим к ручному вводу
-                fileInputContainer.style.display = 'none';
-                manualInputSection.style.display = 'block';
-                manualBarcodeInput.focus();
-                manualBarcodeInput.placeholder = "Введите штрихкод с фото";
-            } else {
-                // Для Android: обрабатываем фото
-                handleImageFile(e.target.files[0]);
-            }
-        }
-        this.value = '';
-    };
-    
-    cameraInput.click();
-});
-
-// Использовать приложение сканера
-useScannerApp.addEventListener('click', function() {
-    if (isIOS()) {
-        showIOSScannerSelector();
-    } else if (isAndroid()) {
-        // Для Android используем Intent
-        const scannerUrl = 'intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;S.browser_fallback_url=https%3A%2F%2Fzxing.appspot.com%2Fscan;end';
-        window.location.href = scannerUrl;
-    } else {
-        // Для десктопа
-        window.location.href = 'https://scanapp.org/';
-    }
-    
-    // Закрываем окно сканирования
-    setTimeout(() => {
-        scanModal.style.display = 'none';
-    }, 300);
-});
-
-// Показать выбор приложения для iOS
-function showIOSScannerSelector() {
-    const iosVersion = getIOSVersion();
-    
-    // Фильтруем приложения по версии iOS
-    const compatibleApps = iosScannerApps.filter(app => {
-        return !iosVersion || iosVersion >= app.minIOS;
-    });
-    
-    if (compatibleApps.length === 0) {
-        // Если нет совместимых приложений
-        alert(
-            'Для вашей версии iOS (' + (iosVersion || 'неизвестно') + ') нет рекомендованных приложений.\n\n' +
-            'Попробуйте:\n' +
-            '1. Обновить iOS до актуальной версии\n' +
-            '2. Использовать ручной ввод штрихкода\n' +
-            '3. Поискать "QR сканер" в App Store'
-        );
-        return;
-    }
-    
-    // Создаем сообщение с выбором
-    let message = '📱 Выберите приложение сканера для iOS ' + (iosVersion || '') + ':\n\n';
-    
-    compatibleApps.forEach((app, index) => {
-        message += (index + 1) + '. ' + app.name + '\n';
-        message += '   ✓ Версия iOS: ' + app.minIOS + '+\n';
-        message += '   ✓ Возможности: ' + app.features.join(', ') + '\n\n';
-    });
-    
-    message += 'Выберите номер приложения (1-' + compatibleApps.length + '):';
-    
-    const choice = prompt(message);
-    const choiceIndex = parseInt(choice) - 1;
-    
-    if (choiceIndex >= 0 && choiceIndex < compatibleApps.length) {
-        // Открываем выбранное приложение в App Store
-        window.location.href = compatibleApps[choiceIndex].url;
-    } else if (choice !== null) {
-        // Если ввели неправильный номер
-        alert('Пожалуйста, выберите номер от 1 до ' + compatibleApps.length);
-        showIOSScannerSelector(); // Показываем снова
-    }
-}
-
-        // Ручной ввод
-        manualInputBtn.addEventListener('click', function() {
-            scanMethodSelection.style.display = 'none';
-            manualInputSection.style.display = 'block';
-            manualBarcodeInput.focus();
-        });
-
-        // Отправка ручного ввода
-        submitManualBarcode.addEventListener('click', function() {
-            const barcode = manualBarcodeInput.value.trim();
-            if (barcode) {
-                handleScannedCode(barcode);
-            }
-        });
-
-        // Ввод по Enter в ручном режиме
-        manualBarcodeInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                const barcode = manualBarcodeInput.value.trim();
-                if (barcode) {
-                    handleScannedCode(barcode);
-                }
-            }
+            cameraModal.style.display = 'none';
         });
 
         // Обработчики для модального окна результатов
 
-// Продолжить сканирование
-continueScanBtn.addEventListener('click', function() {
-    // Закрываем окно результатов
-    resultModal.style.display = 'none';
-    
-    // Останавливаем текущий поток камеры (если он есть)
-    stopCameraStream();
-    
-    // Даем время на анимацию закрытия
-    setTimeout(() => {
-        // Открываем окно сканирования
-        scanModal.style.display = 'flex';
-        
-        // Полностью сбрасываем интерфейс сканирования
-        resetScanInterface();
-        
-        // Сразу скрываем меню выбора
-        scanMethodSelection.style.display = 'none';
-        iosInstructions.style.display = 'none';
-        httpsWarning.style.display = 'none';
-        fileInputContainer.style.display = 'none';
-        manualInputSection.style.display = 'none';
-        
-        // Скрываем видео контейнер, но оставляем его готовым
-        videoContainer.style.display = 'none';
-        
-        // Очищаем элементы отладочной информации
-        debugStatus.textContent = 'Статус: Ожидание...';
-        debugCode.textContent = 'Код: Не найден';
-        debugFormat.textContent = 'Формат: -';
-        debugFPS.textContent = 'FPS: 0';
-        
-        // Ждем еще немного для гарантии, что DOM обновился
-        setTimeout(() => {
-            // Запускаем камеру
-            startBrowserCamera();
-        }, 50);
-    }, 300);
-});
-
+        // Продолжить сканирование
+        continueScanBtn.addEventListener('click', function() {
+            resultModal.style.display = 'none';
+            setTimeout(() => {
+                openCamera();
+            }, 300);
+        });
 
         // Новый поиск
         newSearchBtn.addEventListener('click', function() {
@@ -22206,15 +21251,7 @@ continueScanBtn.addEventListener('click', function() {
         // Фокусировка на поле поиска при загрузке
         window.addEventListener('load', function() {
             searchInput.focus();
-            
-            if (isIOS()) {
-                setTimeout(() => {
-                    if (!localStorage.getItem('iosTipShown')) {
-                        alert('📱 Для iPhone/iPad:\n\nИспользуйте кнопку "📸 Сделать фото" для сканирования штрихкодов.\n\nПосле фото вставьте код в поле поиска.');
-                        localStorage.setItem('iosTipShown', 'true');
-                    }
-                }, 1000);
-            }
+            setupPlatformUI();
         });
 
         // Обработчик клавиши Escape для очистки поиска
@@ -22232,19 +21269,6 @@ continueScanBtn.addEventListener('click', function() {
                 e.preventDefault();
                 searchInput.focus();
                 searchInput.select();
-            }
-        });
-
-        // Обработчик вставки из буфера обмена (для iOS)
-        searchInput.addEventListener('paste', function(e) {
-            if (isIOS()) {
-                setTimeout(() => {
-                    const code = this.value.trim();
-                    if (code) {
-                        const results = performSimpleSearch(code, 'barcode');
-                        showScanResults(code, results);
-                    }
-                }, 100);
             }
         });
     </script>
