@@ -18361,6 +18361,14 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             "МАГАЗИН 234"
         ];
 
+        // Функция для преобразования строки с пробелами в число
+        function parseStockValue(value) {
+            if (!value) return 0;
+            // Убираем все пробелы (включая неразрывные пробелы \u00A0)
+            const cleanValue = value.toString().replace(/\s/g, '').replace(/\u00A0/g, '');
+            return parseInt(cleanValue) || 0;
+        }
+
         // Функция для парсинга данных
         function parseProductsData(data) {
             const lines = data.trim().split('\n');
@@ -18373,13 +18381,18 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                     wholesalePrice: parts[3],
                     retailPrice: parts[4],
                     stocks: {
-                        warehouse1: parseInt(parts[5]) || 0,
-                        warehouse2: parseInt(parts[6]) || 0,
-                        warehouse3: parseInt(parts[7]) || 0,
-                        warehouse4: parseInt(parts[8]) || 0
+                        warehouse1: parseStockValue(parts[5]),
+                        warehouse2: parseStockValue(parts[6]),
+                        warehouse3: parseStockValue(parts[7]),
+                        warehouse4: parseStockValue(parts[8])
                     }
                 };
             });
+        }
+
+        // Функция для форматирования числа с разделителями тысяч
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
         }
 
         // Функция для форматирования отображения остатков
@@ -18390,25 +18403,25 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             // Первый склад
             html += `<div class="stock-item">
                 <span class="stock-name">Уральская 97:</span>
-                <span class="stock-quantity">${stocks.warehouse1} шт.</span>
+                <span class="stock-quantity">${formatNumber(stocks.warehouse1)} шт.</span>
             </div>`;
             
             // Второй склад
             html += `<div class="stock-item">
                 <span class="stock-name">ОСНОВНОЙ СКЛАД:</span>
-                <span class="stock-quantity">${stocks.warehouse2} шт.</span>
+                <span class="stock-quantity">${formatNumber(stocks.warehouse2)} шт.</span>
             </div>`;
             
             // Третий склад
             html += `<div class="stock-item">
                 <span class="stock-name">Шевченко 139:</span>
-                <span class="stock-quantity">${stocks.warehouse3} шт.</span>
+                <span class="stock-quantity">${formatNumber(stocks.warehouse3)} шт.</span>
             </div>`;
             
             // Четвертый склад
             html += `<div class="stock-item">
                 <span class="stock-name">МАГАЗИН 234:</span>
-                <span class="stock-quantity">${stocks.warehouse4} шт.</span>
+                <span class="stock-quantity">${formatNumber(stocks.warehouse4)} шт.</span>
             </div>`;
             
             html += '</div>';
@@ -18423,25 +18436,25 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             // Первый склад
             html += `<div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px;">
                 <span style="color: #555;">Уральская 97:</span>
-                <span style="color: #2e7d32; font-weight: bold;">${stocks.warehouse1} шт.</span>
+                <span style="color: #2e7d32; font-weight: bold;">${formatNumber(stocks.warehouse1)} шт.</span>
             </div>`;
             
             // Второй склад
             html += `<div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px;">
                 <span style="color: #555;">ОСНОВНОЙ СКЛАД:</span>
-                <span style="color: #2e7d32; font-weight: bold;">${stocks.warehouse2} шт.</span>
+                <span style="color: #2e7d32; font-weight: bold;">${formatNumber(stocks.warehouse2)} шт.</span>
             </div>`;
             
             // Третий склад
             html += `<div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px;">
                 <span style="color: #555;">Шевченко 139:</span>
-                <span style="color: #2e7d32; font-weight: bold;">${stocks.warehouse3} шт.</span>
+                <span style="color: #2e7d32; font-weight: bold;">${formatNumber(stocks.warehouse3)} шт.</span>
             </div>`;
             
             // Четвертый склад
             html += `<div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px;">
                 <span style="color: #555;">МАГАЗИН 234:</span>
-                <span style="color: #2e7d32; font-weight: bold;">${stocks.warehouse4} шт.</span>
+                <span style="color: #2e7d32; font-weight: bold;">${formatNumber(stocks.warehouse4)} шт.</span>
             </div>`;
             
             html += '</div>';
