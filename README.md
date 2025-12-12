@@ -138,6 +138,7 @@
             border-radius: 5px;
             box-shadow: 0 1px 5px rgba(0,0,0,0.1);
             border-left: 4px solid #4CAF50;
+            position: relative;
         }
         
         .product-field {
@@ -152,6 +153,48 @@
         .article {
             font-weight: bold;
             color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .article-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .search-image-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+            width: 28px;
+            height: 28px;
+        }
+        
+        .search-image-btn:hover {
+            background-color: #f0f0f0;
+            transform: scale(1.1);
+        }
+        
+        .search-image-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .search-image-btn img {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
+        
+        .search-image-btn:hover img {
+            opacity: 1;
         }
         
         .name {
@@ -467,6 +510,86 @@
             background-color: #e68900;
             transform: translateY(-2px);
         }
+        
+        /* Стили для модального окна изображения */
+        #imageModal .modal-frame {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        #closeImageModal {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+        }
+        
+        #closeImageModal:hover {
+            background-color: #d32f2f;
+        }
+        
+        #productImage {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        #imageStatus {
+            margin-top: 15px;
+            font-size: 14px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        
+        #refreshImage {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        #refreshImage:hover {
+            background-color: #e68900;
+        }
+        
+        /* SVG иконка лупы */
+        .search-icon {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .search-icon path {
+            fill: #666;
+            transition: fill 0.3s;
+        }
+        
+        .search-image-btn:hover .search-icon path {
+            fill: #2196F3;
+        }
     </style>
 </head>
 <body>
@@ -566,6 +689,25 @@
             </div>
         </div>
     </div>
+
+    <!-- Модальное окно изображения товара -->
+    <div class="modal-overlay" id="imageModal">
+        <div class="modal-frame" style="max-width: 90%; max-height: 90%; text-align: center;">
+            <button class="close-modal" id="closeImageModal">✕</button>
+            <div id="imageContainer" style="max-height: 80vh; overflow: auto; padding: 20px;">
+                <img id="productImage" style="max-width: 100%; max-height: 70vh; border-radius: 8px;" />
+            </div>
+            <div id="imageStatus" style="margin-top: 10px; color: #666;"></div>
+            <button id="refreshImage" class="camera-btn" style="margin-top: 10px; display: none;">Повторить попытку</button>
+        </div>
+    </div>
+
+    <!-- SVG иконка лупы -->
+    <svg style="display: none;">
+        <symbol id="search-icon" viewBox="0 0 24 24" class="search-icon">
+            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </symbol>
+    </svg>
 
     <script>
         // Пример данных
@@ -18537,6 +18679,135 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             return html;
         }
 
+        // ===== ФУНКЦИОНАЛ ДЛЯ ПОЛУЧЕНИЯ ИЗОБРАЖЕНИЙ =====
+
+        // Функция для поиска изображения товара по артикулу
+        async function fetchProductImage(article) {
+            try {
+                // Формируем URL для поиска товара на сайте
+                const searchUrl = `https://kubanstar.ru/results,1-48?keyword=${encodeURIComponent(article)}&limitstart=0&option=com_virtuemart&view=category&virtuemart_category_id=0`;
+                
+                // Делаем запрос к странице поиска
+                const response = await fetch(searchUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const html = await response.text();
+                
+                // Ищем изображение на странице
+                const imageMatch = html.match(/images\/virtuemart\/product\/[^"\']+\.(jpg|jpeg|png|gif)/i);
+                
+                if (imageMatch) {
+                    const imagePath = imageMatch[0];
+                    return `https://kubanstar.ru/${imagePath}`;
+                }
+                
+                // Если не нашли в стандартном месте, ищем в других местах
+                const altImageMatch = html.match(/src=["']([^"']*\.(jpg|jpeg|png|gif))[^"']*["'][^>]*alt=["'][^"']*${escapeRegExp(article)}[^"']*["']/i);
+                
+                if (altImageMatch && altImageMatch[1]) {
+                    let imageUrl = altImageMatch[1];
+                    if (!imageUrl.startsWith('http')) {
+                        imageUrl = `https://kubanstar.ru/${imageUrl.replace(/^\//, '')}`;
+                    }
+                    return imageUrl;
+                }
+                
+                return null;
+            } catch (error) {
+                console.error('Ошибка при получении изображения:', error);
+                return null;
+            }
+        }
+
+        // Функция для отображения изображения товара
+        async function showProductImage(article) {
+            const modal = document.getElementById('imageModal');
+            const productImage = document.getElementById('productImage');
+            const imageStatus = document.getElementById('imageStatus');
+            const refreshButton = document.getElementById('refreshImage');
+            const closeButton = document.getElementById('closeImageModal');
+            
+            // Показываем модальное окно с индикатором загрузки
+            modal.style.display = 'flex';
+            productImage.style.display = 'none';
+            imageStatus.textContent = 'Загрузка изображения...';
+            imageStatus.style.color = '#2196F3';
+            refreshButton.style.display = 'none';
+            
+            // Добавляем обработчики событий
+            const closeHandler = () => {
+                modal.style.display = 'none';
+                productImage.src = '';
+            };
+            
+            const refreshHandler = () => {
+                showProductImage(article);
+            };
+            
+            closeButton.onclick = closeHandler;
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    closeHandler();
+                }
+            };
+            
+            refreshButton.onclick = refreshHandler;
+            
+            try {
+                // Получаем URL изображения
+                const imageUrl = await fetchProductImage(article);
+                
+                if (imageUrl) {
+                    productImage.src = imageUrl;
+                    productImage.onload = () => {
+                        productImage.style.display = 'block';
+                        imageStatus.textContent = `Изображение товара: ${article}`;
+                        imageStatus.style.color = '#4CAF50';
+                        refreshButton.style.display = 'none';
+                    };
+                    
+                    productImage.onerror = () => {
+                        productImage.style.display = 'none';
+                        imageStatus.textContent = 'Ошибка загрузки изображения';
+                        imageStatus.style.color = '#f44336';
+                        refreshButton.style.display = 'block';
+                    };
+                } else {
+                    productImage.style.display = 'none';
+                    imageStatus.textContent = 'Изображение отсутствует';
+                    imageStatus.style.color = '#ff9800';
+                    refreshButton.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                productImage.style.display = 'none';
+                imageStatus.textContent = 'Ошибка при получении изображения';
+                imageStatus.style.color = '#f44336';
+                refreshButton.style.display = 'block';
+            }
+        }
+
+        // Функция для создания кнопки с лупой
+        function createSearchImageButton(article) {
+            const button = document.createElement('button');
+            button.className = 'search-image-btn';
+            button.title = 'Найти изображение товара';
+            button.innerHTML = `
+                <svg class="search-icon">
+                    <use xlink:href="#search-icon"></use>
+                </svg>
+            `;
+            
+            button.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                showProductImage(article);
+            });
+            
+            return button;
+        }
+
         // Парсим данные
         const products = parseProductsData(productsData);
 
@@ -18770,12 +19041,26 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                     const productCard = document.createElement('div');
                     productCard.className = 'scan-result-card';
                     
+                    // Создаем контейнер для артикула и кнопки
+                    const articleContainer = document.createElement('div');
+                    articleContainer.style.display = 'flex';
+                    articleContainer.style.justifyContent = 'space-between';
+                    articleContainer.style.alignItems = 'center';
+                    articleContainer.style.marginBottom = '5px';
+                    
+                    const articleText = document.createElement('div');
+                    articleText.innerHTML = `<strong>Артикул:</strong> ${product.article}`;
+                    articleText.style.fontWeight = 'bold';
+                    articleText.style.color = '#333';
+                    
+                    const searchButton = createSearchImageButton(product.article);
+                    
+                    articleContainer.appendChild(articleText);
+                    articleContainer.appendChild(searchButton);
+                    
                     productCard.innerHTML = `
                         <div style="font-size: 12px; color: #666; margin-bottom: 5px;">
                             <strong>Штрихкод:</strong> ${product.barcode}
-                        </div>
-                        <div style="font-weight: bold; color: #333; margin-bottom: 5px;">
-                            <strong>Артикул:</strong> ${product.article}
                         </div>
                         <div style="font-size: 16px; color: #222; margin-bottom: 8px;">
                             ${product.name}
@@ -18785,6 +19070,9 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                         </div>
                         ${formatStockInfoModal(product.stocks, product.coefficients)}
                     `;
+                    
+                    // Вставляем контейнер с артикулом и кнопкой
+                    productCard.insertBefore(articleContainer, productCard.querySelector('div:first-child').nextSibling);
                     
                     resultProducts.appendChild(productCard);
                 });
@@ -18889,6 +19177,19 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             });
         }
 
+        // Функция для подсветки совпадений
+        function highlightMatch(text, searchTerm) {
+            if (!searchTerm) return text;
+            
+            const regex = new RegExp(`(${escapeRegExp(searchTerm)})`, 'gi');
+            return text.toString().replace(regex, '<mark>$1</mark>');
+        }
+
+        // Экранирование специальных символов для RegExp
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
         // Функция отображения результатов
         function displayResults(results, query, searchMode) {
             resultsContainer.innerHTML = '';
@@ -18940,32 +19241,36 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                     }
                 }
                 
+                // Создаем контейнер для артикула и кнопки
+                const articleContainer = document.createElement('div');
+                articleContainer.className = 'article';
+                
+                const articleContent = document.createElement('div');
+                articleContent.className = 'article-content';
+                articleContent.innerHTML = `Артикул: ${highlightedArticle}`;
+                
+                const searchButton = createSearchImageButton(product.article);
+                
+                articleContainer.appendChild(articleContent);
+                articleContainer.appendChild(searchButton);
+                
                 productCard.innerHTML = `
                     <div class="product-field barcode">Штрихкод: ${highlightedBarcode}</div>
-                    <div class="product-field article">Артикул: ${highlightedArticle}</div>
                     <div class="product-field name">${highlightedName}</div>
                     <div class="product-field price">
                         Цена: ${product.wholesalePrice} руб.
                     </div>
                     ${formatStockInfo(product.stocks, product.coefficients)}
                 `;
+                
+                // Вставляем контейнер с артикулом и кнопкой
+                const barcodeElement = productCard.querySelector('.barcode');
+                productCard.insertBefore(articleContainer, barcodeElement.nextSibling);
+                
                 resultsContainer.appendChild(productCard);
             });
 
             resultsContainer.style.display = 'block';
-        }
-
-        // Функция для подсветки совпадений
-        function highlightMatch(text, searchTerm) {
-            if (!searchTerm) return text;
-            
-            const regex = new RegExp(`(${escapeRegExp(searchTerm)})`, 'gi');
-            return text.toString().replace(regex, '<mark>$1</mark>');
-        }
-
-        // Экранирование специальных символов для RegExp
-        function escapeRegExp(string) {
-            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
         // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
