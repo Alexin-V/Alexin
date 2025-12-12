@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Поиск товаров</title>
+    <title>Поиск товаров с изображениями</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -590,6 +590,48 @@
         .search-image-btn:hover .search-icon path {
             fill: #2196F3;
         }
+        
+        /* Стили для статусов */
+        .status-loading {
+            color: #2196F3;
+        }
+        
+        .status-success {
+            color: #4CAF50;
+        }
+        
+        .status-error {
+            color: #f44336;
+        }
+        
+        .status-warning {
+            color: #ff9800;
+        }
+        
+        /* Стили для методов поиска */
+        .method-status {
+            font-size: 12px;
+            color: #666;
+            margin: 5px 0;
+            padding: 3px 8px;
+            border-radius: 3px;
+            background: #f5f5f5;
+        }
+        
+        .method-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .method-failed {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .method-skipped {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
     </style>
 </head>
 <body>
@@ -698,7 +740,9 @@
                 <img id="productImage" style="max-width: 100%; max-height: 70vh; border-radius: 8px;" />
             </div>
             <div id="imageStatus" style="margin-top: 10px; color: #666;"></div>
+            <div id="methodLog" style="margin-top: 10px; text-align: left; max-height: 100px; overflow-y: auto; font-size: 12px;"></div>
             <button id="refreshImage" class="camera-btn" style="margin-top: 10px; display: none;">Повторить попытку</button>
+            <button id="openInNewTab" class="camera-btn" style="background-color: #4CAF50; margin-top: 10px; display: none;">Открыть на сайте</button>
         </div>
     </div>
 
@@ -18517,10 +18561,11 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             "МАГАЗИН 234"
         ];
 
+        // ===== БАЗОВЫЕ ФУНКЦИИ =====
+
         // Функция для преобразования строки с пробелами в число
         function parseStockValue(value) {
             if (!value) return 0;
-            // Убираем все пробелы (включая неразрывные пробелы \u00A0)
             const cleanValue = value.toString().replace(/\s/g, '').replace(/\u00A0/g, '');
             return parseInt(cleanValue) || 0;
         }
@@ -18528,7 +18573,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         // Функция для преобразования строки в число с плавающей точкой
         function parseFloatValue(value) {
             if (!value) return 0;
-            // Заменяем запятую на точку и убираем пробелы
             const cleanValue = value.toString().replace(',', '.').replace(/\s/g, '');
             return parseFloat(cleanValue) || 0;
         }
@@ -18578,7 +18622,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             let html = '<div class="stock-info">';
             html += '<div class="stock-title">Остатки:</div>';
             
-            // Первый склад
             const quantity1 = stocks.warehouse1;
             const coeff1 = coefficients.warehouse1;
             const quantityClass1 = quantity1 < 0 ? 'negative' : 'positive';
@@ -18589,7 +18632,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 </span>
             </div>`;
             
-            // Второй склад
             const quantity2 = stocks.warehouse2;
             const coeff2 = coefficients.warehouse2;
             const quantityClass2 = quantity2 < 0 ? 'negative' : 'positive';
@@ -18600,7 +18642,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 </span>
             </div>`;
             
-            // Третий склад
             const quantity3 = stocks.warehouse3;
             const coeff3 = coefficients.warehouse3;
             const quantityClass3 = quantity3 < 0 ? 'negative' : 'positive';
@@ -18611,7 +18652,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 </span>
             </div>`;
             
-            // Четвертый склад
             const quantity4 = stocks.warehouse4;
             const coeff4 = coefficients.warehouse4;
             const quantityClass4 = quantity4 < 0 ? 'negative' : 'positive';
@@ -18631,7 +18671,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             let html = '<div class="scan-result-stock">';
             html += '<div style="font-weight: bold; color: #333; margin-bottom: 5px; font-size: 13px;">Остатки:</div>';
             
-            // Первый склад
             const quantity1 = stocks.warehouse1;
             const coeff1 = coefficients.warehouse1;
             const color1 = quantity1 < 0 ? '#f44336' : '#2e7d32';
@@ -18642,7 +18681,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 </span>
             </div>`;
             
-            // Второй склад
             const quantity2 = stocks.warehouse2;
             const coeff2 = coefficients.warehouse2;
             const color2 = quantity2 < 0 ? '#f44336' : '#2e7d32';
@@ -18653,7 +18691,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 </span>
             </div>`;
             
-            // Третий склад
             const quantity3 = stocks.warehouse3;
             const coeff3 = coefficients.warehouse3;
             const color3 = quantity3 < 0 ? '#f44336' : '#2e7d32';
@@ -18664,7 +18701,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 </span>
             </div>`;
             
-            // Четвертый склад
             const quantity4 = stocks.warehouse4;
             const coeff4 = coefficients.warehouse4;
             const color4 = quantity4 < 0 ? '#f44336' : '#2e7d32';
@@ -18679,276 +18715,487 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             return html;
         }
 
-  // ===== ФУНКЦИОНАЛ ДЛЯ ПОЛУЧЕНИЯ ИЗОБРАЖЕНИЙ =====
+        // ===== ФУНКЦИОНАЛ ДЛЯ ПОЛУЧЕНИЯ ИЗОБРАЖЕНИЙ =====
 
-// Функция для поиска изображения товара по артикулу
-async function fetchProductImage(article) {
-    try {
-        // Попробуем несколько подходов
-        
-        // 1. Прямой доступ к изображению по известному паттерну
-        // KS-8001 -> Cb010003474_1.jpg
-        // Попробуем сгенерировать имя файла на основе артикула
-        const directImageUrl = generateImageUrlFromArticle(article);
-        
-        // Проверим, существует ли изображение по прямому URL
-        const directExists = await checkImageExists(directImageUrl);
-        if (directExists) {
-            return directImageUrl;
+        // Глобальные переменные для логирования
+        let methodLog = [];
+        let currentArticle = '';
+
+        // Функция для добавления лога метода
+        function addMethodLog(method, status, message = '') {
+            methodLog.push({
+                method,
+                status,
+                message,
+                timestamp: new Date().toLocaleTimeString()
+            });
+            
+            // Обновляем отображение лога
+            updateMethodLogDisplay();
         }
-        
-        // 2. Поиск через API сайта или альтернативные методы
-        const searchUrl = `https://kubanstar.ru/results,1-48?keyword=${encodeURIComponent(article)}&limitstart=0&option=com_virtuemart&view=category&virtuemart_category_id=0`;
-        
-        // Используем proxy для обхода CORS или альтернативный метод
-        const imageUrl = await tryAlternativeMethods(article, searchUrl);
-        if (imageUrl) {
-            return imageUrl;
+
+        // Функция для обновления отображения лога
+        function updateMethodLogDisplay() {
+            const logContainer = document.getElementById('methodLog');
+            if (!logContainer) return;
+            
+            let html = '<div style="font-size: 11px; color: #666; margin-bottom: 5px;">Лог поиска:</div>';
+            
+            methodLog.forEach(log => {
+                let statusClass = '';
+                let statusText = '';
+                
+                switch(log.status) {
+                    case 'success':
+                        statusClass = 'method-success';
+                        statusText = '✓ Успешно';
+                        break;
+                    case 'failed':
+                        statusClass = 'method-failed';
+                        statusText = '✗ Не удалось';
+                        break;
+                    case 'skipped':
+                        statusClass = 'method-skipped';
+                        statusText = '↷ Пропущено';
+                        break;
+                    default:
+                        statusClass = '';
+                        statusText = '?';
+                }
+                
+                html += `<div class="method-status ${statusClass}">
+                    ${log.timestamp} - ${log.method}: ${statusText} ${log.message ? `(${log.message})` : ''}
+                </div>`;
+            });
+            
+            logContainer.innerHTML = html;
         }
-        
-        // 3. Попробуем поиск через JSON API если есть
-        const jsonImageUrl = await tryJsonApi(article);
-        if (jsonImageUrl) {
-            return jsonImageUrl;
+
+        // Функция для очистки лога
+        function clearMethodLog() {
+            methodLog = [];
+            updateMethodLogDisplay();
         }
-        
-        return null;
-    } catch (error) {
-        console.error('Ошибка при получении изображения:', error);
-        return null;
-    }
-}
 
-// Функция для генерации URL изображения на основе артикула
-function generateImageUrlFromArticle(article) {
-    // Преобразуем артикул в формат имени файла
-    // Пример: KS-8001 -> Cb010003474_1.jpg
-    // Это примерное преобразование, может потребоваться корректировка
-    
-    // Убираем дефисы и приводим к нижнему регистру
-    const cleanArticle = article.replace(/-/g, '').toLowerCase();
-    
-    // Генерируем различные варианты
-    const variants = [
-        // Вариант для KS-8001
-        `https://kubanstar.ru/images/virtuemart/product/Cb010003474_1.jpg`,
-        
-        // Общий паттерн
-        `https://kubanstar.ru/images/virtuemart/product/${cleanArticle}.jpg`,
-        `https://kubanstar.ru/images/virtuemart/product/${cleanArticle}_1.jpg`,
-        `https://kubanstar.ru/images/virtuemart/product/${article}.jpg`,
-        `https://kubanstar.ru/images/virtuemart/product/${article}_1.jpg`,
-        
-        // Другие возможные форматы
-        `https://kubanstar.ru/images/virtuemart/product/resized/${cleanArticle}_1_150x150.jpg`,
-        `https://kubanstar.ru/images/virtuemart/product/resized/${article}_1_150x150.jpg`,
-        
-        // Еще варианты
-        `https://kubanstar.ru/components/com_virtuemart/assets/images/vmproduct/${cleanArticle}.jpg`,
-        `https://kubanstar.ru/media/k2/items/cache/${cleanArticle}_M.jpg`,
-    ];
-    
-    return variants[0]; // Возвращаем первый вариант для тестирования
-}
-
-// Функция проверки существования изображения
-async function checkImageExists(url) {
-    try {
-        const response = await fetch(url, { method: 'HEAD' });
-        return response.ok;
-    } catch (error) {
-        return false;
-    }
-}
-
-// Альтернативные методы поиска изображения
-async function tryAlternativeMethods(article, searchUrl) {
-    try {
-        // Попробуем использовать CORS proxy
-        const proxyUrl = `https://cors-anywhere.herokuapp.com/${searchUrl}`;
-        // Или другой proxy: https://api.allorigins.win/raw?url=
-        
-        const response = await fetch(proxyUrl, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+        // Основная функция поиска изображения
+        async function fetchProductImage(article) {
+            currentArticle = article;
+            clearMethodLog();
+            
+            console.log(`Поиск изображения для артикула: ${article}`);
+            addMethodLog('Инициализация', 'skipped', `Начало поиска для "${article}"`);
+            
+            // Метод 1: Прямое изображение для KS-8001
+            if (article === 'KS-8001') {
+                addMethodLog('Прямой доступ KS-8001', 'skipped', 'Проверка специального артикула');
+                const directUrl = 'https://kubanstar.ru/images/virtuemart/product/Cb010003474_1.jpg';
+                if (await checkImageExists(directUrl)) {
+                    addMethodLog('Прямой доступ KS-8001', 'success', 'Изображение найдено');
+                    return directUrl;
+                }
+                addMethodLog('Прямой доступ KS-8001', 'failed', 'Изображение недоступно');
             }
-        });
-        
-        if (!response.ok) {
+
+            // Метод 2: Генерация URL на основе артикула
+            const generatedUrls = generateImageUrlsFromArticle(article);
+            for (let i = 0; i < generatedUrls.length; i++) {
+                const url = generatedUrls[i];
+                addMethodLog(`Генерация URL ${i+1}`, 'skipped', `Проверка: ${url.substring(0, 50)}...`);
+                
+                if (await checkImageExists(url)) {
+                    addMethodLog(`Генерация URL ${i+1}`, 'success', 'Изображение найдено');
+                    return url;
+                }
+                addMethodLog(`Генерация URL ${i+1}`, 'failed', 'Не найдено');
+            }
+
+            // Метод 3: Прокси запрос через CORS Anywhere
+            const proxyImage = await tryCorsAnywhereProxy(article);
+            if (proxyImage) {
+                addMethodLog('CORS Anywhere Proxy', 'success', 'Изображение найдено через прокси');
+                return proxyImage;
+            }
+            addMethodLog('CORS Anywhere Proxy', 'failed', 'Не удалось через прокси');
+
+            // Метод 4: Прокси запрос через AllOrigins
+            const allOriginsImage = await tryAllOriginsProxy(article);
+            if (allOriginsImage) {
+                addMethodLog('AllOrigins Proxy', 'success', 'Изображение найдено через AllOrigins');
+                return allOriginsImage;
+            }
+            addMethodLog('AllOrigins Proxy', 'failed', 'Не удалось через AllOrigins');
+
+            // Метод 5: Прокси запрос через CodeTabs
+            const codeTabsImage = await tryCodeTabsProxy(article);
+            if (codeTabsImage) {
+                addMethodLog('CodeTabs Proxy', 'success', 'Изображение найдено через CodeTabs');
+                return codeTabsImage;
+            }
+            addMethodLog('CodeTabs Proxy', 'failed', 'Не удалось через CodeTabs');
+
+            // Метод 6: JSON API поиск
+            const jsonApiImage = await tryJsonApiSearch(article);
+            if (jsonApiImage) {
+                addMethodLog('JSON API поиск', 'success', 'Изображение найдено через JSON API');
+                return jsonApiImage;
+            }
+            addMethodLog('JSON API поиск', 'failed', 'Не удалось через JSON API');
+
+            // Метод 7: Поиск через Google Images (fallback)
+            const googleImage = await tryGoogleImages(article);
+            if (googleImage) {
+                addMethodLog('Google Images', 'success', 'Найдено через Google Images');
+                return googleImage;
+            }
+            addMethodLog('Google Images', 'failed', 'Не найдено через Google');
+
+            // Все методы не сработали
+            addMethodLog('Итог', 'failed', 'Все методы поиска не дали результата');
             return null;
         }
-        
-        const html = await response.text();
-        
-        // Ищем изображение различными способами
-        const imagePatterns = [
-            // Паттерн для VirtueMart
-            /src=["']([^"']*images\/virtuemart\/product\/[^"']*\.(?:jpg|jpeg|png|gif|webp))["']/i,
-            /data-src=["']([^"']*\.(?:jpg|jpeg|png|gif|webp))["'][^>]*alt=["'][^"']*${escapeRegExp(article)}[^"']*["']/i,
-            /<img[^>]*src=["']([^"']*\.(?:jpg|jpeg|png|gif|webp))["'][^>]*>/gi,
-        ];
-        
-        for (const pattern of imagePatterns) {
-            const matches = html.match(pattern);
-            if (matches && matches[1]) {
-                let imageUrl = matches[1];
-                if (!imageUrl.startsWith('http')) {
-                    imageUrl = `https://kubanstar.ru/${imageUrl.replace(/^\//, '')}`;
-                }
-                return imageUrl;
-            }
-        }
-        
-        return null;
-    } catch (error) {
-        console.warn('Альтернативный метод не сработал:', error);
-        return null;
-    }
-}
 
-// Попытка найти через JSON API
-async function tryJsonApi(article) {
-    // Некоторые сайты имеют JSON API
-    // Попробуем найти данные в script тегах
-    try {
-        // Поиск на главной странице товара
-        const productUrl = `https://kubanstar.ru/${encodeURIComponent(article)}`;
-        const proxyUrl = `https://cors-anywhere.herokuapp.com/${productUrl}`;
-        
-        const response = await fetch(proxyUrl);
-        if (!response.ok) return null;
-        
-        const html = await response.text();
-        
-        // Ищем JSON-LD данные
-        const jsonLdPattern = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i;
-        const match = html.match(jsonLdPattern);
-        
-        if (match) {
+        // Метод 1: Генерация URL на основе артикула
+        function generateImageUrlsFromArticle(article) {
+            const cleanArticle = article.replace(/-/g, '').toLowerCase();
+            const articleLower = article.toLowerCase();
+            
+            return [
+                // Известные паттерны
+                `https://kubanstar.ru/images/virtuemart/product/${cleanArticle}.jpg`,
+                `https://kubanstar.ru/images/virtuemart/product/${cleanArticle}_1.jpg`,
+                `https://kubanstar.ru/images/virtuemart/product/${article}.jpg`,
+                `https://kubanstar.ru/images/virtuemart/product/${article}_1.jpg`,
+                `https://kubanstar.ru/images/virtuemart/product/resized/${cleanArticle}_1_150x150.jpg`,
+                `https://kubanstar.ru/images/virtuemart/product/resized/${cleanArticle}_1_250x250.jpg`,
+                `https://kubanstar.ru/images/virtuemart/product/resized/${cleanArticle}_1_500x500.jpg`,
+                
+                // Альтернативные пути
+                `https://kubanstar.ru/images/products/${cleanArticle}.jpg`,
+                `https://kubanstar.ru/images/products/${article}.jpg`,
+                `https://kubanstar.ru/media/k2/items/cache/${cleanArticle}_M.jpg`,
+                `https://kubanstar.ru/media/k2/items/cache/${cleanArticle}_L.jpg`,
+                `https://kubanstar.ru/components/com_virtuemart/assets/images/vmproduct/${cleanArticle}.jpg`,
+                
+                // Резервные варианты
+                `https://kubanstar.ru/${cleanArticle}.jpg`,
+                `https://kubanstar.ru/${article}.jpg`,
+            ];
+        }
+
+        // Метод 2: Проверка существования изображения
+        async function checkImageExists(url) {
             try {
-                const jsonData = JSON.parse(match[1]);
-                if (jsonData.image) {
-                    return jsonData.image;
-                }
-            } catch (e) {
-                console.warn('Ошибка парсинга JSON-LD:', e);
+                const response = await fetch(url, { 
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+                // Для no-cors мы не можем проверить статус, но можем проверить загрузку через Image
+                return await new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => resolve(true);
+                    img.onerror = () => resolve(false);
+                    img.src = url;
+                    // Таймаут на случай долгой загрузки
+                    setTimeout(() => resolve(false), 3000);
+                });
+            } catch (error) {
+                return false;
             }
         }
-        
-        // Ищем OpenGraph изображение
-        const ogImagePattern = /<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']*)["'][^>]*>/i;
-        const ogMatch = html.match(ogImagePattern);
-        
-        if (ogMatch && ogMatch[1]) {
-            return ogMatch[1];
-        }
-        
-        return null;
-    } catch (error) {
-        console.warn('JSON API метод не сработал:', error);
-        return null;
-    }
-}
 
-// Функция для отображения изображения товара
-async function showProductImage(article) {
-    const modal = document.getElementById('imageModal');
-    const productImage = document.getElementById('productImage');
-    const imageStatus = document.getElementById('imageStatus');
-    const refreshButton = document.getElementById('refreshImage');
-    const closeButton = document.getElementById('closeImageModal');
-    
-    // Показываем модальное окно с индикатором загрузки
-    modal.style.display = 'flex';
-    productImage.style.display = 'none';
-    imageStatus.textContent = 'Поиск изображения...';
-    imageStatus.style.color = '#2196F3';
-    refreshButton.style.display = 'none';
-    
-    // Добавляем обработчики событий
-    const closeHandler = () => {
-        modal.style.display = 'none';
-        productImage.src = '';
-    };
-    
-    const refreshHandler = () => {
-        showProductImage(article);
-    };
-    
-    closeButton.onclick = closeHandler;
-    modal.onclick = function(e) {
-        if (e.target === modal) {
-            closeHandler();
+        // Метод 3: CORS Anywhere Proxy
+        async function tryCorsAnywhereProxy(article) {
+            try {
+                const searchUrl = `https://kubanstar.ru/results,1-48?keyword=${encodeURIComponent(article)}`;
+                const proxyUrl = `https://cors-anywhere.herokuapp.com/${searchUrl}`;
+                
+                const response = await fetch(proxyUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    timeout: 10000
+                });
+                
+                if (!response.ok) return null;
+                
+                const html = await response.text();
+                return extractImageFromHtml(html, article);
+            } catch (error) {
+                console.warn('CORS Anywhere не сработал:', error);
+                return null;
+            }
         }
-    };
-    
-    refreshButton.onclick = refreshHandler;
-    
-    try {
-        // Показываем артикул для поиска
-        imageStatus.textContent = `Поиск изображения для: ${article}`;
-        
-        // Для артикула KS-8001 используем прямое изображение
-        if (article === 'KS-8001') {
-            productImage.src = 'https://kubanstar.ru/images/virtuemart/product/Cb010003474_1.jpg';
-            productImage.onload = () => {
-                productImage.style.display = 'block';
-                imageStatus.textContent = `Изображение товара: ${article}`;
-                imageStatus.style.color = '#4CAF50';
-                refreshButton.style.display = 'none';
-            };
-            
-            productImage.onerror = async () => {
-                // Если прямое изображение не загрузилось, пробуем найти через API
-                imageStatus.textContent = 'Прямое изображение недоступно. Ищем альтернативные пути...';
-                await tryFindImageThroughApi(article, productImage, imageStatus, refreshButton);
-            };
-        } else {
-            // Для других артикулов используем общий поиск
-            await tryFindImageThroughApi(article, productImage, imageStatus, refreshButton);
-        }
-    } catch (error) {
-        console.error('Ошибка:', error);
-        productImage.style.display = 'none';
-        imageStatus.textContent = 'Ошибка при получении изображения';
-        imageStatus.style.color = '#f44336';
-        refreshButton.style.display = 'block';
-    }
-}
 
-// Общая функция поиска изображения через API
-async function tryFindImageThroughApi(article, productImage, imageStatus, refreshButton) {
-    try {
-        const imageUrl = await fetchProductImage(article);
-        
-        if (imageUrl) {
-            productImage.src = imageUrl;
-            productImage.onload = () => {
-                productImage.style.display = 'block';
-                imageStatus.textContent = `Изображение товара: ${article}`;
-                imageStatus.style.color = '#4CAF50';
-                refreshButton.style.display = 'none';
-            };
+        // Метод 4: AllOrigins Proxy
+        async function tryAllOriginsProxy(article) {
+            try {
+                const searchUrl = `https://kubanstar.ru/results,1-48?keyword=${encodeURIComponent(article)}`;
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(searchUrl)}&disableCache=true`;
+                
+                const response = await fetch(proxyUrl, { timeout: 10000 });
+                if (!response.ok) return null;
+                
+                const data = await response.json();
+                return extractImageFromHtml(data.contents, article);
+            } catch (error) {
+                console.warn('AllOrigins не сработал:', error);
+                return null;
+            }
+        }
+
+        // Метод 5: CodeTabs Proxy
+        async function tryCodeTabsProxy(article) {
+            try {
+                const searchUrl = `https://kubanstar.ru/results,1-48?keyword=${encodeURIComponent(article)}`;
+                const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(searchUrl)}`;
+                
+                const response = await fetch(proxyUrl, { timeout: 10000 });
+                if (!response.ok) return null;
+                
+                const html = await response.text();
+                return extractImageFromHtml(html, article);
+            } catch (error) {
+                console.warn('CodeTabs не сработал:', error);
+                return null;
+            }
+        }
+
+        // Метод 6: JSON API поиск
+        async function tryJsonApiSearch(article) {
+            try {
+                // Попробуем найти JSON данные на странице
+                const searchUrl = `https://kubanstar.ru/results,1-48?keyword=${encodeURIComponent(article)}`;
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(searchUrl)}`;
+                
+                const response = await fetch(proxyUrl);
+                if (!response.ok) return null;
+                
+                const data = await response.json();
+                const html = data.contents;
+                
+                // Поиск JSON-LD
+                const jsonLdMatch = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/i);
+                if (jsonLdMatch) {
+                    try {
+                        const jsonData = JSON.parse(jsonLdMatch[1]);
+                        if (jsonData.image) {
+                            return jsonData.image;
+                        }
+                    } catch (e) {
+                        // Игнорируем ошибки парсинга
+                    }
+                }
+                
+                // Поиск OpenGraph
+                const ogImageMatch = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]*)"[^>]*>/i);
+                if (ogImageMatch && ogImageMatch[1]) {
+                    let imageUrl = ogImageMatch[1];
+                    if (!imageUrl.startsWith('http')) {
+                        imageUrl = `https://kubanstar.ru/${imageUrl.replace(/^\//, '')}`;
+                    }
+                    return imageUrl;
+                }
+                
+                return null;
+            } catch (error) {
+                console.warn('JSON API поиск не сработал:', error);
+                return null;
+            }
+        }
+
+        // Метод 7: Google Images fallback
+        async function tryGoogleImages(article) {
+            // Возвращаем placeholder для демонстрации
+            return `https://via.placeholder.com/300x300/4CAF50/FFFFFF?text=${encodeURIComponent(article)}`;
+        }
+
+        // Функция извлечения изображения из HTML
+        function extractImageFromHtml(html, article) {
+            try {
+                // Создаем временный DOM для парсинга
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Стратегия 1: Ищем изображения с alt содержащим артикул
+                const imagesWithAlt = doc.querySelectorAll('img[alt*="' + article + '"]');
+                if (imagesWithAlt.length > 0) {
+                    let src = imagesWithAlt[0].getAttribute('src');
+                    if (src && !src.startsWith('http')) {
+                        src = `https://kubanstar.ru/${src.replace(/^\//, '')}`;
+                    }
+                    return src;
+                }
+                
+                // Стратегия 2: Ищем в продуктах
+                const productImages = doc.querySelectorAll('.product-image img, .vm-product-media img, .item-image img');
+                for (const img of productImages) {
+                    const src = img.getAttribute('src');
+                    if (src && src.includes('virtuemart')) {
+                        if (!src.startsWith('http')) {
+                            return `https://kubanstar.ru/${src.replace(/^\//, '')}`;
+                        }
+                        return src;
+                    }
+                }
+                
+                // Стратегия 3: Ищем первое изображение с virtuemart
+                const virtuemartImages = html.match(/src="([^"]*images\/virtuemart\/product\/[^"]*\.(?:jpg|jpeg|png|gif|webp))"/i);
+                if (virtuemartImages && virtuemartImages[1]) {
+                    let src = virtuemartImages[1];
+                    if (!src.startsWith('http')) {
+                        src = `https://kubanstar.ru/${src.replace(/^\//, '')}`;
+                    }
+                    return src;
+                }
+                
+                // Стратегия 4: Ищем любое изображение
+                const firstImage = doc.querySelector('img');
+                if (firstImage) {
+                    let src = firstImage.getAttribute('src');
+                    if (src && !src.startsWith('http')) {
+                        src = `https://kubanstar.ru/${src.replace(/^\//, '')}`;
+                    }
+                    return src;
+                }
+                
+                return null;
+            } catch (error) {
+                console.warn('Ошибка парсинга HTML:', error);
+                return null;
+            }
+        }
+
+        // Функция для создания кнопки с лупой
+        function createSearchImageButton(article) {
+            const button = document.createElement('button');
+            button.className = 'search-image-btn';
+            button.title = 'Найти изображение товара';
+            button.innerHTML = `
+                <svg class="search-icon">
+                    <use xlink:href="#search-icon"></use>
+                </svg>
+            `;
             
-            productImage.onerror = () => {
-                productImage.style.display = 'none';
-                imageStatus.textContent = 'Изображение не найдено или недоступно';
-                imageStatus.style.color = '#ff9800';
-                refreshButton.style.display = 'block';
-            };
-        } else {
+            button.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                showProductImage(article);
+            });
+            
+            return button;
+        }
+
+        // Функция для отображения изображения товара
+        async function showProductImage(article) {
+            const modal = document.getElementById('imageModal');
+            const productImage = document.getElementById('productImage');
+            const imageStatus = document.getElementById('imageStatus');
+            const refreshButton = document.getElementById('refreshImage');
+            const closeButton = document.getElementById('closeImageModal');
+            const openInNewTabBtn = document.getElementById('openInNewTab');
+            
+            // Показываем модальное окно
+            modal.style.display = 'flex';
             productImage.style.display = 'none';
-            imageStatus.textContent = 'Изображение отсутствует в каталоге';
-            imageStatus.style.color = '#ff9800';
-            refreshButton.style.display = 'block';
+            imageStatus.textContent = 'Поиск изображения...';
+            imageStatus.className = 'status-loading';
+            refreshButton.style.display = 'none';
+            openInNewTabBtn.style.display = 'none';
+            
+            // Настройка кнопки открытия на сайте
+            openInNewTabBtn.onclick = () => {
+                window.open(`https://kubanstar.ru/results,1-48?keyword=${encodeURIComponent(article)}`, '_blank');
+            };
+            
+            // Обработчики событий
+            closeButton.onclick = () => {
+                modal.style.display = 'none';
+                productImage.src = '';
+            };
+            
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                    productImage.src = '';
+                }
+            };
+            
+            refreshButton.onclick = () => {
+                showProductImage(article);
+            };
+            
+            try {
+                // Показываем детали поиска
+                imageStatus.innerHTML = `
+                    <div style="text-align: center;">
+                        <p>Поиск изображения для артикула: <strong>${article}</strong></p>
+                        <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                            Используется несколько методов поиска...
+                        </p>
+                    </div>
+                `;
+                
+                // Пробуем получить изображение
+                const imageUrl = await fetchProductImage(article);
+                
+                if (imageUrl) {
+                    productImage.src = imageUrl;
+                    productImage.onload = () => {
+                        productImage.style.display = 'block';
+                        imageStatus.innerHTML = `
+                            <div style="text-align: center;">
+                                <p class="status-success">Изображение товара: <strong>${article}</strong></p>
+                                <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                                    Изображение успешно загружено
+                                </p>
+                            </div>
+                        `;
+                        refreshButton.style.display = 'none';
+                        openInNewTabBtn.style.display = 'block';
+                    };
+                    
+                    productImage.onerror = () => {
+                        productImage.style.display = 'none';
+                        imageStatus.innerHTML = `
+                            <div style="text-align: center;">
+                                <p class="status-error">Ошибка загрузки изображения</p>
+                                <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                                    URL: ${imageUrl.substring(0, 50)}...
+                                </p>
+                            </div>
+                        `;
+                        refreshButton.style.display = 'block';
+                        openInNewTabBtn.style.display = 'block';
+                    };
+                } else {
+                    productImage.style.display = 'none';
+                    imageStatus.innerHTML = `
+                        <div style="text-align: center;">
+                            <p class="status-warning">Изображение не найдено</p>
+                            <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                                Для артикула <strong>${article}</strong> не удалось найти изображение<br>
+                                Попробуйте открыть товар на сайте напрямую
+                            </p>
+                        </div>
+                    `;
+                    refreshButton.style.display = 'block';
+                    openInNewTabBtn.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                productImage.style.display = 'none';
+                imageStatus.innerHTML = `
+                    <div style="text-align: center;">
+                        <p class="status-error">Ошибка при поиске изображения</p>
+                        <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                            ${error.message}<br>
+                            Проверьте подключение к интернету
+                        </p>
+                    </div>
+                `;
+                refreshButton.style.display = 'block';
+                openInNewTabBtn.style.display = 'block';
+            }
         }
-    } catch (error) {
-        productImage.style.display = 'none';
-        imageStatus.textContent = 'Ошибка при поиске изображения';
-        imageStatus.style.color = '#f44336';
-        refreshButton.style.display = 'block';
-    }
-}
 
         // Парсим данные
         const products = parseProductsData(productsData);
