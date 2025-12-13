@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -19,6 +19,42 @@
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             text-align: center;
+        }
+        
+        /* Стили для комбинированного поиска */
+        .combined-search-fields {
+            display: none;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .combined-field {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .combined-field label {
+            display: block;
+            text-align: left;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .combined-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        
+        .combined-input:focus {
+            border-color: #4CAF50;
+            outline: none;
         }
         
         .search-input {
@@ -566,7 +602,7 @@
             transform: translateY(-2px);
         }
         
-        /* Стили для кнопки изображения */
+        /* Стили для кнопки изображения - увеличенная в 1.5 раза */
         .image-button {
             background: none;
             border: none;
@@ -575,12 +611,12 @@
             margin-left: 10px;
             border-radius: 50%;
             transition: all 0.3s;
-            width: 28px;
-            height: 28px;
+            width: 42px; /* Увеличен на 50% */
+            height: 42px; /* Увеличен на 50% */
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 24px; /* Увеличен на 50% */
         }
         
         .image-button:hover {
@@ -603,25 +639,59 @@
 <body>
     <div class="search-container">
         <h2>Поиск товаров</h2>
+        
+        <!-- Основное поле поиска (для всех режимов кроме комбинированного) -->
         <input type="text" 
                class="search-input" 
                id="searchInput" 
-               placeholder="Введите артикул, штрихкод, наименование или комбинацию через / ..."
+               placeholder="Введите артикул для поиска..."
                autocomplete="off">
+        
+        <!-- Поля для комбинированного поиска -->
+        <div class="combined-search-fields" id="combinedSearchFields">
+            <div class="combined-field">
+                <label for="articleInput">Артикул:</label>
+                <input type="text" 
+                       class="combined-input" 
+                       id="articleInput" 
+                       placeholder="Часть артикула..."
+                       autocomplete="off">
+            </div>
+            <div class="combined-field">
+                <label for="nameInput">Наименование:</label>
+                <input type="text" 
+                       class="combined-input" 
+                       id="nameInput" 
+                       placeholder="Часть наименования..."
+                       autocomplete="off">
+            </div>
+            <div class="combined-field">
+                <label for="barcodeInput">Штрихкод:</label>
+                <input type="text" 
+                       class="combined-input" 
+                       id="barcodeInput" 
+                       placeholder="Часть штрихкода..."
+                       autocomplete="off">
+            </div>
+        </div>
         
         <!-- Блок выбора режима поиска -->
         <div class="search-mode-selector">
             <div class="mode-option">
-                <input type="radio" id="modeGeneral" name="searchMode" class="mode-radio" value="general" checked>
-                <label for="modeGeneral" class="mode-label">Общий</label>
-            </div>
-            <div class="mode-option">
-                <input type="radio" id="modeArticle" name="searchMode" class="mode-radio" value="article">
+                <input type="radio" id="modeArticle" name="searchMode" class="mode-radio" value="article" checked>
                 <label for="modeArticle" class="mode-label">Артикул</label>
             </div>
             <div class="mode-option">
                 <input type="radio" id="modeBarcode" name="searchMode" class="mode-radio" value="barcode">
                 <label for="modeBarcode" class="mode-label">Штрихкод</label>
+            </div>
+            <div class="mode-option">
+                <input type="radio" id="modeName" name="searchMode" class="mode-radio" value="name">
+                <label for="modeName" class="mode-label">Наименование</label>
+            </div>
+            <div class="mode-option">
+                <input type="radio" id="modeCombined" name="searchMode" class="mode-radio" value="combined">
+                <label for="modeCombined" class="mode-label">Комбинированный</label>
             </div>
         </div>
         
@@ -634,8 +704,7 @@
             </button>
         </div>
         
-        <div class="search-hint">Поиск по артикулу, штрихкоду и наименованию товара</div>
-        <div class="search-hint">Для комбинированного поиска используйте символ / (например: маркер/423) - первая часть в наименовании, вторая в артикуле</div>
+        <div class="search-hint" id="searchHint">Поиск по артикулу товара</div>
         <div class="barcode-supported">
             Поддерживаемые форматы: 
             <span class="barcode-format">EAN-13</span>
@@ -20971,14 +21040,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
 ОК000001530;TS-XLQ-6H;Набор машин в коробке;1490,00;1490,00;;;;;;;;;;;
 ОК000001531;TS-2202F;Интерактивная игрушка "Заяц на торте";340,00;340,00;;;;;;;;;;Ok000001531_1;`;
 
-        // Названия складов
-        const warehouseNames = [
-            "УРАЛЬСКАЯ 97",
-            "ОСНОВНОЙ СКЛАД", 
-            "ТОРГОВЫЙ ЗАЛ Шевченко 139",
-            "МАГАЗИН 234"
-        ];
-
         // ===== ФУНКЦИИ ДЛЯ ДАННЫХ =====
         
         function parseStockValue(value) {
@@ -21104,7 +21165,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             
             modal.innerHTML = `
                 <div class="modal-frame" style="max-width: 90%; max-height: 90%;">
-                    <button class="close-modal" onclick="this.closest('.modal-overlay').style.display='none'">✕</button>
                     <div style="text-align: center; padding: 20px;">
                         <h3 style="margin-bottom: 20px;">${product.article} - ${product.name}</h3>
                         <div style="max-height: 70vh; overflow: auto; margin: 20px 0;">
@@ -21112,13 +21172,11 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                                 `<img src="${imageUrl}" 
                                       style="max-width: 100%; max-height: 60vh; border-radius: 8px;"
                                       onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❌</text></svg>'; this.alt='Ошибка загрузки'; this.style.border='2px solid #f44336';">
-                                 <div style="margin-top: 10px; font-size: 12px; color: #666;">
-                                    URL: ${imageUrl}
-                                 </div>` : 
+                                 ` : 
                                 `<div style="padding: 40px; color: #999;">
                                     <div style="font-size: 48px; margin-bottom: 20px;">🖼️</div>
-                                    <div>Изображение не найдено</div>
-                                    <div style="font-size: 12px; margin-top: 10px;">Код: ${imageCode || 'не указан'}</div>
+                                    <div style="font-size: 18px; font-weight: bold; color: #666;">Изображение не найдено или отсутствует</div>
+                                    <div style="font-size: 12px; margin-top: 10px; color: #999;">Код изображения: ${imageCode || 'не указан'}</div>
                                  </div>`}
                         </div>
                         <div style="margin-top: 15px;">
@@ -21259,29 +21317,52 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
 
         function getCurrentSearchMode() {
             const selectedRadio = document.querySelector('input[name="searchMode"]:checked');
-            return selectedRadio ? selectedRadio.value : 'general';
+            return selectedRadio ? selectedRadio.value : 'article'; // По умолчанию артикул
         }
 
         // Функция для получения отображаемого названия режима поиска
         function getSearchModeDisplayName(mode) {
             switch(mode) {
-                case 'general': return 'общий';
                 case 'article': return 'по артикулу';
                 case 'barcode': return 'по штрихкоду';
-                default: return 'обычный';
+                case 'name': return 'по наименованию';
+                case 'combined': return 'комбинированный';
+                default: return 'по артикулу';
             }
         }
 
         // Функция комбинированного поиска
-        function performCombinedSearch(parts) {
+        function performCombinedSearch(articlePart, namePart, barcodePart) {
             return products.filter(product => {
-                const nameMatch = parts[0] ? 
-                    product.name.toLowerCase().includes(parts[0].toLowerCase()) : false;
+                let matches = 0;
+                let totalConditions = 0;
                 
-                const articleMatch = parts[1] ? 
-                    product.article.toLowerCase().includes(parts[1].toLowerCase()) : false;
-
-                return nameMatch && articleMatch;
+                // Проверяем артикул
+                if (articlePart && articlePart.trim() !== '') {
+                    totalConditions++;
+                    if (product.article.toLowerCase().includes(articlePart.toLowerCase())) {
+                        matches++;
+                    }
+                }
+                
+                // Проверяем наименование
+                if (namePart && namePart.trim() !== '') {
+                    totalConditions++;
+                    if (product.name.toLowerCase().includes(namePart.toLowerCase())) {
+                        matches++;
+                    }
+                }
+                
+                // Проверяем штрихкод
+                if (barcodePart && barcodePart.trim() !== '') {
+                    totalConditions++;
+                    if (product.barcode.includes(barcodePart)) {
+                        matches++;
+                    }
+                }
+                
+                // Возвращаем true если все заполненные условия выполнены
+                return totalConditions > 0 && matches === totalConditions;
             });
         }
 
@@ -21295,11 +21376,11 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                     case 'barcode':
                         return product.barcode.includes(searchTerm);
                     
-                    case 'general':
+                    case 'name':
+                        return product.name.toLowerCase().includes(searchTerm.toLowerCase());
+                    
                     default:
-                        return product.article.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                               product.barcode.includes(searchTerm) ||
-                               product.name.toLowerCase().includes(searchTerm.toLowerCase());
+                        return product.article.toLowerCase().includes(searchTerm.toLowerCase());
                 }
             });
         }
@@ -21314,26 +21395,31 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             let highlightedArticle = product.article;
             let highlightedBarcode = '';
             
-            if (searchMode === 'комбинированный' && query.includes('/')) {
-                const parts = query.split('/').map(part => part.trim()).filter(part => part);
-                
-                if (parts[0]) {
-                    highlightedName = highlightMatch(product.name, parts[0]);
+            // Подсветка в зависимости от режима поиска
+            if (searchMode === 'комбинированный') {
+                // Для комбинированного поиска подсвечиваем все что найдено
+                if (query.article) {
+                    highlightedArticle = highlightMatch(product.article, query.article);
                 }
-                if (parts[1]) {
-                    highlightedArticle = highlightMatch(product.article, parts[1]);
+                if (query.name) {
+                    highlightedName = highlightMatch(product.name, query.name);
+                }
+                if (query.barcode) {
+                    if (product.count > 1) {
+                        highlightedBarcode = createMultipleBarcodesHTML(product.barcodes, query.barcode);
+                    } else {
+                        highlightedBarcode = highlightMatch(product.barcode, query.barcode);
+                    }
                 }
             } else {
-                const currentMode = getCurrentSearchMode();
-                
-                if (currentMode === 'general' || currentMode === 'article') {
+                // Для простого поиска
+                if (searchMode === 'по артикулу' || searchMode === 'комбинированный') {
                     highlightedArticle = highlightMatch(product.article, query);
                 }
-                if (currentMode === 'general') {
+                if (searchMode === 'по наименованию' || searchMode === 'комбинированный') {
                     highlightedName = highlightMatch(product.name, query);
                 }
-                if (currentMode === 'general' || currentMode === 'barcode') {
-                    // Для штрихкодов в обычном поиске
+                if (searchMode === 'по штрихкоду') {
                     if (product.count > 1) {
                         highlightedBarcode = createMultipleBarcodesHTML(product.barcodes, query);
                     } else {
@@ -21342,19 +21428,10 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 }
             }
             
-            // Для штрихкодов в режиме поиска по штрихкоду
-            if (searchMode === 'по штрихкоду' || getCurrentSearchMode() === 'barcode') {
-                if (product.count > 1) {
-                    highlightedBarcode = createMultipleBarcodesHTML(product.barcodes, query);
-                } else {
-                    highlightedBarcode = highlightMatch(product.barcode, query);
-                }
-            }
-            
             // Если штрихкод еще не заполнен, показываем обычный текст
             if (!highlightedBarcode) {
                 if (product.count > 1) {
-                    highlightedBarcode = createMultipleBarcodesHTML(product.barcodes, query);
+                    highlightedBarcode = createMultipleBarcodesHTML(product.barcodes, '');
                 } else {
                     highlightedBarcode = product.barcode;
                 }
@@ -21363,7 +21440,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             // Создаем HTML карточки
             const container = document.createElement('div');
             
-            // Строка с артикулом и кнопкой изображения
+            // Строка с артикулом и кнопкой изображения (увеличенная)
             const articleRow = document.createElement('div');
             articleRow.className = 'article';
             articleRow.innerHTML = `Артикул: ${highlightedArticle}`;
@@ -21490,30 +21567,35 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
 
         // Основная функция поиска
         function searchProducts() {
-            const query = searchInput.value.trim();
             const searchMode = getCurrentSearchMode();
             
-            if (!query) {
-                resultsContainer.style.display = 'none';
-                return;
-            }
-
             let results = [];
-            let displaySearchMode = '';
+            let query = '';
+            let displaySearchMode = getSearchModeDisplayName(searchMode);
 
-            if (query.includes('/') && searchMode === 'general') {
-                const parts = query.split('/').map(part => part.trim()).filter(part => part);
+            if (searchMode === 'combined') {
+                // Комбинированный поиск
+                const articlePart = articleInput.value.trim();
+                const namePart = nameInput.value.trim();
+                const barcodePart = barcodeInput.value.trim();
                 
-                if (parts.length >= 2) {
-                    displaySearchMode = 'комбинированный';
-                    results = performCombinedSearch(parts);
-                } else {
-                    results = performSimpleSearch(query.replace('/',''), searchMode);
-                    displaySearchMode = getSearchModeDisplayName(searchMode);
-                }
+                query = {
+                    article: articlePart,
+                    name: namePart,
+                    barcode: barcodePart
+                };
+                
+                results = performCombinedSearch(articlePart, namePart, barcodePart);
             } else {
+                // Простой поиск
+                query = searchInput.value.trim();
+                
+                if (!query) {
+                    resultsContainer.style.display = 'none';
+                    return;
+                }
+                
                 results = performSimpleSearch(query, searchMode);
-                displaySearchMode = getSearchModeDisplayName(searchMode);
             }
 
             displayResults(results, query, displaySearchMode);
@@ -21708,6 +21790,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             
             stopCameraStream();
             document.getElementById('modeBarcode').checked = true;
+            updateSearchUI(); // Обновляем интерфейс
             
             const cleanCode = code.toString().trim();
             searchInput.value = cleanCode;
@@ -21853,6 +21936,11 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         const scanButton = document.getElementById('scanButton');
         const resultsContainer = document.getElementById('resultsContainer');
         const searchModeRadios = document.querySelectorAll('input[name="searchMode"]');
+        const searchHint = document.getElementById('searchHint');
+        const combinedSearchFields = document.getElementById('combinedSearchFields');
+        const articleInput = document.getElementById('articleInput');
+        const nameInput = document.getElementById('nameInput');
+        const barcodeInput = document.getElementById('barcodeInput');
         
         // Модальные окна
         const cameraModal = document.getElementById('cameraModal');
@@ -21877,6 +21965,39 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         let scanInterval = null;
         let lastScannedCode = '';
 
+        // Функция обновления интерфейса в зависимости от выбранного режима поиска
+        function updateSearchUI() {
+            const mode = getCurrentSearchMode();
+            
+            // Обновляем подсказку
+            switch(mode) {
+                case 'article':
+                    searchHint.textContent = 'Поиск по артикулу товара';
+                    searchInput.placeholder = 'Введите артикул для поиска...';
+                    break;
+                case 'barcode':
+                    searchHint.textContent = 'Поиск по штрихкоду товара';
+                    searchInput.placeholder = 'Введите штрихкод для поиска...';
+                    break;
+                case 'name':
+                    searchHint.textContent = 'Поиск по наименованию товара';
+                    searchInput.placeholder = 'Введите наименование для поиска...';
+                    break;
+                case 'combined':
+                    searchHint.textContent = 'Комбинированный поиск - заполните нужные поля';
+                    break;
+            }
+            
+            // Показываем/скрываем поля комбинированного поиска
+            if (mode === 'combined') {
+                combinedSearchFields.style.display = 'flex';
+                searchInput.style.display = 'none';
+            } else {
+                combinedSearchFields.style.display = 'none';
+                searchInput.style.display = 'block';
+            }
+        }
+
         // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
 
         // Обработчик клика на кнопку "Найти"
@@ -21884,6 +22005,25 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
 
         // Обработчик нажатия Enter в поле ввода
         searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                searchProducts();
+            }
+        });
+
+        // Обработчики Enter для полей комбинированного поиска
+        articleInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                searchProducts();
+            }
+        });
+
+        nameInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                searchProducts();
+            }
+        });
+
+        barcodeInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 searchProducts();
             }
@@ -21945,7 +22085,10 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         // Обработчик изменения режима поиска
         searchModeRadios.forEach(radio => {
             radio.addEventListener('change', function() {
-                if (searchInput.value.trim()) {
+                updateSearchUI();
+                if (searchInput.value.trim() || 
+                    (getCurrentSearchMode() === 'combined' && 
+                     (articleInput.value.trim() || nameInput.value.trim() || barcodeInput.value.trim()))) {
                     searchProducts();
                 }
             });
@@ -21953,6 +22096,9 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
 
         // Фокусировка на поле поиска при загрузке
         window.addEventListener('load', function() {
+            // Устанавливаем режим "Артикул" по умолчанию
+            document.getElementById('modeArticle').checked = true;
+            updateSearchUI();
             searchInput.focus();
             setupPlatformUI();
         });
@@ -21970,8 +22116,13 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         document.addEventListener('keydown', function(e) {
             if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
                 e.preventDefault();
-                searchInput.focus();
-                searchInput.select();
+                const mode = getCurrentSearchMode();
+                if (mode === 'combined') {
+                    articleInput.focus();
+                } else {
+                    searchInput.focus();
+                    searchInput.select();
+                }
             }
         });
     </script>
