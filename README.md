@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -412,9 +412,9 @@
             font-size: 11px;
         }
         
-        /* Модальное окно результатов */
+        /* Модальное окно результатов сканирования */
         .scan-result-frame {
-            max-width: 500px;
+            max-width: 550px;
             animation: successSlide 0.5s ease-out;
         }
         
@@ -477,6 +477,43 @@
             background-color: #fff3cd;
             border-radius: 5px;
             border-left: 3px solid #ffc107;
+        }
+        
+        .scan-result-barcodes {
+            margin-top: 8px;
+            padding: 6px;
+            background-color: #e8f5e9;
+            border-radius: 5px;
+            border-left: 3px solid #4CAF50;
+            cursor: pointer;
+        }
+        
+        .scan-result-barcodes-title {
+            font-weight: bold;
+            color: #2e7d32;
+            margin-bottom: 3px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .scan-result-barcodes-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .scan-result-barcodes-list.expanded {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .scan-result-barcode-item {
+            padding: 2px 0;
+            font-family: monospace;
+            font-size: 11px;
+            border-bottom: 1px solid #d0f0c0;
         }
         
         .scan-result-actions {
@@ -662,7 +699,7 @@
     </div>
 
     <script>
-        // Пример данных
+        // Пример данных с поддержкой изображений
         const productsData = `6080010075148;KS-8001;Набор для творчества "ЧАСТИЧНАЯ ВЫКЛАДКА СТРАЗАМИ" 10*15 в пакете;70,00;70,00;7;;10;2;0,035;;0,050;0,010;;Cb010003474_1;
 ЦБ010003475;Q-А998;Парусник на радиоуправлении на батарейках с рулём.;355,00;355,00;;;8;;;;0,167;;;;
 6132588301003;TS-MY88301;Конструктор " Гоночная машина";1780,00;1780,00;;;1;1;;;0,167;0,167;У/Ж2;KS-402-24;
@@ -20934,7 +20971,38 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
 ОК000001530;TS-XLQ-6H;Набор машин в коробке;1490,00;1490,00;;;;;;;;;;;
 ОК000001531;TS-2202F;Интерактивная игрушка "Заяц на торте";340,00;340,00;;;;;;;;;;Ok000001531_1;`;
 
-        // ===== ОСНОВНЫЕ ФУНКЦИИ =====
+        // Названия складов
+        const warehouseNames = [
+            "УРАЛЬСКАЯ 97",
+            "ОСНОВНОЙ СКЛАД", 
+            "ТОРГОВЫЙ ЗАЛ Шевченко 139",
+            "МАГАЗИН 234"
+        ];
+
+        // ===== ФУНКЦИИ ДЛЯ ДАННЫХ =====
+        
+        function parseStockValue(value) {
+            if (!value) return 0;
+            const cleanValue = value.toString().replace(/\s/g, '').replace(/\u00A0/g, '');
+            return parseInt(cleanValue) || 0;
+        }
+
+        function parseFloatValue(value) {
+            if (!value) return 0;
+            const cleanValue = value.toString().replace(',', '.').replace(/\s/g, '');
+            return parseFloat(cleanValue) || 0;
+        }
+
+        function formatNumber(num) {
+            if (num < 0) {
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+            }
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        }
+
+        function formatCoefficient(num) {
+            return num.toFixed(3).replace('.', ',');
+        }
 
         // Функция для парсинга данных
         function parseProductsData(data) {
@@ -20983,147 +21051,35 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             return products;
         }
 
-        function parseStockValue(value) {
-            if (!value) return 0;
-            const cleanValue = value.toString().replace(/\s/g, '').replace(/\u00A0/g, '');
-            return parseInt(cleanValue) || 0;
+        // Функция для создания ключа товара (без штрихкода)
+        function createProductKey(product) {
+            return `${product.article}|${product.name}|${product.wholesalePrice}|${product.retailPrice}|${product.stocks.warehouse1}|${product.stocks.warehouse2}|${product.stocks.warehouse3}|${product.stocks.warehouse4}|${product.coefficients.warehouse1}|${product.coefficients.warehouse2}|${product.coefficients.warehouse3}|${product.coefficients.warehouse4}|${product.storageLocation}|${product.imageCode}`;
         }
 
-        function parseFloatValue(value) {
-            if (!value) return 0;
-            const cleanValue = value.toString().replace(',', '.').replace(/\s/g, '');
-            return parseFloat(cleanValue) || 0;
-        }
-
-        function formatNumber(num) {
-            if (num < 0) {
-                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-            }
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-        }
-
-        function formatCoefficient(num) {
-            return num.toFixed(3).replace('.', ',');
+        // Функция для группировки товаров по ключу (без штрихкода)
+        function groupProductsByKey(products) {
+            const groups = {};
+            
+            products.forEach(product => {
+                const key = createProductKey(product);
+                
+                if (!groups[key]) {
+                    groups[key] = {
+                        ...product,
+                        barcodes: [product.barcode],
+                        count: 1
+                    };
+                } else {
+                    groups[key].barcodes.push(product.barcode);
+                    groups[key].count++;
+                }
+            });
+            
+            return Object.values(groups);
         }
 
         // ===== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ =====
         
-        // 1. Создать HTML для карточки товара (ВСЁ В ОДНОЙ ФУНКЦИИ)
-        function createProductCard(product, query, searchMode) {
-            const productCard = document.createElement('div');
-            productCard.className = 'product-card';
-            
-            // Подсветка совпадений
-            let highlightedBarcode = product.barcode;
-            let highlightedArticle = product.article;
-            let highlightedName = product.name;
-            
-            if (searchMode === 'barcode') {
-                highlightedBarcode = highlightMatch(product.barcode, query);
-            } else if (searchMode === 'article') {
-                highlightedArticle = highlightMatch(product.article, query);
-            } else {
-                highlightedBarcode = highlightMatch(product.barcode, query);
-                highlightedArticle = highlightMatch(product.article, query);
-                highlightedName = highlightMatch(product.name, query);
-            }
-            
-            // Создаем основной контейнер
-            const container = document.createElement('div');
-            
-            // Строка с артикулом и кнопкой
-            const articleRow = document.createElement('div');
-            articleRow.className = 'article';
-            articleRow.innerHTML = `Артикул: ${highlightedArticle}`;
-            
-            // Добавляем кнопку или текст
-            const hasImage = product.imageCode && product.imageCode.trim() !== '';
-            
-            if (hasImage) {
-                const imageButton = document.createElement('button');
-                imageButton.className = 'image-button';
-                imageButton.title = 'Показать изображение товара';
-                imageButton.innerHTML = '🖼️';
-                imageButton.onclick = function() {
-                    showProductImage(product);
-                };
-                articleRow.appendChild(imageButton);
-            } else {
-                const noImageSpan = document.createElement('span');
-                noImageSpan.className = 'no-image-text';
-                noImageSpan.textContent = '(без изображения)';
-                articleRow.appendChild(noImageSpan);
-            }
-            
-            // Добавляем остальной контент
-            container.innerHTML = `
-                <div class="product-field barcode">Штрихкод: ${highlightedBarcode}</div>
-                <div class="product-field name">${highlightedName}</div>
-                <div class="product-field price">
-                    Цена: ${product.wholesalePrice} руб.
-                </div>
-            `;
-            
-            // Вставляем строку с артикулом в начало
-            const articleField = document.createElement('div');
-            articleField.className = 'product-field';
-            articleField.appendChild(articleRow);
-            container.insertBefore(articleField, container.firstChild);
-            
-            // Добавляем остатки
-            const stockInfo = document.createElement('div');
-            stockInfo.innerHTML = `
-                <div class="stock-info">
-                    <div class="stock-title">Остатки:</div>
-                    <div class="stock-item">
-                        <span class="stock-name">Уральская 97:</span>
-                        <span class="stock-quantity ${product.stocks.warehouse1 < 0 ? 'negative' : 'positive'}">
-                            ${formatNumber(product.stocks.warehouse1)} шт. 
-                            <span class="box-coefficient">(${formatCoefficient(product.coefficients.warehouse1)} кор.)</span>
-                        </span>
-                    </div>
-                    <div class="stock-item">
-                        <span class="stock-name">ОСНОВНОЙ СКЛАД:</span>
-                        <span class="stock-quantity ${product.stocks.warehouse2 < 0 ? 'negative' : 'positive'}">
-                            ${formatNumber(product.stocks.warehouse2)} шт. 
-                            <span class="box-coefficient">(${formatCoefficient(product.coefficients.warehouse2)} кор.)</span>
-                        </span>
-                    </div>
-                    <div class="stock-item">
-                        <span class="stock-name">Шевченко 139:</span>
-                        <span class="stock-quantity ${product.stocks.warehouse3 < 0 ? 'negative' : 'positive'}">
-                            ${formatNumber(product.stocks.warehouse3)} шт. 
-                            <span class="box-coefficient">(${formatCoefficient(product.coefficients.warehouse3)} кор.)</span>
-                        </span>
-                    </div>
-                    <div class="stock-item">
-                        <span class="stock-name">МАГАЗИН 234:</span>
-                        <span class="stock-quantity ${product.stocks.warehouse4 < 0 ? 'negative' : 'positive'}">
-                            ${formatNumber(product.stocks.warehouse4)} шт. 
-                            <span class="box-coefficient">(${formatCoefficient(product.coefficients.warehouse4)} кор.)</span>
-                        </span>
-                    </div>
-                </div>
-            `;
-            
-            // Добавляем место хранения если есть
-            if (product.storageLocation && product.storageLocation.trim() !== '') {
-                stockInfo.innerHTML += `
-                    <div class="storage-location">
-                        <div class="storage-title">Место хранения:</div>
-                        <div class="storage-value">${product.storageLocation}</div>
-                    </div>
-                `;
-            }
-            
-            // Собираем всё вместе
-            productCard.appendChild(container);
-            productCard.appendChild(stockInfo);
-            
-            return productCard;
-        }
-        
-        // 2. Показать изображение товара
         function showProductImage(product) {
             // Создаем модальное окно
             const modal = document.createElement('div');
@@ -21197,21 +21153,342 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 }
             };
         }
-        
-        // 3. Подсветка совпадений
+
+        // ===== ФУНКЦИИ ДЛЯ ШТРИХКОДОВ =====
+
+        // Функция для создания HTML с несколькими штрихкодами
+        function createMultipleBarcodesHTML(barcodes, query) {
+            const uniqueBarcodes = [...new Set(barcodes)];
+            const barcodesCount = uniqueBarcodes.length;
+            
+            let html = `<span class="multiple-barcodes" onclick="showBarcodeTooltip(event, this)">Несколько (${barcodesCount})</span>`;
+            html += `<div class="barcode-tooltip">`;
+            html += `<div class="barcode-list">`;
+            
+            uniqueBarcodes.forEach(barcode => {
+                const highlightedBarcode = highlightMatch(barcode, query);
+                html += `<div class="barcode-item">${highlightedBarcode}</div>`;
+            });
+            
+            html += `</div>`;
+            html += `</div>`;
+            
+            return html;
+        }
+
+        // Функция для создания HTML списка штрихкодов для модального окна
+        function createBarcodesListHTML(barcodes, scannedCode) {
+            const uniqueBarcodes = [...new Set(barcodes)];
+            const barcodesCount = uniqueBarcodes.length;
+            
+            let html = `<div class="scan-result-barcodes" onclick="toggleBarcodesList(this)">`;
+            html += `<div class="scan-result-barcodes-title">`;
+            html += `<span>Штрихкоды (${barcodesCount}):</span>`;
+            html += `<span style="font-size: 10px; color: #666;">нажмите для просмотра</span>`;
+            html += `</div>`;
+            html += `<div class="scan-result-barcodes-list">`;
+            
+            // Выделяем отсканированный код
+            uniqueBarcodes.forEach(barcode => {
+                const isScanned = barcode === scannedCode;
+                const barcodeClass = isScanned ? 'style="color: #e74c3c; font-weight: bold;"' : '';
+                html += `<div class="scan-result-barcode-item" ${barcodeClass}>${barcode}${isScanned ? ' ✓' : ''}</div>`;
+            });
+            
+            html += `</div>`;
+            html += `</div>`;
+            
+            return html;
+        }
+
+        // Функция для показа/скрытия подсказки со штрихкодами
+        function showBarcodeTooltip(event, element) {
+            event.stopPropagation();
+            
+            // Скрываем все другие подсказки
+            document.querySelectorAll('.barcode-tooltip').forEach(tooltip => {
+                tooltip.style.display = 'none';
+            });
+            
+            const tooltip = element.nextElementSibling;
+            if (tooltip && tooltip.classList.contains('barcode-tooltip')) {
+                tooltip.style.display = 'block';
+                
+                // Позиционируем подсказку
+                const rect = element.getBoundingClientRect();
+                tooltip.style.position = 'fixed';
+                tooltip.style.left = Math.min(rect.left, window.innerWidth - 320) + 'px';
+                tooltip.style.top = (rect.bottom + 5) + 'px';
+                
+                // Закрытие при клике вне подсказки
+                const closeTooltip = (e) => {
+                    if (!tooltip.contains(e.target) && e.target !== element) {
+                        tooltip.style.display = 'none';
+                        document.removeEventListener('click', closeTooltip);
+                    }
+                };
+                
+                setTimeout(() => {
+                    document.addEventListener('click', closeTooltip);
+                }, 100);
+            }
+        }
+
+        // Функция для переключения списка штрихкодов в модальном окне
+        function toggleBarcodesList(element) {
+            const list = element.querySelector('.scan-result-barcodes-list');
+            list.classList.toggle('expanded');
+            
+            // Обновляем текст заголовка
+            const title = element.querySelector('.scan-result-barcodes-title span:last-child');
+            if (list.classList.contains('expanded')) {
+                title.textContent = 'нажмите для скрытия';
+            } else {
+                title.textContent = 'нажмите для просмотра';
+            }
+        }
+
+        // ===== ФУНКЦИИ ДЛЯ ПОИСКА И ОТОБРАЖЕНИЯ =====
+
+        // Функция для подсветки совпадений
         function highlightMatch(text, searchTerm) {
             if (!searchTerm || !text) return text;
             const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
             return text.toString().replace(regex, '<mark>$1</mark>');
         }
 
-        // ===== ФУНКЦИИ ПОИСКА =====
-        
         function getCurrentSearchMode() {
             const selectedRadio = document.querySelector('input[name="searchMode"]:checked');
             return selectedRadio ? selectedRadio.value : 'general';
         }
 
+        // Функция для получения отображаемого названия режима поиска
+        function getSearchModeDisplayName(mode) {
+            switch(mode) {
+                case 'general': return 'общий';
+                case 'article': return 'по артикулу';
+                case 'barcode': return 'по штрихкоду';
+                default: return 'обычный';
+            }
+        }
+
+        // Функция комбинированного поиска
+        function performCombinedSearch(parts) {
+            return products.filter(product => {
+                const nameMatch = parts[0] ? 
+                    product.name.toLowerCase().includes(parts[0].toLowerCase()) : false;
+                
+                const articleMatch = parts[1] ? 
+                    product.article.toLowerCase().includes(parts[1].toLowerCase()) : false;
+
+                return nameMatch && articleMatch;
+            });
+        }
+
+        // Функция простого поиска
+        function performSimpleSearch(searchTerm, mode) {
+            return products.filter(product => {
+                switch(mode) {
+                    case 'article':
+                        return product.article.toLowerCase().includes(searchTerm.toLowerCase());
+                    
+                    case 'barcode':
+                        return product.barcode.includes(searchTerm);
+                    
+                    case 'general':
+                    default:
+                        return product.article.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                               product.barcode.includes(searchTerm) ||
+                               product.name.toLowerCase().includes(searchTerm.toLowerCase());
+                }
+            });
+        }
+
+        // Создать карточку товара
+        function createProductCard(product, query, searchMode) {
+            const productCard = document.createElement('div');
+            productCard.className = 'product-card';
+            
+            // Определяем, что подсвечивать в зависимости от режима поиска
+            let highlightedName = product.name;
+            let highlightedArticle = product.article;
+            let highlightedBarcode = '';
+            
+            if (searchMode === 'комбинированный' && query.includes('/')) {
+                const parts = query.split('/').map(part => part.trim()).filter(part => part);
+                
+                if (parts[0]) {
+                    highlightedName = highlightMatch(product.name, parts[0]);
+                }
+                if (parts[1]) {
+                    highlightedArticle = highlightMatch(product.article, parts[1]);
+                }
+            } else {
+                const currentMode = getCurrentSearchMode();
+                
+                if (currentMode === 'general' || currentMode === 'article') {
+                    highlightedArticle = highlightMatch(product.article, query);
+                }
+                if (currentMode === 'general') {
+                    highlightedName = highlightMatch(product.name, query);
+                }
+                if (currentMode === 'general' || currentMode === 'barcode') {
+                    // Для штрихкодов в обычном поиске
+                    if (product.count > 1) {
+                        highlightedBarcode = createMultipleBarcodesHTML(product.barcodes, query);
+                    } else {
+                        highlightedBarcode = highlightMatch(product.barcode, query);
+                    }
+                }
+            }
+            
+            // Для штрихкодов в режиме поиска по штрихкоду
+            if (searchMode === 'по штрихкоду' || getCurrentSearchMode() === 'barcode') {
+                if (product.count > 1) {
+                    highlightedBarcode = createMultipleBarcodesHTML(product.barcodes, query);
+                } else {
+                    highlightedBarcode = highlightMatch(product.barcode, query);
+                }
+            }
+            
+            // Если штрихкод еще не заполнен, показываем обычный текст
+            if (!highlightedBarcode) {
+                if (product.count > 1) {
+                    highlightedBarcode = createMultipleBarcodesHTML(product.barcodes, query);
+                } else {
+                    highlightedBarcode = product.barcode;
+                }
+            }
+            
+            // Создаем HTML карточки
+            const container = document.createElement('div');
+            
+            // Строка с артикулом и кнопкой изображения
+            const articleRow = document.createElement('div');
+            articleRow.className = 'article';
+            articleRow.innerHTML = `Артикул: ${highlightedArticle}`;
+            
+            // Добавляем кнопку или текст для изображения
+            const hasImage = product.imageCode && product.imageCode.trim() !== '';
+            
+            if (hasImage) {
+                const imageButton = document.createElement('button');
+                imageButton.className = 'image-button';
+                imageButton.title = 'Показать изображение товара';
+                imageButton.innerHTML = '🖼️';
+                imageButton.onclick = function() {
+                    showProductImage(product);
+                };
+                articleRow.appendChild(imageButton);
+            } else {
+                const noImageSpan = document.createElement('span');
+                noImageSpan.className = 'no-image-text';
+                noImageSpan.textContent = '(без изображения)';
+                articleRow.appendChild(noImageSpan);
+            }
+            
+            // Основной контент
+            container.innerHTML = `
+                <div class="product-field barcode">Штрихкод: ${highlightedBarcode}</div>
+                <div class="product-field name">${highlightedName}</div>
+                <div class="product-field price">
+                    Цена: ${product.wholesalePrice} руб.
+                </div>
+            `;
+            
+            // Вставляем строку с артикулом в начало
+            const articleField = document.createElement('div');
+            articleField.className = 'product-field';
+            articleField.appendChild(articleRow);
+            container.insertBefore(articleField, container.firstChild);
+            
+            // Добавляем остатки
+            const stockInfo = document.createElement('div');
+            stockInfo.innerHTML = `
+                <div class="stock-info">
+                    <div class="stock-title">Остатки:</div>
+                    <div class="stock-item">
+                        <span class="stock-name">Уральская 97:</span>
+                        <span class="stock-quantity ${product.stocks.warehouse1 < 0 ? 'negative' : 'positive'}">
+                            ${formatNumber(product.stocks.warehouse1)} шт. 
+                            <span class="box-coefficient">(${formatCoefficient(product.coefficients.warehouse1)} кор.)</span>
+                        </span>
+                    </div>
+                    <div class="stock-item">
+                        <span class="stock-name">ОСНОВНОЙ СКЛАД:</span>
+                        <span class="stock-quantity ${product.stocks.warehouse2 < 0 ? 'negative' : 'positive'}">
+                            ${formatNumber(product.stocks.warehouse2)} шт. 
+                            <span class="box-coefficient">(${formatCoefficient(product.coefficients.warehouse2)} кор.)</span>
+                        </span>
+                    </div>
+                    <div class="stock-item">
+                        <span class="stock-name">Шевченко 139:</span>
+                        <span class="stock-quantity ${product.stocks.warehouse3 < 0 ? 'negative' : 'positive'}">
+                            ${formatNumber(product.stocks.warehouse3)} шт. 
+                            <span class="box-coefficient">(${formatCoefficient(product.coefficients.warehouse3)} кор.)</span>
+                        </span>
+                    </div>
+                    <div class="stock-item">
+                        <span class="stock-name">МАГАЗИН 234:</span>
+                        <span class="stock-quantity ${product.stocks.warehouse4 < 0 ? 'negative' : 'positive'}">
+                            ${formatNumber(product.stocks.warehouse4)} шт. 
+                            <span class="box-coefficient">(${formatCoefficient(product.coefficients.warehouse4)} кор.)</span>
+                        </span>
+                    </div>
+                </div>
+            `;
+            
+            // Добавляем место хранения если есть
+            if (product.storageLocation && product.storageLocation.trim() !== '') {
+                stockInfo.innerHTML += `
+                    <div class="storage-location">
+                        <div class="storage-title">Место хранения:</div>
+                        <div class="storage-value">${product.storageLocation}</div>
+                    </div>
+                `;
+            }
+            
+            // Собираем всё вместе
+            productCard.appendChild(container);
+            productCard.appendChild(stockInfo);
+            
+            return productCard;
+        }
+
+        // Отображение результатов
+        function displayResults(results, query, searchMode) {
+            resultsContainer.innerHTML = '';
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<div class="no-results">Товары не найдены</div>';
+                resultsContainer.style.display = 'block';
+                return;
+            }
+
+            // Группируем товары по ключу (без штрихкода)
+            const groupedResults = groupProductsByKey(results);
+            const totalCount = results.length;
+            const uniqueCount = groupedResults.length;
+
+            const countElement = document.createElement('div');
+            countElement.className = 'results-count';
+            countElement.textContent = `Найдено товаров: ${totalCount} (${uniqueCount} уникальных)`;
+            resultsContainer.appendChild(countElement);
+
+            const modeElement = document.createElement('div');
+            modeElement.className = 'search-mode';
+            modeElement.textContent = `Режим поиска: ${searchMode}`;
+            resultsContainer.appendChild(modeElement);
+
+            groupedResults.forEach(product => {
+                const productCard = createProductCard(product, query, searchMode);
+                resultsContainer.appendChild(productCard);
+            });
+
+            resultsContainer.style.display = 'block';
+        }
+
+        // Основная функция поиска
         function searchProducts() {
             const query = searchInput.value.trim();
             const searchMode = getCurrentSearchMode();
@@ -21222,59 +21499,347 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             }
 
             let results = [];
-            
+            let displaySearchMode = '';
+
             if (query.includes('/') && searchMode === 'general') {
                 const parts = query.split('/').map(part => part.trim()).filter(part => part);
+                
                 if (parts.length >= 2) {
-                    results = products.filter(product => {
-                        const nameMatch = parts[0] ? 
-                            product.name.toLowerCase().includes(parts[0].toLowerCase()) : false;
-                        const articleMatch = parts[1] ? 
-                            product.article.toLowerCase().includes(parts[1].toLowerCase()) : false;
-                        return nameMatch && articleMatch;
-                    });
+                    displaySearchMode = 'комбинированный';
+                    results = performCombinedSearch(parts);
+                } else {
+                    results = performSimpleSearch(query.replace('/',''), searchMode);
+                    displaySearchMode = getSearchModeDisplayName(searchMode);
                 }
             } else {
-                results = products.filter(product => {
-                    switch(searchMode) {
-                        case 'article':
-                            return product.article.toLowerCase().includes(query.toLowerCase());
-                        case 'barcode':
-                            return product.barcode.includes(query);
-                        case 'general':
-                        default:
-                            return product.article.toLowerCase().includes(query.toLowerCase()) ||
-                                   product.barcode.includes(query) ||
-                                   product.name.toLowerCase().includes(query.toLowerCase());
-                    }
-                });
+                results = performSimpleSearch(query, searchMode);
+                displaySearchMode = getSearchModeDisplayName(searchMode);
             }
 
-            displayResults(results, query, searchMode);
+            displayResults(results, query, displaySearchMode);
         }
 
-        function displayResults(results, query, searchMode) {
-            resultsContainer.innerHTML = '';
+        // ===== ФУНКЦИИ ДЛЯ СКАНИРОВАНИЯ ШТРИХКОДОВ =====
 
-            if (results.length === 0) {
-                resultsContainer.innerHTML = '<div class="no-results">Товары не найдены</div>';
-                resultsContainer.style.display = 'block';
+        // Проверяем iOS
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        }
+
+        // Проверяем Android
+        function isAndroid() {
+            return /Android/.test(navigator.userAgent);
+        }
+
+        // Проверяем поддержку BarcodeDetector API
+        function isBarcodeDetectorSupported() {
+            return ('BarcodeDetector' in window);
+        }
+
+        // Инициализируем BarcodeDetector
+        async function initBarcodeDetector() {
+            if (!isBarcodeDetectorSupported()) {
+                console.warn('BarcodeDetector API не поддерживается в этом браузере');
+                return null;
+            }
+            
+            try {
+                const formats = await BarcodeDetector.getSupportedFormats();
+                console.log('Поддерживаемые форматы:', formats);
+                
+                const supportedFormats = formats.filter(format => 
+                    ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_39', 'code_128', 'codabar'].includes(format)
+                );
+                
+                if (supportedFormats.length === 0) {
+                    console.warn('Нет поддержки нужных форматов штрихкодов');
+                    return null;
+                }
+                
+                barcodeDetector = new BarcodeDetector({ formats: supportedFormats });
+                return barcodeDetector;
+            } catch (error) {
+                console.error('Ошибка инициализации BarcodeDetector:', error);
+                return null;
+            }
+        }
+
+        // Проверяем, работает ли на HTTPS
+        function isHTTPS() {
+            return window.location.protocol === 'https:';
+        }
+
+        // Проверяем localhost
+        function isLocalhost() {
+            return window.location.hostname === 'localhost' || 
+                   window.location.hostname === '127.0.0.1' ||
+                   window.location.hostname === '';
+        }
+
+        // Проверяем, можно ли использовать камеру
+        function canUseCamera() {
+            return isHTTPS() || isLocalhost();
+        }
+
+        // Настройка интерфейса в зависимости от платформы
+        function setupPlatformUI() {
+            if (isIOS()) {
+                // Для iOS скрываем кнопку сканирования
+                scanButton.style.display = 'none';
+                searchButton.style.maxWidth = '300px';
+            } else if (isAndroid()) {
+                // Для Android показываем кнопку сканирования
+                scanButton.style.display = 'flex';
+                
+                // Инициализируем BarcodeDetector для Android
+                initBarcodeDetector();
+            } else {
+                // Для Desktop скрываем кнопку сканирования
+                scanButton.style.display = 'none';
+                searchButton.style.maxWidth = '300px';
+            }
+        }
+
+        // Открытие камеры для Android
+        async function openCamera() {
+            if (!isAndroid()) return;
+            
+            if (!canUseCamera()) {
+                alert('Для использования камеры браузера требуется HTTPS соединение.');
                 return;
             }
+            
+            if (!barcodeDetector) {
+                alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
+                return;
+            }
+            
+            try {
+                stopCameraStream();
+                
+                const constraints = {
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                };
+                
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                cameraVideo.srcObject = stream;
+                cameraModal.style.display = 'flex';
+                
+                await new Promise((resolve) => {
+                    cameraVideo.onloadedmetadata = () => {
+                        cameraVideo.play();
+                        resolve();
+                    };
+                });
+                
+                startBarcodeDetection();
+                
+            } catch (error) {
+                console.error('Ошибка доступа к камере:', error);
+                
+                let errorMessage = 'Не удалось получить доступ к камере. ';
+                
+                if (error.name === 'NotAllowedError') {
+                    errorMessage += 'Пожалуйста, разрешите доступ к камере в настройках браузера.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage += 'Камера не найдена.';
+                } else if (error.name === 'NotSupportedError') {
+                    errorMessage += 'Ваш браузер не поддерживает доступ к камере.';
+                } else if (error.name === 'NotReadableError') {
+                    errorMessage += 'Камера уже используется другим приложением.';
+                }
+                
+                alert(errorMessage);
+            }
+        }
 
-            // Заголовок с количеством
-            const countElement = document.createElement('div');
-            countElement.className = 'results-count';
-            countElement.textContent = `Найдено товаров: ${results.length}`;
-            resultsContainer.appendChild(countElement);
+        // Запуск распознавания штрихкодов
+        function startBarcodeDetection() {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            scanInterval = setInterval(async () => {
+                if (cameraVideo.readyState === cameraVideo.HAVE_ENOUGH_DATA) {
+                    canvas.width = cameraVideo.videoWidth;
+                    canvas.height = cameraVideo.videoHeight;
+                    
+                    context.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+                    
+                    try {
+                        const barcodes = await barcodeDetector.detect(canvas);
+                        
+                        if (barcodes && barcodes.length > 0) {
+                            const barcode = barcodes[0];
+                            handleScannedCode(barcode.rawValue);
+                            return;
+                        }
+                        
+                    } catch (error) {
+                        console.error('Ошибка детектирования штрихкода:', error);
+                    }
+                }
+            }, 300);
+        }
 
-            // Отображаем каждый товар
-            results.forEach(product => {
-                const productCard = createProductCard(product, query, searchMode);
-                resultsContainer.appendChild(productCard);
-            });
+        // Остановка потока камеры
+        function stopCameraStream() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            if (scanInterval) {
+                clearInterval(scanInterval);
+                scanInterval = null;
+            }
+            cameraVideo.srcObject = null;
+        }
 
-            resultsContainer.style.display = 'block';
+        // Обработка отсканированного кода
+        function handleScannedCode(code) {
+            if (!code || code.trim().length === 0) {
+                return;
+            }
+            
+            stopCameraStream();
+            document.getElementById('modeBarcode').checked = true;
+            
+            const cleanCode = code.toString().trim();
+            searchInput.value = cleanCode;
+            
+            const results = performSimpleSearch(cleanCode, 'barcode');
+            showScanResults(cleanCode, results);
+        }
+
+        // Показать результаты сканирования
+        function showScanResults(code, results) {
+            lastScannedCode = code;
+            
+            resultBarcode.textContent = code;
+            
+            if (results.length === 0) {
+                resultCount.textContent = 'Товары не найдены';
+                resultCount.style.color = '#f44336';
+                resultProducts.innerHTML = '<div class="scan-result-card" style="text-align: center; color: #666; font-style: italic;">По этому штрихкоду товары не найдены в базе данных</div>';
+            } else {
+                // Группируем товары для модального окна
+                const groupedResults = groupProductsByKey(results);
+                resultCount.textContent = `Найдено товаров: ${results.length} (${groupedResults.length} уникальных)`;
+                resultCount.style.color = '#4CAF50';
+                
+                resultProducts.innerHTML = '';
+                
+                groupedResults.forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'scan-result-card';
+                    
+                    // Определяем, есть ли изображение
+                    const hasImage = product.imageCode && product.imageCode.trim() !== '';
+                    const imageButtonHTML = hasImage ? 
+                        `<button class="image-button" style="margin-left: 10px;" onclick="showProductImage(${JSON.stringify(product).replace(/"/g, '&quot;')})">🖼️</button>` : 
+                        `<span class="no-image-text">(без изображения)</span>`;
+                    
+                    productCard.innerHTML = `
+                        <div style="font-size: 12px; color: #666; margin-bottom: 5px;">
+                            <strong>Штрихкод:</strong> ${product.count > 1 ? `Несколько (${product.count})` : product.barcode}
+                        </div>
+                        <div style="font-weight: bold; color: #333; margin-bottom: 5px; display: flex; align-items: center;">
+                            <strong>Артикул:</strong> ${product.article}
+                            ${imageButtonHTML}
+                        </div>
+                        <div style="font-size: 16px; color: #222; margin-bottom: 8px;">
+                            ${product.name}
+                        </div>
+                        <div style="font-size: 30px; color: #e74c3c; font-weight: bold;">
+                            Цена: ${product.wholesalePrice} руб.
+                        </div>
+                        ${formatStockInfoModal(product)}
+                    `;
+                    
+                    resultProducts.appendChild(productCard);
+                });
+            }
+            
+            cameraModal.style.display = 'none';
+            resultModal.style.display = 'flex';
+        }
+
+        // Функция для форматирования остатков для модального окна сканирования
+        function formatStockInfoModal(product) {
+            const stocks = product.stocks;
+            const coefficients = product.coefficients;
+            const storageLocation = product.storageLocation;
+            const barcodes = product.barcodes;
+            const scannedCode = lastScannedCode;
+            
+            let html = '<div class="scan-result-stock">';
+            html += '<div style="font-weight: bold; color: #333; margin-bottom: 5px; font-size: 13px;">Остатки:</div>';
+            
+            // Первый склад
+            const quantity1 = stocks.warehouse1;
+            const coeff1 = coefficients.warehouse1;
+            const color1 = quantity1 < 0 ? '#f44336' : '#2e7d32';
+            html += `<div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px;">
+                <span style="color: #555;">Уральская 97:</span>
+                <span style="color: ${color1}; font-weight: bold;">${formatNumber(quantity1)} шт. 
+                    <span style="color: #666; font-size: 11px;">(${formatCoefficient(coeff1)} кор.)</span>
+                </span>
+            </div>`;
+            
+            // Второй склад
+            const quantity2 = stocks.warehouse2;
+            const coeff2 = coefficients.warehouse2;
+            const color2 = quantity2 < 0 ? '#f44336' : '#2e7d32';
+            html += `<div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px;">
+                <span style="color: #555;">ОСНОВНОЙ СКЛАД:</span>
+                <span style="color: ${color2}; font-weight: bold;">${formatNumber(quantity2)} шт. 
+                    <span style="color: #666; font-size: 11px;">(${formatCoefficient(coeff2)} кор.)</span>
+                </span>
+            </div>`;
+            
+            // Третий склад
+            const quantity3 = stocks.warehouse3;
+            const coeff3 = coefficients.warehouse3;
+            const color3 = quantity3 < 0 ? '#f44336' : '#2e7d32';
+            html += `<div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px;">
+                <span style="color: #555;">Шевченко 139:</span>
+                <span style="color: ${color3}; font-weight: bold;">${formatNumber(quantity3)} шт. 
+                    <span style="color: #666; font-size: 11px;">(${formatCoefficient(coeff3)} кор.)</span>
+                </span>
+            </div>`;
+            
+            // Четвертый склад
+            const quantity4 = stocks.warehouse4;
+            const coeff4 = coefficients.warehouse4;
+            const color4 = quantity4 < 0 ? '#f44336' : '#2e7d32';
+            html += `<div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px;">
+                <span style="color: #555;">МАГАЗИН 234:</span>
+                <span style="color: ${color4}; font-weight: bold;">${formatNumber(quantity4)} шт. 
+                    <span style="color: #666; font-size: 11px;">(${formatCoefficient(coeff4)} кор.)</span>
+                </span>
+            </div>`;
+            
+            html += '</div>';
+            
+            // Добавляем список штрихкодов, если их несколько
+            if (barcodes && barcodes.length > 1) {
+                html += createBarcodesListHTML(barcodes, scannedCode);
+            }
+            
+            // Добавляем место хранения, если оно есть
+            if (storageLocation && storageLocation.trim() !== '') {
+                html += `<div class="scan-result-storage">
+                    <div style="font-weight: bold; color: #856404; margin-bottom: 3px; font-size: 12px;">Место хранения:</div>
+                    <div style="color: #333; font-weight: bold; font-size: 13px;">${storageLocation}</div>
+                </div>`;
+            }
+            
+            return html;
         }
 
         // ===== ИНИЦИАЛИЗАЦИЯ =====
@@ -21285,38 +21850,128 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         // Элементы DOM
         const searchInput = document.getElementById('searchInput');
         const searchButton = document.getElementById('searchButton');
+        const scanButton = document.getElementById('scanButton');
         const resultsContainer = document.getElementById('resultsContainer');
+        const searchModeRadios = document.querySelectorAll('input[name="searchMode"]');
         
+        // Модальные окна
+        const cameraModal = document.getElementById('cameraModal');
+        const resultModal = document.getElementById('resultModal');
+        const closeCameraModal = document.getElementById('closeCameraModal');
+        
+        // Элементы камеры
+        const cameraVideo = document.getElementById('cameraVideo');
+        const stopCameraBtn = document.getElementById('stopCamera');
+        
+        // Элементы результатов
+        const resultBarcode = document.getElementById('resultBarcode');
+        const resultCount = document.getElementById('resultCount');
+        const resultProducts = document.getElementById('resultProducts');
+        const continueScanBtn = document.getElementById('continueScanBtn');
+        const newSearchBtn = document.getElementById('newSearchBtn');
+        const closeResultBtn = document.getElementById('closeResultBtn');
+
+        // Переменные для работы с камерой
+        let stream = null;
+        let barcodeDetector = null;
+        let scanInterval = null;
+        let lastScannedCode = '';
+
+        // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
+
         // Обработчик клика на кнопку "Найти"
         searchButton.addEventListener('click', searchProducts);
-        
+
         // Обработчик нажатия Enter в поле ввода
         searchInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 searchProducts();
             }
         });
-        
+
+        // Обработчик клика на кнопку сканирования (только для Android)
+        scanButton.addEventListener('click', openCamera);
+
+        // Закрытие модального окна камеры
+        closeCameraModal.addEventListener('click', function() {
+            stopCameraStream();
+            cameraModal.style.display = 'none';
+        });
+
+        // Закрытие модального окна камеры при клике вне его
+        cameraModal.addEventListener('click', function(e) {
+            if (e.target === cameraModal) {
+                stopCameraStream();
+                cameraModal.style.display = 'none';
+            }
+        });
+
+        // Остановка камеры
+        stopCameraBtn.addEventListener('click', function() {
+            stopCameraStream();
+            cameraModal.style.display = 'none';
+        });
+
+        // Обработчики для модального окна результатов
+
+        // Продолжить сканирование
+        continueScanBtn.addEventListener('click', function() {
+            resultModal.style.display = 'none';
+            setTimeout(() => {
+                openCamera();
+            }, 300);
+        });
+
+        // Новый поиск
+        newSearchBtn.addEventListener('click', function() {
+            resultModal.style.display = 'none';
+            searchInput.value = lastScannedCode;
+            searchInput.focus();
+            searchProducts();
+        });
+
+        // Закрыть результаты
+        closeResultBtn.addEventListener('click', function() {
+            resultModal.style.display = 'none';
+        });
+
+        // Закрытие модального окна результатов при клике вне его
+        resultModal.addEventListener('click', function(e) {
+            if (e.target === resultModal) {
+                resultModal.style.display = 'none';
+            }
+        });
+
         // Обработчик изменения режима поиска
-        document.querySelectorAll('input[name="searchMode"]').forEach(radio => {
+        searchModeRadios.forEach(radio => {
             radio.addEventListener('change', function() {
                 if (searchInput.value.trim()) {
                     searchProducts();
                 }
             });
         });
-        
+
         // Фокусировка на поле поиска при загрузке
         window.addEventListener('load', function() {
             searchInput.focus();
+            setupPlatformUI();
         });
-        
-        // Обработчик Escape для очистки поиска
+
+        // Обработчик клавиши Escape для очистки поиска
         searchInput.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 this.value = '';
                 resultsContainer.style.display = 'none';
                 this.focus();
+            }
+        });
+
+        // Обработчик Ctrl+F для быстрого перехода к поиску
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                e.preventDefault();
+                searchInput.focus();
+                searchInput.select();
             }
         });
     </script>
