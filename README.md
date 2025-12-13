@@ -183,6 +183,8 @@
         .article {
             font-weight: bold;
             color: #333;
+            display: flex;
+            align-items: center;
         }
         
         .name {
@@ -558,12 +560,6 @@
             font-size: 12px;
             margin-left: 10px;
             font-style: italic;
-        }
-        
-        /* Убедитесь что article поле имеет правильное выравнивание */
-        .article {
-            display: flex;
-            align-items: center;
         }
     </style>
 </head>
@@ -20938,341 +20934,141 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
 ОК000001530;TS-XLQ-6H;Набор машин в коробке;1490,00;1490,00;;;;;;;;;;;
 ОК000001531;TS-2202F;Интерактивная игрушка "Заяц на торте";340,00;340,00;;;;;;;;;;Ok000001531_1;`;
 
-// Названия складов
-    const warehouseNames = [
-        "УРАЛЬСКАЯ 97",
-        "ОСНОВНОЙ СКЛАД", 
-        "ТОРГОВЫЙ ЗАЛ Шевченко 139",
-        "МАГАЗИН 234"
-    ];
+        // ===== ОСНОВНЫЕ ФУНКЦИИ =====
 
-    // Функция для преобразования строки с пробелами в число
-    function parseStockValue(value) {
-        if (!value) return 0;
-        // Убираем все пробелы
-        const cleanValue = value.toString().replace(/\s/g, '').replace(/\u00A0/g, '');
-        return parseInt(cleanValue) || 0;
-    }
-
-    // Функция для преобразования строки в число с плавающей точкой
-    function parseFloatValue(value) {
-        if (!value) return 0;
-        // Заменяем запятую на точку и убираем пробелы
-        const cleanValue = value.toString().replace(',', '.').replace(/\s/g, '');
-        return parseFloat(cleanValue) || 0;
-    }
-
-    // Функция для форматирования числа с разделителями тысяч
-    function formatNumber(num) {
-        if (num < 0) {
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-        }
-        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-    }
-
-    // Функция для форматирования числа с плавающей точкой (коэффициент коробки)
-    function formatCoefficient(num) {
-        return num.toFixed(3).replace('.', ',');
-    }
-
-    // ===== ФУНКЦИЯ ПАРСИНГА ДАННЫХ =====
-    function parseProductsData(data) {
-        const lines = data.trim().split('\n');
-        const products = [];
-        
-        for (const line of lines) {
-            if (!line.trim()) continue;
+        // Функция для парсинга данных
+        function parseProductsData(data) {
+            const lines = data.trim().split('\n');
+            const products = [];
             
-            const parts = line.split(';');
-            
-            // Последняя колонка - это код изображения (убираем точку с запятой в конце)
-            const imageCode = parts[14] ? parts[14].replace(';', '').trim() : '';
-            
-            products.push({
-                barcode: parts[0] || '',
-                article: parts[1] || '',
-                name: parts[2] || '',
-                wholesalePrice: parts[3] || '',
-                retailPrice: parts[4] || '',
-                stocks: {
-                    warehouse1: parseStockValue(parts[5]),
-                    warehouse2: parseStockValue(parts[6]),
-                    warehouse3: parseStockValue(parts[7]),
-                    warehouse4: parseStockValue(parts[8])
-                },
-                coefficients: {
-                    warehouse1: parseFloatValue(parts[9]),
-                    warehouse2: parseFloatValue(parts[10]),
-                    warehouse3: parseFloatValue(parts[11]),
-                    warehouse4: parseFloatValue(parts[12])
-                },
-                storageLocation: parts[13] || '',
-                imageCode: imageCode // Сохраняем код изображения
-            });
-        }
-        
-        return products;
-    }
-
-    // ===== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ =====
-    
-    // 1. Получить полный URL изображения
-    function getFullImageUrl(imageCode) {
-        if (!imageCode || imageCode.trim() === '') {
-            return null;
-        }
-        
-        const cleanCode = imageCode.trim();
-        // Если уже полный URL - возвращаем как есть
-        if (cleanCode.startsWith('http')) {
-            return cleanCode;
-        }
-        
-        // Если код в формате Cb010006278_1 - добавляем .jpg
-        let fileName = cleanCode;
-        if (!fileName.includes('.jpg') && !fileName.includes('.jpeg') && 
-            !fileName.includes('.png') && !fileName.includes('.gif')) {
-            fileName += '.jpg';
-        }
-        
-        // Формируем полный URL
-        return `https://kubanstar.ru/images/virtuemart/product/${fileName}`;
-    }
-    
-    // 2. Создать HTML для кнопки/текста изображения
-    function createImageElement(product) {
-        const hasImage = product.imageCode && product.imageCode.trim() !== '';
-        
-        if (!hasImage) {
-            const span = document.createElement('span');
-            span.className = 'no-image-text';
-            span.textContent = '(без изображения)';
-            return span;
-        }
-        
-        const button = document.createElement('button');
-        button.className = 'image-button';
-        button.title = 'Показать изображение товара';
-        button.innerHTML = '🖼️';
-        
-        button.onclick = function(e) {
-            e.stopPropagation();
-            showProductImage(product);
-        };
-        
-        return button;
-    }
-    
-    // 3. Создать модальное окно для изображения
-    function createImageModal() {
-        const modalHTML = `
-            <div class="modal-overlay" id="imageModal">
-                <div class="modal-frame" style="max-width: 90%; max-height: 90%;">
-                    <button class="close-modal" id="closeImageModal" style="position: absolute; top: 10px; right: 10px; z-index: 10;">✕</button>
-                    <div style="text-align: center; padding: 20px; position: relative;">
-                        <h3 id="imageModalTitle" style="margin-bottom: 20px;">Изображение товара</h3>
-                        <div id="imageContainer" style="max-height: 70vh; overflow: auto;">
-                            <img id="productImage" style="max-width: 100%; max-height: 60vh; border-radius: 8px;">
-                        </div>
-                        <div id="imageStatus" style="margin-top: 15px; padding: 10px; border-radius: 5px; background-color: #f8f9fa;"></div>
-                        <button id="openOnSite" class="camera-btn" style="background-color: #4CAF50; margin-top: 10px; display: none;">
-                            Открыть на сайте
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-    }
-    
-    // 4. Показать изображение товара
-    function showProductImage(product) {
-        // Создаем модальное окно если его нет
-        if (!document.getElementById('imageModal')) {
-            createImageModal();
-        }
-        
-        const modal = document.getElementById('imageModal');
-        const productImage = document.getElementById('productImage');
-        const imageStatus = document.getElementById('imageStatus');
-        const modalTitle = document.getElementById('imageModalTitle');
-        const closeButton = document.getElementById('closeImageModal');
-        const openOnSiteBtn = document.getElementById('openOnSite');
-        
-        // Показываем модальное окно
-        modal.style.display = 'flex';
-        productImage.style.display = 'none';
-        
-        // Устанавливаем заголовок
-        modalTitle.textContent = `${product.article} - ${product.name}`;
-        
-        // Получаем URL изображения
-        const imageUrl = getFullImageUrl(product.imageCode);
-        
-        if (!imageUrl) {
-            imageStatus.textContent = 'Нет данных об изображении';
-            imageStatus.style.color = '#ff9800';
-            return;
-        }
-        
-        imageStatus.textContent = 'Загрузка изображения...';
-        imageStatus.style.color = '#2196F3';
-        
-        // Пробуем загрузить изображение
-        productImage.src = imageUrl;
-        
-        productImage.onload = function() {
-            productImage.style.display = 'block';
-            imageStatus.textContent = `Изображение: ${product.article}`;
-            imageStatus.style.color = '#4CAF50';
-            openOnSiteBtn.style.display = 'none';
-        };
-        
-        productImage.onerror = function() {
-            productImage.style.display = 'none';
-            imageStatus.innerHTML = `
-                <div style="text-align: center;">
-                    <p style="color: #f44336;">Изображение не найдено</p>
-                    <p style="font-size: 12px; color: #666; margin-top: 5px;">
-                        URL: ${imageUrl}<br>
-                        Код: ${product.imageCode}
-                    </p>
-                </div>
-            `;
-            
-            // Кнопка для открытия на сайте
-            openOnSiteBtn.style.display = 'block';
-            openOnSiteBtn.onclick = function() {
-                window.open(imageUrl, '_blank');
-            };
-        };
-        
-        // Закрытие модального окна
-        closeButton.onclick = function() {
-            modal.style.display = 'none';
-            productImage.src = '';
-        };
-        
-        modal.onclick = function(e) {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-                productImage.src = '';
-            }
-        };
-    }
-
-    // Парсим данные
-    const products = parseProductsData(productsData);
-
-    // Элементы DOM
-    const searchInput = document.getElementById('searchInput');
-    const searchButton = document.getElementById('searchButton');
-    const scanButton = document.getElementById('scanButton');
-    const resultsContainer = document.getElementById('resultsContainer');
-    const searchModeRadios = document.querySelectorAll('input[name="searchMode"]');
-
-    // ===== ОСНОВНЫЕ ФУНКЦИИ ПОИСКА =====
-    
-    // Функция для подсветки совпадений
-    function highlightMatch(text, searchTerm) {
-        if (!searchTerm || !text) return text;
-        
-        const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-        return text.toString().replace(regex, '<mark>$1</mark>');
-    }
-
-    // Функция для получения текущего режима поиска
-    function getCurrentSearchMode() {
-        const selectedRadio = document.querySelector('input[name="searchMode"]:checked');
-        return selectedRadio ? selectedRadio.value : 'general';
-    }
-
-    // Функция поиска
-    function searchProducts() {
-        const query = searchInput.value.trim();
-        const searchMode = getCurrentSearchMode();
-        
-        if (!query) {
-            resultsContainer.style.display = 'none';
-            return;
-        }
-
-        let results = [];
-        
-        if (query.includes('/') && searchMode === 'general') {
-            // Комбинированный поиск
-            const parts = query.split('/').map(part => part.trim()).filter(part => part);
-            if (parts.length >= 2) {
-                results = products.filter(product => {
-                    const nameMatch = parts[0] ? 
-                        product.name.toLowerCase().includes(parts[0].toLowerCase()) : false;
-                    const articleMatch = parts[1] ? 
-                        product.article.toLowerCase().includes(parts[1].toLowerCase()) : false;
-                    return nameMatch && articleMatch;
+            for (const line of lines) {
+                if (!line.trim()) continue;
+                
+                const parts = line.split(';');
+                
+                // Очищаем код изображения (последняя колонка)
+                let imageCode = '';
+                if (parts.length >= 15) {
+                    imageCode = parts[14].trim();
+                } else if (parts.length === 14) {
+                    imageCode = parts[13].trim();
+                }
+                
+                // Убираем точку с запятой если есть
+                imageCode = imageCode.replace(/;+$/, '');
+                
+                products.push({
+                    barcode: parts[0] || '',
+                    article: parts[1] || '',
+                    name: parts[2] || '',
+                    wholesalePrice: parts[3] || '',
+                    retailPrice: parts[4] || '',
+                    stocks: {
+                        warehouse1: parseStockValue(parts[5]),
+                        warehouse2: parseStockValue(parts[6]),
+                        warehouse3: parseStockValue(parts[7]),
+                        warehouse4: parseStockValue(parts[8])
+                    },
+                    coefficients: {
+                        warehouse1: parseFloatValue(parts[9]),
+                        warehouse2: parseFloatValue(parts[10]),
+                        warehouse3: parseFloatValue(parts[11]),
+                        warehouse4: parseFloatValue(parts[12])
+                    },
+                    storageLocation: parts[13] || '',
+                    imageCode: imageCode
                 });
             }
-        } else {
-            // Простой поиск
-            results = products.filter(product => {
-                switch(searchMode) {
-                    case 'article':
-                        return product.article.toLowerCase().includes(query.toLowerCase());
-                    case 'barcode':
-                        return product.barcode.includes(query);
-                    case 'general':
-                    default:
-                        return product.article.toLowerCase().includes(query.toLowerCase()) ||
-                               product.barcode.includes(query) ||
-                               product.name.toLowerCase().includes(query.toLowerCase());
-                }
-            });
+            
+            return products;
         }
 
-        displayResults(results, query, searchMode);
-    }
-
-    // Функция отображения результатов
-    function displayResults(results, query, searchMode) {
-        resultsContainer.innerHTML = '';
-
-        if (results.length === 0) {
-            resultsContainer.innerHTML = '<div class="no-results">Товары не найдены</div>';
-            resultsContainer.style.display = 'block';
-            return;
+        function parseStockValue(value) {
+            if (!value) return 0;
+            const cleanValue = value.toString().replace(/\s/g, '').replace(/\u00A0/g, '');
+            return parseInt(cleanValue) || 0;
         }
 
-        // Заголовок с количеством
-        const countElement = document.createElement('div');
-        countElement.className = 'results-count';
-        countElement.textContent = `Найдено товаров: ${results.length}`;
-        resultsContainer.appendChild(countElement);
+        function parseFloatValue(value) {
+            if (!value) return 0;
+            const cleanValue = value.toString().replace(',', '.').replace(/\s/g, '');
+            return parseFloat(cleanValue) || 0;
+        }
 
-        // Отображаем каждый товар
-        results.forEach(product => {
+        function formatNumber(num) {
+            if (num < 0) {
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+            }
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        }
+
+        function formatCoefficient(num) {
+            return num.toFixed(3).replace('.', ',');
+        }
+
+        // ===== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ =====
+        
+        // 1. Создать HTML для карточки товара (ВСЁ В ОДНОЙ ФУНКЦИИ)
+        function createProductCard(product, query, searchMode) {
             const productCard = document.createElement('div');
             productCard.className = 'product-card';
             
-            // Подсвечиваем совпадения
-            const highlightedBarcode = highlightMatch(product.barcode, query);
-            const highlightedArticle = highlightMatch(product.article, query);
-            const highlightedName = highlightMatch(product.name, query);
+            // Подсветка совпадений
+            let highlightedBarcode = product.barcode;
+            let highlightedArticle = product.article;
+            let highlightedName = product.name;
             
-            // Создаем элемент для изображения
-            const imageElement = createImageElement(product);
+            if (searchMode === 'barcode') {
+                highlightedBarcode = highlightMatch(product.barcode, query);
+            } else if (searchMode === 'article') {
+                highlightedArticle = highlightMatch(product.article, query);
+            } else {
+                highlightedBarcode = highlightMatch(product.barcode, query);
+                highlightedArticle = highlightMatch(product.article, query);
+                highlightedName = highlightMatch(product.name, query);
+            }
             
-            // HTML для карточки товара
-            productCard.innerHTML = `
+            // Создаем основной контейнер
+            const container = document.createElement('div');
+            
+            // Строка с артикулом и кнопкой
+            const articleRow = document.createElement('div');
+            articleRow.className = 'article';
+            articleRow.innerHTML = `Артикул: ${highlightedArticle}`;
+            
+            // Добавляем кнопку или текст
+            const hasImage = product.imageCode && product.imageCode.trim() !== '';
+            
+            if (hasImage) {
+                const imageButton = document.createElement('button');
+                imageButton.className = 'image-button';
+                imageButton.title = 'Показать изображение товара';
+                imageButton.innerHTML = '🖼️';
+                imageButton.onclick = function() {
+                    showProductImage(product);
+                };
+                articleRow.appendChild(imageButton);
+            } else {
+                const noImageSpan = document.createElement('span');
+                noImageSpan.className = 'no-image-text';
+                noImageSpan.textContent = '(без изображения)';
+                articleRow.appendChild(noImageSpan);
+            }
+            
+            // Добавляем остальной контент
+            container.innerHTML = `
                 <div class="product-field barcode">Штрихкод: ${highlightedBarcode}</div>
-                <div class="product-field article">
-                    Артикул: ${highlightedArticle}
-                    ${imageElement.outerHTML}
-                </div>
                 <div class="product-field name">${highlightedName}</div>
                 <div class="product-field price">
                     Цена: ${product.wholesalePrice} руб.
                 </div>
             `;
+            
+            // Вставляем строку с артикулом в начало
+            const articleField = document.createElement('div');
+            articleField.className = 'product-field';
+            articleField.appendChild(articleRow);
+            container.insertBefore(articleField, container.firstChild);
             
             // Добавляем остатки
             const stockInfo = document.createElement('div');
@@ -21320,47 +21116,209 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 `;
             }
             
+            // Собираем всё вместе
+            productCard.appendChild(container);
             productCard.appendChild(stockInfo);
-            resultsContainer.appendChild(productCard);
-        });
-
-        resultsContainer.style.display = 'block';
-    }
-
-    // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
-
-    // Обработчик клика на кнопку "Найти"
-    searchButton.addEventListener('click', searchProducts);
-
-    // Обработчик нажатия Enter в поле ввода
-    searchInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            searchProducts();
+            
+            return productCard;
         }
-    });
+        
+        // 2. Показать изображение товара
+        function showProductImage(product) {
+            // Создаем модальное окно
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.id = 'imageModal';
+            modal.style.display = 'flex';
+            
+            // Получаем URL изображения
+            const imageCode = product.imageCode || '';
+            let imageUrl = '';
+            
+            if (imageCode) {
+                const cleanCode = imageCode.trim();
+                // Добавляем .jpg если нет расширения
+                let fileName = cleanCode;
+                if (!fileName.includes('.jpg') && !fileName.includes('.jpeg') && 
+                    !fileName.includes('.png') && !fileName.includes('.gif')) {
+                    fileName += '.jpg';
+                }
+                imageUrl = `https://kubanstar.ru/images/virtuemart/product/${fileName}`;
+            }
+            
+            modal.innerHTML = `
+                <div class="modal-frame" style="max-width: 90%; max-height: 90%;">
+                    <button class="close-modal" onclick="this.closest('.modal-overlay').style.display='none'">✕</button>
+                    <div style="text-align: center; padding: 20px;">
+                        <h3 style="margin-bottom: 20px;">${product.article} - ${product.name}</h3>
+                        <div style="max-height: 70vh; overflow: auto; margin: 20px 0;">
+                            ${imageUrl ? 
+                                `<img src="${imageUrl}" 
+                                      style="max-width: 100%; max-height: 60vh; border-radius: 8px;"
+                                      onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❌</text></svg>'; this.alt='Ошибка загрузки'; this.style.border='2px solid #f44336';">
+                                 <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                                    URL: ${imageUrl}
+                                 </div>` : 
+                                `<div style="padding: 40px; color: #999;">
+                                    <div style="font-size: 48px; margin-bottom: 20px;">🖼️</div>
+                                    <div>Изображение не найдено</div>
+                                    <div style="font-size: 12px; margin-top: 10px;">Код: ${imageCode || 'не указан'}</div>
+                                 </div>`}
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <button onclick="window.open('${imageUrl}', '_blank')" 
+                                    class="camera-btn" 
+                                    style="background-color: #4CAF50; ${!imageUrl ? 'display: none;' : ''}">
+                                Открыть в новой вкладке
+                            </button>
+                            <button onclick="this.closest('.modal-overlay').style.display='none'" 
+                                    class="camera-btn" 
+                                    style="background-color: #f44336; margin-left: 10px;">
+                                Закрыть
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Удаляем старое модальное окно если есть
+            const oldModal = document.getElementById('imageModal');
+            if (oldModal) {
+                oldModal.remove();
+            }
+            
+            // Добавляем новое модальное окно
+            document.body.appendChild(modal);
+            
+            // Закрытие при клике на фон
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            };
+        }
+        
+        // 3. Подсветка совпадений
+        function highlightMatch(text, searchTerm) {
+            if (!searchTerm || !text) return text;
+            const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.toString().replace(regex, '<mark>$1</mark>');
+        }
 
-    // Обработчик изменения режима поиска
-    searchModeRadios.forEach(radio => {
-        radio.addEventListener('change', function() {
-            if (searchInput.value.trim()) {
+        // ===== ФУНКЦИИ ПОИСКА =====
+        
+        function getCurrentSearchMode() {
+            const selectedRadio = document.querySelector('input[name="searchMode"]:checked');
+            return selectedRadio ? selectedRadio.value : 'general';
+        }
+
+        function searchProducts() {
+            const query = searchInput.value.trim();
+            const searchMode = getCurrentSearchMode();
+            
+            if (!query) {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+
+            let results = [];
+            
+            if (query.includes('/') && searchMode === 'general') {
+                const parts = query.split('/').map(part => part.trim()).filter(part => part);
+                if (parts.length >= 2) {
+                    results = products.filter(product => {
+                        const nameMatch = parts[0] ? 
+                            product.name.toLowerCase().includes(parts[0].toLowerCase()) : false;
+                        const articleMatch = parts[1] ? 
+                            product.article.toLowerCase().includes(parts[1].toLowerCase()) : false;
+                        return nameMatch && articleMatch;
+                    });
+                }
+            } else {
+                results = products.filter(product => {
+                    switch(searchMode) {
+                        case 'article':
+                            return product.article.toLowerCase().includes(query.toLowerCase());
+                        case 'barcode':
+                            return product.barcode.includes(query);
+                        case 'general':
+                        default:
+                            return product.article.toLowerCase().includes(query.toLowerCase()) ||
+                                   product.barcode.includes(query) ||
+                                   product.name.toLowerCase().includes(query.toLowerCase());
+                    }
+                });
+            }
+
+            displayResults(results, query, searchMode);
+        }
+
+        function displayResults(results, query, searchMode) {
+            resultsContainer.innerHTML = '';
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<div class="no-results">Товары не найдены</div>';
+                resultsContainer.style.display = 'block';
+                return;
+            }
+
+            // Заголовок с количеством
+            const countElement = document.createElement('div');
+            countElement.className = 'results-count';
+            countElement.textContent = `Найдено товаров: ${results.length}`;
+            resultsContainer.appendChild(countElement);
+
+            // Отображаем каждый товар
+            results.forEach(product => {
+                const productCard = createProductCard(product, query, searchMode);
+                resultsContainer.appendChild(productCard);
+            });
+
+            resultsContainer.style.display = 'block';
+        }
+
+        // ===== ИНИЦИАЛИЗАЦИЯ =====
+        
+        // Парсим данные
+        const products = parseProductsData(productsData);
+        
+        // Элементы DOM
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const resultsContainer = document.getElementById('resultsContainer');
+        
+        // Обработчик клика на кнопку "Найти"
+        searchButton.addEventListener('click', searchProducts);
+        
+        // Обработчик нажатия Enter в поле ввода
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
                 searchProducts();
             }
         });
-    });
-
-    // Фокусировка на поле поиска при загрузке
-    window.addEventListener('load', function() {
-        searchInput.focus();
-    });
-
-    // Обработчик клавиши Escape для очистки поиска
-    searchInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            this.value = '';
-            resultsContainer.style.display = 'none';
-            this.focus();
-        }
-    });
+        
+        // Обработчик изменения режима поиска
+        document.querySelectorAll('input[name="searchMode"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (searchInput.value.trim()) {
+                    searchProducts();
+                }
+            });
+        });
+        
+        // Фокусировка на поле поиска при загрузке
+        window.addEventListener('load', function() {
+            searchInput.focus();
+        });
+        
+        // Обработчик Escape для очистки поиска
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                this.value = '';
+                resultsContainer.style.display = 'none';
+                this.focus();
+            }
+        });
     </script>
 </body>
 </html>
