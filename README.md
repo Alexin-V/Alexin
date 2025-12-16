@@ -20165,10 +20165,14 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         }
 
-        // Проверяем Android
-        function isAndroid() {
-            return /Android/.test(navigator.userAgent);
-        }
+// Проверяем Android - более надежная проверка
+function isAndroid() {
+    const ua = navigator.userAgent.toLowerCase();
+    const isAndroid = ua.indexOf('android') > -1;
+    console.log('User Agent:', navigator.userAgent);
+    console.log('isAndroid result:', isAndroid);
+    return isAndroid;
+}
 
         // Проверяем поддержку BarcodeDetector API
         function isBarcodeDetectorSupported() {
@@ -20220,24 +20224,30 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             return isHTTPS() || isLocalhost();
         }
 
-        // Настройка интерфейса в зависимости от платформы
-        function setupPlatformUI() {
-            if (isIOS()) {
-                // Для iOS скрываем кнопку сканирования
-                scanButton.style.display = 'none';
-                searchButton.style.maxWidth = '300px';
-            } else if (isAndroid()) {
-                // Для Android показываем кнопку сканирования
-                scanButton.style.display = 'flex';
-                
-                // Инициализируем BarcodeDetector для Android
-                initBarcodeDetector();
-            } else {
-                // Для Desktop скрываем кнопку сканирования
-                scanButton.style.display = 'none';
-                searchButton.style.maxWidth = '300px';
-            }
-        }
+// Настройка интерфейса в зависимости от платформы
+function setupPlatformUI() {
+    console.log('setupPlatformUI called');
+    console.log('isAndroid:', isAndroid());
+    console.log('isIOS:', isIOS());
+    
+    if (isIOS()) {
+        // Для iOS скрываем кнопку сканирования
+        scanButton.style.display = 'none';
+        searchButton.style.maxWidth = '300px';
+    } else if (isAndroid()) {
+        // Для Android показываем кнопку сканирования
+        console.log('Showing scan button for Android');
+        scanButton.style.display = 'flex';
+        scanButton.style.visibility = 'visible';
+        
+        // Инициализируем BarcodeDetector для Android
+        initBarcodeDetector();
+    } else {
+        // Для Desktop скрываем кнопку сканирования
+        scanButton.style.display = 'none';
+        searchButton.style.maxWidth = '300px';
+    }
+}
 
         // Открытие камеры для Android
         async function openCamera() {
