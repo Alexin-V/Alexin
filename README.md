@@ -1,4 +1,5 @@
-﻿<html lang="ru">
+﻿
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -708,7 +709,7 @@
             <button class="search-button" id="searchButton">Найти</button>
             <!-- Кнопка для Android - скрыта на iOS -->
             <button class="scan-button" id="scanButton" style="display: none;">
-                <span class="scan-icon">&#128247;</span> Сканировать штрихкод
+                <span class="scan-icon"></span> Сканировать штрихкод
             </button>
         </div>
         
