@@ -1,4 +1,5 @@
 ﻿
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -597,12 +598,12 @@
         }
         
         .close-result-btn {
-            background-color: #4CAF50;
+            background-color: #f44336;
             color: white;
         }
         
         .close-result-btn:hover {
-            background-color: #45a049;
+            background-color: #d32f2f;
             transform: translateY(-2px);
         }
         
@@ -713,7 +714,7 @@
             </button>
         </div>
         
-        <div class="search-hint" id="searchHint">Поиск по артикулу товара</div>
+
         <div class="barcode-supported">
             Поддерживаемые форматы: 
             <span class="barcode-format">EAN-13</span>
@@ -19719,7 +19720,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                             ${imageUrl ? 
                                 `<img src="${imageUrl}" 
                                       style="max-width: 100%; max-height: 60vh; border-radius: 8px;"
-                                      onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#10060;</text></svg>'; this.alt='Ошибка загрузки'; this.style.border='2px solid #f44336';">
+                                      onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%25%22 y=%2250%25%22 font-size=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22>&#10060;</text></svg>'; this.alt='Ошибка загрузки'; this.style.border='2px solid #f44336';">
                                  ` : 
                                 `<div style="padding: 40px; color: #999;">
                                     <div style="font-size: 48px; margin-bottom: 20px;">&#127750;</div>
@@ -20566,24 +20567,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         function updateSearchUI() {
             const mode = getCurrentSearchMode();
             
-            // Обновляем подсказку
-            switch(mode) {
-                case 'article':
-                    searchHint.textContent = 'Поиск по артикулу товара';
-                    searchInput.placeholder = 'Введите артикул для поиска...';
-                    break;
-                case 'barcode':
-                    searchHint.textContent = 'Поиск по штрихкоду товара';
-                    searchInput.placeholder = 'Введите штрихкод для поиска...';
-                    break;
-                case 'name':
-                    searchHint.textContent = 'Поиск по наименованию товара';
-                    searchInput.placeholder = 'Введите наименование для поиска...';
-                    break;
-                case 'combined':
-                    searchHint.textContent = 'Комбинированный поиск - заполните нужные поля';
-                    break;
-            }
+
             
             // Показываем/скрываем поля комбинированного поиска
             if (mode === 'combined') {
