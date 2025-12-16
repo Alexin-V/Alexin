@@ -585,6 +585,7 @@
             transition: all 0.3s;
             flex: 1;
             min-width: 140px;
+			text-align: center;
         }
         
         .continue-scan-btn {
@@ -748,31 +749,28 @@
         </div>
     </div>
 
-    <!-- Модальное окно результатов сканирования -->
-    <div class="modal-overlay" id="resultModal">
-        <div class="modal-frame scan-result-frame">
-            <div class="scan-result-products" id="resultProducts">
-                <!-- Список товаров будет здесь -->
-            </div>
- 
-            <div class="scan-result-count" id="resultCount">
-                <!-- Количество найденных товаров -->
-            </div>
-            
-            <!-- Кнопка "Сканировать еще" на месте штрихкода -->
-            <div style="text-align: center; margin: 20px 0;">
-                <button class="action-btn continue-scan-btn" id="continueScanBtn">
-                    &#128260; Сканировать еще
-                </button>
-            </div>
+<!-- Модальное окно результатов сканирования -->
+<div class="modal-overlay" id="resultModal">
+    <div class="modal-frame scan-result-frame">
+        <div class="scan-result-products" id="resultProducts">
+            <!-- Список товаров будет здесь -->
+        </div>
 
-            <div class="scan-result-actions">
-                <button class="action-btn close-result-btn" id="closeResultBtn">
-                     Закрыть
-                </button>
-            </div>
+        <div class="scan-result-count" id="resultCount">
+            <!-- Количество найденных товаров -->
+        </div>
+        
+        <!-- Вместо отдельного блока, обе кнопки в одном контейнере -->
+        <div class="scan-result-actions">
+            <button class="action-btn continue-scan-btn" id="continueScanBtn">
+                &#128247; Сканировать еще
+            </button>
+            <button class="action-btn close-result-btn" id="closeResultBtn">
+                 Закрыть
+            </button>
         </div>
     </div>
+</div>
 
     <script>
         // Пример данных с поддержкой изображений
