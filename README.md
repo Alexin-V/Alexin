@@ -1,5 +1,4 @@
 ﻿
-<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -79,25 +78,25 @@
         }
         
         /* Кнопка очистки поля поиска */
-.clear-search-btn {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: #999;
-    font-size: 18px; /* Можно уменьшить до 16-18px если нужно */
-    cursor: pointer;
-    padding: 5px;
-    display: none;
-    transition: color 0.3s;
-    line-height: 1;
-}
-
-.clear-search-btn:hover {
-    color: #ff4444;
-}
+        .clear-search-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+            display: none;
+            transition: color 0.3s;
+            line-height: 1;
+        }
+        
+        .clear-search-btn:hover {
+            color: #ff4444;
+        }
         
         .buttons-container {
             display: flex;
@@ -759,11 +758,14 @@
                 <!-- Количество найденных товаров -->
             </div>
             
-            <!-- Вторая кнопка "Сканировать еще" вместо штрихкода -->
-            <div class="scan-result-actions">
-                <button class="action-btn continue-scan-btn" id="continueScanBtn2">
+            <!-- Кнопка "Сканировать еще" на месте штрихкода -->
+            <div style="text-align: center; margin: 20px 0;">
+                <button class="action-btn continue-scan-btn" id="continueScanBtn">
                     &#128260; Сканировать еще
                 </button>
+            </div>
+
+            <div class="scan-result-actions">
                 <button class="action-btn close-result-btn" id="closeResultBtn">
                      Закрыть
                 </button>
@@ -19717,7 +19719,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                             ${imageUrl ? 
                                 `<img src="${imageUrl}" 
                                       style="max-width: 100%; max-height: 60vh; border-radius: 8px;"
-                                      onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%25%22 y=%2250%25%22 font-size=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22>&#10060;</text></svg>'; this.alt='Ошибка загрузки'; this.style.border='2px solid #f44336';">
+                                      onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#10060;</text></svg>'; this.alt='Ошибка загрузки'; this.style.border='2px solid #f44336';">
                                  ` : 
                                 `<div style="padding: 40px; color: #999;">
                                     <div style="font-size: 48px; margin-bottom: 20px;">&#127750;</div>
@@ -19725,13 +19727,13 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                                     <div style="font-size: 12px; margin-top: 10px; color: #999;">Код изображения: ${imageCode || 'не указан'}</div>
                                  </div>`}
                         </div>
-						<div style="margin-top: 15px; text-align: center;">
-							<button onclick="this.closest('.modal-overlay').style.display='none'" 
-									class="camera-btn" 
-									style="background-color: #f44336; min-width: 200px;">
-								Закрыть
-							</button>
-						</div>
+                        <div style="margin-top: 15px; text-align: center;">
+                            <button onclick="this.closest('.modal-overlay').style.display='none'" 
+                                    class="camera-btn" 
+                                    style="background-color: #f44336; min-width: 200px;">
+                                Закрыть
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -20073,6 +20075,19 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             return productCard;
         }
 
+        // Функция для прокрутки к результатам
+        function scrollToResults() {
+            const resultsContainer = document.getElementById('resultsContainer');
+            if (resultsContainer.style.display === 'block') {
+                setTimeout(() => {
+                    resultsContainer.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 100);
+            }
+        }
+
         // Отображение результатов
         function displayResults(results, query, searchMode) {
             resultsContainer.innerHTML = '';
@@ -20106,20 +20121,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
 
             resultsContainer.style.display = 'block';
             scrollToResults();
-        }
-
-        // Функция для прокрутки к результатам поиска
-        function scrollToResults() {
-            const resultsContainer = document.getElementById('resultsContainer');
-            if (resultsContainer.style.display === 'block') {
-                // Небольшая задержка для гарантии отрисовки
-                setTimeout(() => {
-                    resultsContainer.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }, 100);
-            }
         }
 
         // Основная функция поиска
@@ -20165,14 +20166,10 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         }
 
-// Проверяем Android - более надежная проверка
-function isAndroid() {
-    const ua = navigator.userAgent.toLowerCase();
-    const isAndroid = ua.indexOf('android') > -1;
-    console.log('User Agent:', navigator.userAgent);
-    console.log('isAndroid result:', isAndroid);
-    return isAndroid;
-}
+        // Проверяем Android
+        function isAndroid() {
+            return /Android/.test(navigator.userAgent);
+        }
 
         // Проверяем поддержку BarcodeDetector API
         function isBarcodeDetectorSupported() {
@@ -20224,30 +20221,24 @@ function isAndroid() {
             return isHTTPS() || isLocalhost();
         }
 
-// Настройка интерфейса в зависимости от платформы
-function setupPlatformUI() {
-    console.log('setupPlatformUI called');
-    console.log('isAndroid:', isAndroid());
-    console.log('isIOS:', isIOS());
-    
-    if (isIOS()) {
-        // Для iOS скрываем кнопку сканирования
-        scanButton.style.display = 'none';
-        searchButton.style.maxWidth = '300px';
-    } else if (isAndroid()) {
-        // Для Android показываем кнопку сканирования
-        console.log('Showing scan button for Android');
-        scanButton.style.display = 'flex';
-        scanButton.style.visibility = 'visible';
-        
-        // Инициализируем BarcodeDetector для Android
-        initBarcodeDetector();
-    } else {
-        // Для Desktop скрываем кнопку сканирования
-        scanButton.style.display = 'none';
-        searchButton.style.maxWidth = '300px';
-    }
-}
+        // Настройка интерфейса в зависимости от платформы
+        function setupPlatformUI() {
+            if (isIOS()) {
+                // Для iOS скрываем кнопку сканирования
+                scanButton.style.display = 'none';
+                searchButton.style.maxWidth = '300px';
+            } else if (isAndroid()) {
+                // Для Android показываем кнопку сканирования
+                scanButton.style.display = 'flex';
+                
+                // Инициализируем BarcodeDetector для Android
+                initBarcodeDetector();
+            } else {
+                // Для Desktop скрываем кнопку сканирования
+                scanButton.style.display = 'none';
+                searchButton.style.maxWidth = '300px';
+            }
+        }
 
         // Открытие камеры для Android
         async function openCamera() {
@@ -20361,7 +20352,7 @@ function setupPlatformUI() {
             
             const cleanCode = code.toString().trim();
             searchInput.value = cleanCode;
-            updateClearButton(); // Обновляем видимость кнопки очистки
+            updateClearButton(); // Обновляем кнопку очистки
             
             const results = performSimpleSearch(cleanCode, 'barcode');
             showScanResults(cleanCode, results);
@@ -20563,7 +20554,6 @@ function setupPlatformUI() {
         const resultCount = document.getElementById('resultCount');
         const resultProducts = document.getElementById('resultProducts');
         const continueScanBtn = document.getElementById('continueScanBtn');
-        const continueScanBtn2 = document.getElementById('continueScanBtn2');
         const closeResultBtn = document.getElementById('closeResultBtn');
 
         // Переменные для работы с камерой
@@ -20604,7 +20594,7 @@ function setupPlatformUI() {
                 searchInput.style.display = 'block';
             }
             
-            // Обновляем видимость кнопки очистки
+            // Обновляем кнопку очистки
             updateClearButton();
         }
 
@@ -20673,16 +20663,8 @@ function setupPlatformUI() {
 
         // Обработчики для модального окна результатов
 
-        // Продолжить сканирование (первая кнопка)
+        // Продолжить сканирование
         continueScanBtn.addEventListener('click', function() {
-            resultModal.style.display = 'none';
-            setTimeout(() => {
-                openCamera();
-            }, 300);
-        });
-
-        // Продолжить сканирование (вторая кнопка)
-        continueScanBtn2.addEventListener('click', function() {
             resultModal.style.display = 'none';
             setTimeout(() => {
                 openCamera();
@@ -20742,20 +20724,6 @@ function setupPlatformUI() {
                 }
             }
         });
-		// Вызов setupPlatformUI при загрузке
-document.addEventListener('DOMContentLoaded', function() {
-    setupPlatformUI();
-});
-
-// Также вызываем при полной загрузке страницы
-window.addEventListener('load', function() {
-    // Устанавливаем режим "Артикул" по умолчанию
-    document.getElementById('modeArticle').checked = true;
-    updateSearchUI();
-    searchInput.focus();
-    setupPlatformUI(); // Еще один вызов для страховки
-});
-
     </script>
 </body>
 </html>
