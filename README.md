@@ -79,24 +79,25 @@
         }
         
         /* Кнопка очистки поля поиска */
-        .clear-search-btn {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #999;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 5px;
-            display: none;
-            transition: color 0.3s;
-        }
-        
-        .clear-search-btn:hover {
-            color: #ff4444;
-        }
+.clear-search-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 18px; /* Можно уменьшить до 16-18px если нужно */
+    cursor: pointer;
+    padding: 5px;
+    display: none;
+    transition: color 0.3s;
+    line-height: 1;
+}
+
+.clear-search-btn:hover {
+    color: #ff4444;
+}
         
         .buttons-container {
             display: flex;
@@ -653,7 +654,7 @@
                    placeholder="Введите артикул для поиска..."
                    autocomplete="off">
             <!-- Кнопка очистки поля поиска -->
-            <button class="clear-search-btn" id="clearSearchBtn" title="Очистить поле поиска">?</button>
+            <button class="clear-search-btn" id="clearSearchBtn" title="Очистить поле поиска">&#10060;</button>
         </div>
         
         <!-- Поля для комбинированного поиска -->
@@ -709,7 +710,7 @@
             <button class="search-button" id="searchButton">Найти</button>
             <!-- Кнопка для Android - скрыта на iOS -->
             <button class="scan-button" id="scanButton" style="display: none;">
-                <span class="scan-icon"></span> Сканировать штрихкод
+                <span class="scan-icon">&#128247;</span> Сканировать штрихкод
             </button>
         </div>
         
@@ -20731,6 +20732,20 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 }
             }
         });
+		// Вызов setupPlatformUI при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    setupPlatformUI();
+});
+
+// Также вызываем при полной загрузке страницы
+window.addEventListener('load', function() {
+    // Устанавливаем режим "Артикул" по умолчанию
+    document.getElementById('modeArticle').checked = true;
+    updateSearchUI();
+    searchInput.focus();
+    setupPlatformUI(); // Еще один вызов для страховки
+});
+
     </script>
 </body>
 </html>
