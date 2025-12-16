@@ -1,5 +1,4 @@
-﻿
-<html lang="ru">
+﻿<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -57,19 +56,45 @@
             outline: none;
         }
         
+        /* Обертка для основного поля поиска с кнопкой очистки */
+        .search-input-wrapper {
+            position: relative;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
         .search-input {
             width: 100%;
-            padding: 15px;
+            padding: 15px 40px 15px 15px; /* Добавлен отступ справа для кнопки */
             font-size: 16px;
             border: 2px solid #ddd;
             border-radius: 5px;
             box-sizing: border-box;
-            margin-bottom: 10px;
         }
         
         .search-input:focus {
             border-color: #4CAF50;
             outline: none;
+        }
+        
+        /* Кнопка очистки поля поиска */
+        .clear-search-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            display: none;
+            transition: color 0.3s;
+        }
+        
+        .clear-search-btn:hover {
+            color: #ff4444;
         }
         
         .buttons-container {
@@ -466,18 +491,6 @@
             font-weight: bold;
         }
         
-        .scan-result-barcode {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-            background: #f5f5f5;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            font-family: monospace;
-            letter-spacing: 1px;
-        }
-        
         .scan-result-count {
             color: #666;
             font-size: 14px;
@@ -592,16 +605,6 @@
             transform: translateY(-2px);
         }
         
-        .new-search-btn {
-            background-color: #ff9800;
-            color: white;
-        }
-        
-        .new-search-btn:hover {
-            background-color: #e68900;
-            transform: translateY(-2px);
-        }
-        
         /* Стили для кнопки изображения - увеличенная в 1.5 раза */
         .image-button {
             background: none;
@@ -640,12 +643,17 @@
     <div class="search-container">
         <h2>Поиск товаров</h2>
         
-        <!-- Основное поле поиска (для всех режимов кроме комбинированного) -->
-        <input type="text" 
-               class="search-input" 
-               id="searchInput" 
-               placeholder="Введите артикул для поиска..."
-               autocomplete="off">
+        <!-- Обертка для основного поля поиска с кнопкой очистки -->
+        <div class="search-input-wrapper">
+            <!-- Основное поле поиска (для всех режимов кроме комбинированного) -->
+            <input type="text" 
+                   class="search-input" 
+                   id="searchInput" 
+                   placeholder="Введите артикул для поиска..."
+                   autocomplete="off">
+            <!-- Кнопка очистки поля поиска -->
+            <button class="clear-search-btn" id="clearSearchBtn" title="Очистить поле поиска">?</button>
+        </div>
         
         <!-- Поля для комбинированного поиска -->
         <div class="combined-search-fields" id="combinedSearchFields">
@@ -700,7 +708,7 @@
             <button class="search-button" id="searchButton">Найти</button>
             <!-- Кнопка для Android - скрыта на iOS -->
             <button class="scan-button" id="scanButton" style="display: none;">
-                <span class="scan-icon">??</span> Сканировать штрихкод
+                <span class="scan-icon">&#128247;</span> Сканировать штрихкод
             </button>
         </div>
         
@@ -749,19 +757,13 @@
                 <!-- Количество найденных товаров -->
             </div>
             
-            <div class="scan-result-barcode" id="resultBarcode">
-                <!-- Штрихкод будет здесь -->
-            </div>
-
+            <!-- Вторая кнопка "Сканировать еще" вместо штрихкода -->
             <div class="scan-result-actions">
-                <button class="action-btn continue-scan-btn" id="continueScanBtn">
-                    ?? Сканировать еще
-                </button>
-                <button class="action-btn new-search-btn" id="newSearchBtn">
-                    ?? Новый поиск
+                <button class="action-btn continue-scan-btn" id="continueScanBtn2">
+                    &#128260; Сканировать еще
                 </button>
                 <button class="action-btn close-result-btn" id="closeResultBtn">
-                    ? Готово
+                     Закрыть
                 </button>
             </div>
         </div>
@@ -19713,26 +19715,21 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                             ${imageUrl ? 
                                 `<img src="${imageUrl}" 
                                       style="max-width: 100%; max-height: 60vh; border-radius: 8px;"
-                                      onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>?</text></svg>'; this.alt='Ошибка загрузки'; this.style.border='2px solid #f44336';">
+                                      onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%25%22 y=%2250%25%22 font-size=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22>&#10060;</text></svg>'; this.alt='Ошибка загрузки'; this.style.border='2px solid #f44336';">
                                  ` : 
                                 `<div style="padding: 40px; color: #999;">
-                                    <div style="font-size: 48px; margin-bottom: 20px;">???</div>
+                                    <div style="font-size: 48px; margin-bottom: 20px;">&#127750;</div>
                                     <div style="font-size: 18px; font-weight: bold; color: #666;">Изображение не найдено или отсутствует</div>
                                     <div style="font-size: 12px; margin-top: 10px; color: #999;">Код изображения: ${imageCode || 'не указан'}</div>
                                  </div>`}
                         </div>
-                        <div style="margin-top: 15px;">
-                            <button onclick="window.open('${imageUrl}', '_blank')" 
-                                    class="camera-btn" 
-                                    style="background-color: #4CAF50; ${!imageUrl ? 'display: none;' : ''}">
-                                Открыть в новой вкладке
-                            </button>
-                            <button onclick="this.closest('.modal-overlay').style.display='none'" 
-                                    class="camera-btn" 
-                                    style="background-color: #f44336; margin-left: 10px;">
-                                Закрыть
-                            </button>
-                        </div>
+						<div style="margin-top: 15px; text-align: center;">
+							<button onclick="this.closest('.modal-overlay').style.display='none'" 
+									class="camera-btn" 
+									style="background-color: #f44336; min-width: 200px;">
+								Закрыть
+							</button>
+						</div>
                     </div>
                 </div>
             `;
@@ -19994,7 +19991,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 const imageButton = document.createElement('button');
                 imageButton.className = 'image-button';
                 imageButton.title = 'Показать изображение товара';
-                imageButton.innerHTML = '???';
+                imageButton.innerHTML = '&#127750;';
                 imageButton.onclick = function() {
                     showProductImage(product);
                 };
@@ -20081,6 +20078,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             if (results.length === 0) {
                 resultsContainer.innerHTML = '<div class="no-results">Товары не найдены</div>';
                 resultsContainer.style.display = 'block';
+                scrollToResults();
                 return;
             }
 
@@ -20105,6 +20103,21 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             });
 
             resultsContainer.style.display = 'block';
+            scrollToResults();
+        }
+
+        // Функция для прокрутки к результатам поиска
+        function scrollToResults() {
+            const resultsContainer = document.getElementById('resultsContainer');
+            if (resultsContainer.style.display === 'block') {
+                // Небольшая задержка для гарантии отрисовки
+                setTimeout(() => {
+                    resultsContainer.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 100);
+            }
         }
 
         // Основная функция поиска
@@ -20336,6 +20349,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             
             const cleanCode = code.toString().trim();
             searchInput.value = cleanCode;
+            updateClearButton(); // Обновляем видимость кнопки очистки
             
             const results = performSimpleSearch(cleanCode, 'barcode');
             showScanResults(cleanCode, results);
@@ -20344,8 +20358,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         // Показать результаты сканирования
         function showScanResults(code, results) {
             lastScannedCode = code;
-            
-            resultBarcode.textContent = code;
             
             if (results.length === 0) {
                 resultCount.textContent = 'Товары не найдены';
@@ -20366,7 +20378,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                     // Определяем, есть ли изображение
                     const hasImage = product.imageCode && product.imageCode.trim() !== '';
                     const imageButtonHTML = hasImage ? 
-                        `<button class="image-button" style="margin-left: 10px;" onclick="showProductImage(${JSON.stringify(product).replace(/"/g, '&quot;')})">???</button>` : 
+                        `<button class="image-button" style="margin-left: 10px;" onclick="showProductImage(${JSON.stringify(product).replace(/"/g, '&quot;')})">&#127750;</button>` : 
                         `<span class="no-image-text">(без изображения)</span>`;
                     
                     productCard.innerHTML = `
@@ -20467,6 +20479,47 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             return html;
         }
 
+        // Функция для обновления видимости кнопки очистки
+        function updateClearButton() {
+            const mode = getCurrentSearchMode();
+            let hasText = false;
+            
+            if (mode === 'combined') {
+                // Для комбинированного режима проверяем все поля
+                hasText = articleInput.value.trim() !== '' || 
+                          nameInput.value.trim() !== '' || 
+                          barcodeInput.value.trim() !== '';
+            } else {
+                // Для обычного режима проверяем основное поле
+                hasText = searchInput.value.trim() !== '';
+            }
+            
+            if (hasText) {
+                clearSearchBtn.style.display = 'block';
+            } else {
+                clearSearchBtn.style.display = 'none';
+            }
+        }
+
+        // Функция для очистки всех полей поиска
+        function clearSearchFields() {
+            const mode = getCurrentSearchMode();
+            
+            if (mode === 'combined') {
+                // Очищаем все поля комбинированного поиска
+                articleInput.value = '';
+                nameInput.value = '';
+                barcodeInput.value = '';
+            } else {
+                // Очищаем основное поле поиска
+                searchInput.value = '';
+                searchInput.focus();
+            }
+            
+            updateClearButton();
+            resultsContainer.style.display = 'none';
+        }
+
         // ===== ИНИЦИАЛИЗАЦИЯ =====
         
         // Парсим данные
@@ -20474,6 +20527,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         
         // Элементы DOM
         const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
         const searchButton = document.getElementById('searchButton');
         const scanButton = document.getElementById('scanButton');
         const resultsContainer = document.getElementById('resultsContainer');
@@ -20494,11 +20548,10 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         const stopCameraBtn = document.getElementById('stopCamera');
         
         // Элементы результатов
-        const resultBarcode = document.getElementById('resultBarcode');
         const resultCount = document.getElementById('resultCount');
         const resultProducts = document.getElementById('resultProducts');
         const continueScanBtn = document.getElementById('continueScanBtn');
-        const newSearchBtn = document.getElementById('newSearchBtn');
+        const continueScanBtn2 = document.getElementById('continueScanBtn2');
         const closeResultBtn = document.getElementById('closeResultBtn');
 
         // Переменные для работы с камерой
@@ -20538,12 +20591,24 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 combinedSearchFields.style.display = 'none';
                 searchInput.style.display = 'block';
             }
+            
+            // Обновляем видимость кнопки очистки
+            updateClearButton();
         }
 
         // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
 
         // Обработчик клика на кнопку "Найти"
         searchButton.addEventListener('click', searchProducts);
+
+        // Обработчик клика на кнопку очистки поиска
+        clearSearchBtn.addEventListener('click', clearSearchFields);
+
+        // Обработчик ввода в поле поиска
+        searchInput.addEventListener('input', updateClearButton);
+        articleInput.addEventListener('input', updateClearButton);
+        nameInput.addEventListener('input', updateClearButton);
+        barcodeInput.addEventListener('input', updateClearButton);
 
         // Обработчик нажатия Enter в поле ввода
         searchInput.addEventListener('keydown', function(e) {
@@ -20596,7 +20661,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
 
         // Обработчики для модального окна результатов
 
-        // Продолжить сканирование
+        // Продолжить сканирование (первая кнопка)
         continueScanBtn.addEventListener('click', function() {
             resultModal.style.display = 'none';
             setTimeout(() => {
@@ -20604,12 +20669,12 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             }, 300);
         });
 
-        // Новый поиск
-        newSearchBtn.addEventListener('click', function() {
+        // Продолжить сканирование (вторая кнопка)
+        continueScanBtn2.addEventListener('click', function() {
             resultModal.style.display = 'none';
-            searchInput.value = lastScannedCode;
-            searchInput.focus();
-            searchProducts();
+            setTimeout(() => {
+                openCamera();
+            }, 300);
         });
 
         // Закрыть результаты
@@ -20648,9 +20713,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         // Обработчик клавиши Escape для очистки поиска
         searchInput.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                this.value = '';
-                resultsContainer.style.display = 'none';
-                this.focus();
+                clearSearchFields();
             }
         });
 
