@@ -20566,7 +20566,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             // Отключаем кнопку печати
             const printBtn = document.getElementById('printActionBtn');
             printBtn.disabled = true;
-            printBtn.textContent = '&#128438;️ Подключаюсь к принтеру...';
+            printBtn.textContent = 'Подключаюсь к принтеру...';
             
             // Пытаемся подключиться к принтеру
             try {
@@ -20577,12 +20577,12 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                     printBtn.textContent = 'Распечатать';
                 } else {
                     printBtn.disabled = true;
-                    printBtn.textContent = '&#10060; Не удалось подключиться';
+                    printBtn.textContent = 'Не удалось подключиться';
                 }
             } catch (error) {
                 console.error('Ошибка при подключении:', error);
                 printBtn.disabled = true;
-                printBtn.textContent = '&#10060; Ошибка подключения';
+                printBtn.textContent = 'Ошибка подключения';
             }
         }
 
@@ -20603,7 +20603,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             
             const printBtn = document.getElementById('printActionBtn');
             printBtn.disabled = true;
-            printBtn.textContent = '&#128438; Печатаю...';
+            printBtn.textContent = 'Печатаю...';
             
             try {
                 await printPriceTag(currentProductForPrint);
