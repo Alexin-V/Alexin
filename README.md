@@ -141,6 +141,14 @@
             background-color: #0b7dda;
         }
         
+        .search-button:active {
+            background-color: #3d8b40;
+        }
+        
+        .scan-button:active {
+            background-color: #0a6ebd;
+        }
+        
         .scan-icon {
             font-size: 18px;
         }
@@ -395,55 +403,90 @@
         }
         
         /* Стили для кнопки печати */
-.print-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 5px;
-    border-radius: 50%;
-    transition: all 0.3s;
-    width: 42px;
-    height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    margin-left: auto; /* Это выровняет кнопку вправо */
-}
+        .print-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-left: auto;
+        }
 
-.print-button:hover {
-    background-color: #f0f0f0;
-    transform: scale(1.1);
-}
+        .print-button:hover {
+            background-color: #f0f0f0;
+            transform: scale(1.1);
+        }
 
-/* Стили для кнопки изображения (оставить как было) */
-.image-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 5px;
-    margin-left: 10px;
-    border-radius: 50%;
-    transition: all 0.3s;
-    width: 42px;
-    height: 42px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-}
+        /* Стили для кнопки изображения */
+        .image-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            margin-left: 10px;
+            border-radius: 50%;
+            transition: all 0.3s;
+            width: 42px;
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
 
-.image-button:hover {
-    background-color: #f0f0f0;
-    transform: scale(1.1);
-}
+        .image-button:hover {
+            background-color: #f0f0f0;
+            transform: scale(1.1);
+        }
 
-.no-image-text {
-    color: #999;
-    font-size: 12px;
-    margin-left: 10px;
-    font-style: italic;
-}
+        .no-image-text {
+            color: #999;
+            font-size: 12px;
+            margin-left: 10px;
+            font-style: italic;
+        }
+        
+        /* Кнопка "Наверх" */
+        .scroll-to-top-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .scroll-to-top-btn:hover {
+            background-color: #45a049;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        
+        .scroll-to-top-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .scroll-to-top-btn.show {
+            display: flex;
+        }
         
         /* Модальное окно выбора печати */
         .print-modal {
@@ -625,6 +668,18 @@
             0% { top: 0; }
             50% { top: 100%; }
             100% { top: 0; }
+        }
+        
+        .scan-hint {
+            position: absolute;
+            bottom: -40px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            z-index: 2;
         }
         
         .barcode-supported {
@@ -883,6 +938,9 @@
         </div>
     </div>
 
+    <!-- Кнопка "Наверх" -->
+    <button class="scroll-to-top-btn" id="scrollToTopBtn" title="Наверх">↑</button>
+
     <!-- Модальное окно камеры -->
     <div class="modal-overlay" id="cameraModal">
         <div class="modal-frame">
@@ -936,7 +994,13 @@
     </div>
 
     <script>
-        // Данные с добавленным параметром "кор."
+        // ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
+        let stream = null;
+        let barcodeDetector = null;
+        let scanInterval = null;
+        let lastScannedCode = '';
+        
+        // Пример данных
         const productsData = `6080010075148;KS-8001;Набор для творчества "ЧАСТИЧНАЯ ВЫКЛАДКА СТРАЗАМИ" 10*15 в пакете;70,00;70,00;7;;10;2;0,035;;0,050;0,010;;Cb010003474_1;;;200;
 ЦБ010003475;Q-А998;Парусник на радиоуправлении на батарейках с рулём.;355,00;355,00;;;8;;;;0,167;;;;50;177,50;48;
 6132588301003;TS-MY88301;Конструктор " Гоночная машина";1780,00;1780,00;;;1;1;;;0,167;0,167;У/Ж2;KS-402-24;;;6;
@@ -20796,165 +20860,165 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             });
         }
 
-function createProductCard(product, query, searchMode) {
-    const productCard = document.createElement('div');
-    productCard.className = 'product-card';
-    
-    let highlightedName = product.name;
-    let highlightedArticle = product.article;
-    let highlightedBarcode = '';
-    
-    if (searchMode === 'комбинированный') {
-        if (query.article) {
-            highlightedArticle = highlightMatch(product.article, query.article);
-        }
-        if (query.name) {
-            highlightedName = highlightMatch(product.name, query.name);
-        }
-        if (query.barcode) {
-            if (product.count > 1) {
-                highlightedBarcode = createMultipleBarcodesHTML(product.barcodes, query.barcode);
+        function createProductCard(product, query, searchMode) {
+            const productCard = document.createElement('div');
+            productCard.className = 'product-card';
+            
+            let highlightedName = product.name;
+            let highlightedArticle = product.article;
+            let highlightedBarcode = '';
+            
+            if (searchMode === 'комбинированный') {
+                if (query.article) {
+                    highlightedArticle = highlightMatch(product.article, query.article);
+                }
+                if (query.name) {
+                    highlightedName = highlightMatch(product.name, query.name);
+                }
+                if (query.barcode) {
+                    if (product.count > 1) {
+                        highlightedBarcode = createMultipleBarcodesHTML(product.barcodes, query.barcode);
+                    } else {
+                        highlightedBarcode = highlightMatch(product.barcode, query.barcode);
+                    }
+                }
             } else {
-                highlightedBarcode = highlightMatch(product.barcode, query.barcode);
+                if (searchMode === 'по артикулу' || searchMode === 'комбинированный') {
+                    highlightedArticle = highlightMatch(product.article, query);
+                }
+                if (searchMode === 'по наименованию' || searchMode === 'комбинированный') {
+                    highlightedName = highlightMatch(product.name, query);
+                }
+                if (searchMode === 'по штрихкоду') {
+                    if (product.count > 1) {
+                        highlightedBarcode = createMultipleBarcodesHTML(product.barcodes, query);
+                    } else {
+                        highlightedBarcode = highlightMatch(product.barcode, query);
+                    }
+                }
             }
-        }
-    } else {
-        if (searchMode === 'по артикулу' || searchMode === 'комбинированный') {
-            highlightedArticle = highlightMatch(product.article, query);
-        }
-        if (searchMode === 'по наименованию' || searchMode === 'комбинированный') {
-            highlightedName = highlightMatch(product.name, query);
-        }
-        if (searchMode === 'по штрихкоду') {
-            if (product.count > 1) {
-                highlightedBarcode = createMultipleBarcodesHTML(product.barcodes, query);
+            
+            if (!highlightedBarcode) {
+                if (product.count > 1) {
+                    highlightedBarcode = createMultipleBarcodesHTML(product.barcodes, '');
+                } else {
+                    highlightedBarcode = product.barcode;
+                }
+            }
+            
+            const container = document.createElement('div');
+            
+            // Создаем строку с артикулом и кнопками
+            const articleRow = document.createElement('div');
+            articleRow.className = 'article';
+            articleRow.innerHTML = `Артикул: ${highlightedArticle}`;
+            
+            // Добавляем кнопку изображения слева рядом с артикулом
+            const hasImage = product.imageCode && product.imageCode.trim() !== '';
+            
+            if (hasImage) {
+                const imageButton = document.createElement('button');
+                imageButton.className = 'image-button';
+                imageButton.title = 'Показать изображение товара';
+                imageButton.innerHTML = '&#127750;';
+                imageButton.onclick = function() {
+                    showProductImage(product);
+                };
+                articleRow.appendChild(imageButton);
             } else {
-                highlightedBarcode = highlightMatch(product.barcode, query);
+                const noImageSpan = document.createElement('span');
+                noImageSpan.className = 'no-image-text';
+                noImageSpan.textContent = '(без изображения)';
+                articleRow.appendChild(noImageSpan);
             }
+            
+            // Добавляем кнопку печати справа в той же строке
+            const printButton = document.createElement('button');
+            printButton.className = 'print-button';
+            printButton.title = 'Печать ценника';
+            printButton.innerHTML = '&#129534;';
+            printButton.onclick = function() {
+                openPrintModal(product);
+            };
+            
+            // Создаем контейнер для кнопки печати, чтобы разместить её справа
+            const articleContainer = document.createElement('div');
+            articleContainer.style.display = 'flex';
+            articleContainer.style.justifyContent = 'space-between';
+            articleContainer.style.alignItems = 'center';
+            articleContainer.style.marginBottom = '5px';
+            
+            articleContainer.appendChild(articleRow);
+            articleContainer.appendChild(printButton);
+            
+            // Основной контент карточки
+            container.innerHTML = `
+                <div class="product-field barcode">Штрихкод: ${highlightedBarcode}</div>
+                <div class="product-field name">${highlightedName}</div>
+                ${formatPriceWithDiscount(product)}
+            `;
+            
+            // Вставляем строку с артикулом и кнопками в начало
+            container.insertBefore(articleContainer, container.firstChild);
+            
+            const stockInfo = document.createElement('div');
+            stockInfo.innerHTML = `
+                <div class="stock-info">
+                    <div class="stock-title">Остатки:</div>
+                    <div class="stock-item">
+                        <span class="stock-name">Уральская 97:</span>
+                        <span class="stock-quantity ${product.stocks.warehouse1 < 0 ? 'negative' : 'positive'}">
+                            ${formatNumber(product.stocks.warehouse1)} шт. 
+                            <span class="box-coefficient">(${formatCoefficient(product.coefficients.warehouse1)} кор.)</span>
+                        </span>
+                    </div>
+                    <div class="stock-item">
+                        <span class="stock-name">ОСНОВНОЙ СКЛАД:</span>
+                        <span class="stock-quantity ${product.stocks.warehouse2 < 0 ? 'negative' : 'positive'}">
+                            ${formatNumber(product.stocks.warehouse2)} шт. 
+                            <span class="box-coefficient">(${formatCoefficient(product.coefficients.warehouse2)} кор.)</span>
+                        </span>
+                    </div>
+                    <div class="stock-item">
+                        <span class="stock-name">Шевченко 139:</span>
+                        <span class="stock-quantity ${product.stocks.warehouse3 < 0 ? 'negative' : 'positive'}">
+                            ${formatNumber(product.stocks.warehouse3)} шт. 
+                            <span class="box-coefficient">(${formatCoefficient(product.coefficients.warehouse3)} кор.)</span>
+                        </span>
+                    </div>
+                    <div class="stock-item">
+                        <span class="stock-name">МАГАЗИН 234:</span>
+                        <span class="stock-quantity ${product.stocks.warehouse4 < 0 ? 'negative' : 'positive'}">
+                            ${formatNumber(product.stocks.warehouse4)} шт. 
+                            <span class="box-coefficient">(${formatCoefficient(product.coefficients.warehouse4)} кор.)</span>
+                        </span>
+                    </div>
+                </div>
+            `;
+            
+            if (product.boxQuantity && product.boxQuantity.trim() !== '') {
+                stockInfo.innerHTML += `
+                    <div class="box-quantity-info">
+                        <div class="box-quantity-title">Кол-во в коробке:</div>
+                        <div class="box-quantity-value">${product.boxQuantity} шт.</div>
+                    </div>
+                `;
+            }
+            
+            if (product.storageLocation && product.storageLocation.trim() !== '') {
+                stockInfo.innerHTML += `
+                    <div class="storage-location">
+                        <div class="storage-title">Место хранения:</div>
+                        <div class="storage-value">${product.storageLocation}</div>
+                    </div>
+                `;
+            }
+            
+            productCard.appendChild(container);
+            productCard.appendChild(stockInfo);
+            
+            return productCard;
         }
-    }
-    
-    if (!highlightedBarcode) {
-        if (product.count > 1) {
-            highlightedBarcode = createMultipleBarcodesHTML(product.barcodes, '');
-        } else {
-            highlightedBarcode = product.barcode;
-        }
-    }
-    
-    const container = document.createElement('div');
-    
-    // Создаем строку с артикулом и кнопками
-    const articleRow = document.createElement('div');
-    articleRow.className = 'article';
-    articleRow.innerHTML = `Артикул: ${highlightedArticle}`;
-    
-    // Добавляем кнопку изображения слева рядом с артикулом
-    const hasImage = product.imageCode && product.imageCode.trim() !== '';
-    
-    if (hasImage) {
-        const imageButton = document.createElement('button');
-        imageButton.className = 'image-button';
-        imageButton.title = 'Показать изображение товара';
-        imageButton.innerHTML = '&#127750;';
-        imageButton.onclick = function() {
-            showProductImage(product);
-        };
-        articleRow.appendChild(imageButton);
-    } else {
-        const noImageSpan = document.createElement('span');
-        noImageSpan.className = 'no-image-text';
-        noImageSpan.textContent = '(без изображения)';
-        articleRow.appendChild(noImageSpan);
-    }
-    
-    // Добавляем кнопку печати справа в той же строке
-    const printButton = document.createElement('button');
-    printButton.className = 'print-button';
-    printButton.title = 'Печать ценника';
-    printButton.innerHTML = '&#129534;';
-    printButton.onclick = function() {
-        openPrintModal(product);
-    };
-    
-    // Создаем контейнер для кнопки печати, чтобы разместить её справа
-    const articleContainer = document.createElement('div');
-    articleContainer.style.display = 'flex';
-    articleContainer.style.justifyContent = 'space-between';
-    articleContainer.style.alignItems = 'center';
-    articleContainer.style.marginBottom = '5px';
-    
-    articleContainer.appendChild(articleRow);
-    articleContainer.appendChild(printButton);
-    
-    // Основной контент карточки
-    container.innerHTML = `
-        <div class="product-field barcode">Штрихкод: ${highlightedBarcode}</div>
-        <div class="product-field name">${highlightedName}</div>
-        ${formatPriceWithDiscount(product)}
-    `;
-    
-    // Вставляем строку с артикулом и кнопками в начало
-    container.insertBefore(articleContainer, container.firstChild);
-    
-    const stockInfo = document.createElement('div');
-    stockInfo.innerHTML = `
-        <div class="stock-info">
-            <div class="stock-title">Остатки:</div>
-            <div class="stock-item">
-                <span class="stock-name">Уральская 97:</span>
-                <span class="stock-quantity ${product.stocks.warehouse1 < 0 ? 'negative' : 'positive'}">
-                    ${formatNumber(product.stocks.warehouse1)} шт. 
-                    <span class="box-coefficient">(${formatCoefficient(product.coefficients.warehouse1)} кор.)</span>
-                </span>
-            </div>
-            <div class="stock-item">
-                <span class="stock-name">ОСНОВНОЙ СКЛАД:</span>
-                <span class="stock-quantity ${product.stocks.warehouse2 < 0 ? 'negative' : 'positive'}">
-                    ${formatNumber(product.stocks.warehouse2)} шт. 
-                    <span class="box-coefficient">(${formatCoefficient(product.coefficients.warehouse2)} кор.)</span>
-                </span>
-            </div>
-            <div class="stock-item">
-                <span class="stock-name">Шевченко 139:</span>
-                <span class="stock-quantity ${product.stocks.warehouse3 < 0 ? 'negative' : 'positive'}">
-                    ${formatNumber(product.stocks.warehouse3)} шт. 
-                    <span class="box-coefficient">(${formatCoefficient(product.coefficients.warehouse3)} кор.)</span>
-                </span>
-            </div>
-            <div class="stock-item">
-                <span class="stock-name">МАГАЗИН 234:</span>
-                <span class="stock-quantity ${product.stocks.warehouse4 < 0 ? 'negative' : 'positive'}">
-                    ${formatNumber(product.stocks.warehouse4)} шт. 
-                    <span class="box-coefficient">(${formatCoefficient(product.coefficients.warehouse4)} кор.)</span>
-                </span>
-            </div>
-        </div>
-    `;
-    
-    if (product.boxQuantity && product.boxQuantity.trim() !== '') {
-        stockInfo.innerHTML += `
-            <div class="box-quantity-info">
-                <div class="box-quantity-title">Кол-во в коробке:</div>
-                <div class="box-quantity-value">${product.boxQuantity} шт.</div>
-            </div>
-        `;
-    }
-    
-    if (product.storageLocation && product.storageLocation.trim() !== '') {
-        stockInfo.innerHTML += `
-            <div class="storage-location">
-                <div class="storage-title">Место хранения:</div>
-                <div class="storage-value">${product.storageLocation}</div>
-            </div>
-        `;
-    }
-    
-    productCard.appendChild(container);
-    productCard.appendChild(stockInfo);
-    
-    return productCard;
-}
 
         function scrollToResults() {
             const resultsContainer = document.getElementById('resultsContainer');
@@ -21107,12 +21171,6 @@ function createProductCard(product, query, searchMode) {
                 return;
             }
             
-            const barcodeDetector = await initBarcodeDetector();
-            if (!barcodeDetector) {
-                alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
-                return;
-            }
-            
             try {
                 stopCameraStream();
                 
@@ -21125,11 +21183,25 @@ function createProductCard(product, query, searchMode) {
                     audio: false
                 };
                 
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                // Используем глобальную переменную stream
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                
                 cameraVideo.srcObject = stream;
                 cameraModal.style.display = 'flex';
                 
                 await cameraVideo.play();
+                
+                // Инициализируем barcodeDetector если еще не инициализирован
+                if (!barcodeDetector) {
+                    barcodeDetector = await initBarcodeDetector();
+                }
+                
+                if (!barcodeDetector) {
+                    alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
+                    stopCameraStream();
+                    return;
+                }
+                
                 startBarcodeDetection(barcodeDetector);
                 
             } catch (error) {
@@ -21138,7 +21210,7 @@ function createProductCard(product, query, searchMode) {
             }
         }
 
-        function startBarcodeDetection(barcodeDetector) {
+        function startBarcodeDetection(detector) {
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
             
@@ -21150,7 +21222,7 @@ function createProductCard(product, query, searchMode) {
                     context.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
                     
                     try {
-                        const barcodes = await barcodeDetector.detect(canvas);
+                        const barcodes = await detector.detect(canvas);
                         
                         if (barcodes && barcodes.length > 0) {
                             const barcode = barcodes[0];
@@ -21166,14 +21238,15 @@ function createProductCard(product, query, searchMode) {
         }
 
         function stopCameraStream() {
-            if (cameraVideo.srcObject) {
-                cameraVideo.srcObject.getTracks().forEach(track => track.stop());
-                cameraVideo.srcObject = null;
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
             }
             if (scanInterval) {
                 clearInterval(scanInterval);
                 scanInterval = null;
             }
+            cameraVideo.srcObject = null;
         }
 
         function handleScannedCode(code) {
@@ -21210,44 +21283,40 @@ function createProductCard(product, query, searchMode) {
                     productCard.className = 'scan-result-card';
                     
                     const hasImage = product.imageCode && product.imageCode.trim() !== '';
-                    const imageButtonHTML = hasImage ? 
-                        `<button class="image-button" style="margin-left: 10px;" onclick="showProductImage(${JSON.stringify(product).replace(/"/g, '&quot;')})">&#127750;</button>` : 
-                        `<span class="no-image-text">(без изображения)</span>`;
+                    const printButtonHTML = `<button class="print-button" onclick="openPrintModal(${JSON.stringify(product).replace(/"/g, '&quot;')})" title="Печать ценника">&#129534;</button>`;
+
+                    productCard.innerHTML = `
+                        <div style="font-size: 12px; color: #666; margin-bottom: 5px;">
+                            <strong>Штрихкод:</strong> ${product.count > 1 ? `Несколько (${product.count})` : product.barcode}
+                        </div>
+                        <div style="font-weight: bold; color: #333; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center;" id="articleContainer_${product.article.replace(/[^a-zA-Z0-9]/g, '_')}">
+                                <strong>Артикул:</strong> ${product.article}
+                                ${hasImage ? '<button class="image-button" style="margin-left: 10px;">&#127750;</button>' : '<span class="no-image-text">(без изображения)</span>'}
+                            </div>
+                            ${printButtonHTML}
+                        </div>
+                        <div style="font-size: 16px; color: #222; margin-bottom: 8px;">
+                            ${product.name}
+                        </div>
+                        ${formatPriceWithDiscountModal(product)}
+                        ${formatStockInfoModal(product)}
+                    `;
                     
-					const printButtonHTML = `<button class="print-button" onclick="openPrintModal(${JSON.stringify(product).replace(/"/g, '&quot;')})" title="Печать ценника">&#129534;</button>`;
-
-productCard.innerHTML = `
-    <div style="font-size: 12px; color: #666; margin-bottom: 5px;">
-        <strong>Штрихкод:</strong> ${product.count > 1 ? `Несколько (${product.count})` : product.barcode}
-    </div>
-    <div style="font-weight: bold; color: #333; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: center;" id="articleContainer_${product.article.replace(/[^a-zA-Z0-9]/g, '_')}">
-            <strong>Артикул:</strong> ${product.article}
-            ${hasImage ? '<button class="image-button" style="margin-left: 10px;">&#127750;</button>' : '<span class="no-image-text">(без изображения)</span>'}
-        </div>
-        ${printButtonHTML}
-    </div>
-    <div style="font-size: 16px; color: #222; margin-bottom: 8px;">
-        ${product.name}
-    </div>
-    ${formatPriceWithDiscountModal(product)}
-    ${formatStockInfoModal(product)}
-`;
-
-// Добавляем обработчик клика на кнопку изображения
-if (hasImage) {
-    setTimeout(() => {
-        const container = productCard.querySelector(`#articleContainer_${product.article.replace(/[^a-zA-Z0-9]/g, '_')}`);
-        if (container) {
-            const imageButton = container.querySelector('.image-button');
-            if (imageButton) {
-                imageButton.onclick = function() {
-                    showProductImage(product);
-                };
-            }
-        }
-    }, 0);
-}
+                    // Добавляем обработчик клика на кнопку изображения
+                    if (hasImage) {
+                        setTimeout(() => {
+                            const container = productCard.querySelector(`#articleContainer_${product.article.replace(/[^a-zA-Z0-9]/g, '_')}`);
+                            if (container) {
+                                const imageButton = container.querySelector('.image-button');
+                                if (imageButton) {
+                                    imageButton.onclick = function() {
+                                        showProductImage(product);
+                                    };
+                                }
+                            }
+                        }, 0);
+                    }
                     
                     resultProducts.appendChild(productCard);
                 });
@@ -21341,6 +21410,29 @@ if (hasImage) {
             resultsContainer.style.display = 'none';
         }
 
+        // ===== ФУНКЦИИ ДЛЯ КНОПКИ "НАВЕРХ" =====
+        
+        function initScrollToTopButton() {
+            const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+            
+            // Показать/скрыть кнопку при прокрутке
+            window.addEventListener('scroll', function() {
+                if (window.pageYOffset > 300) {
+                    scrollToTopBtn.classList.add('show');
+                } else {
+                    scrollToTopBtn.classList.remove('show');
+                }
+            });
+            
+            // Прокрутка вверх при клике
+            scrollToTopBtn.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+
         // ===== ИНИЦИАЛИЗАЦИЯ =====
         
         const products = parseProductsData(productsData);
@@ -21373,10 +21465,6 @@ if (hasImage) {
         const resultProducts = document.getElementById('resultProducts');
         const continueScanBtn = document.getElementById('continueScanBtn');
         const closeResultBtn = document.getElementById('closeResultBtn');
-
-        // Переменные
-        let scanInterval = null;
-        let lastScannedCode = '';
 
         function updateSearchUI() {
             const mode = getCurrentSearchMode();
@@ -21475,6 +21563,7 @@ if (hasImage) {
             updateSearchUI();
             searchInput.focus();
             setupPlatformUI();
+            initScrollToTopButton(); // Инициализация кнопки "Наверх"
         });
 
         searchInput.addEventListener('keydown', function(e) {
