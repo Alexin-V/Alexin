@@ -21216,23 +21216,38 @@ function createProductCard(product, query, searchMode) {
                     
 					const printButtonHTML = `<button class="print-button" onclick="openPrintModal(${JSON.stringify(product).replace(/"/g, '&quot;')})" title="Печать ценника">&#129534;</button>`;
 
-					productCard.innerHTML = `
-						<div style="font-size: 12px; color: #666; margin-bottom: 5px;">
-							<strong>Штрихкод:</strong> ${product.count > 1 ? `Несколько (${product.count})` : product.barcode}
-						</div>
-						<div style="font-weight: bold; color: #333; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between;">
-							<div style="display: flex; align-items: center;">
-								<strong>Артикул:</strong> ${product.article}
-								${imageButtonHTML}
-						</div>
-							${printButtonHTML}
-						</div>
-						<div style="font-size: 16px; color: #222; margin-bottom: 8px;">
-							${product.name}
-						</div>
-						${formatPriceWithDiscountModal(product)}
-						${formatStockInfoModal(product)}
-					`;
+productCard.innerHTML = `
+    <div style="font-size: 12px; color: #666; margin-bottom: 5px;">
+        <strong>Штрихкод:</strong> ${product.count > 1 ? `Несколько (${product.count})` : product.barcode}
+    </div>
+    <div style="font-weight: bold; color: #333; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center;" id="articleContainer_${product.article.replace(/[^a-zA-Z0-9]/g, '_')}">
+            <strong>Артикул:</strong> ${product.article}
+            ${hasImage ? '<button class="image-button" style="margin-left: 10px;">&#127750;</button>' : '<span class="no-image-text">(без изображения)</span>'}
+        </div>
+        ${printButtonHTML}
+    </div>
+    <div style="font-size: 16px; color: #222; margin-bottom: 8px;">
+        ${product.name}
+    </div>
+    ${formatPriceWithDiscountModal(product)}
+    ${formatStockInfoModal(product)}
+`;
+
+// Добавляем обработчик клика на кнопку изображения
+if (hasImage) {
+    setTimeout(() => {
+        const container = productCard.querySelector(`#articleContainer_${product.article.replace(/[^a-zA-Z0-9]/g, '_')}`);
+        if (container) {
+            const imageButton = container.querySelector('.image-button');
+            if (imageButton) {
+                imageButton.onclick = function() {
+                    showProductImage(product);
+                };
+            }
+        }
+    }, 0);
+}
                     
                     resultProducts.appendChild(productCard);
                 });
