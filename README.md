@@ -488,8 +488,8 @@
             display: flex;
         }
         
-        /* Модальное окно выбора печати */
-        .print-modal {
+        /* Новое модальное окно печати */
+        .print-modal-new {
             position: fixed;
             top: 0;
             left: 0;
@@ -502,51 +502,16 @@
             z-index: 2000;
         }
         
-        .print-modal-content {
+        .print-modal-content-new {
             background: white;
-            padding: 30px;
+            padding: 25px;
             border-radius: 15px;
             text-align: center;
-            max-width: 400px;
+            max-width: 450px;
             width: 90%;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         
-        .print-options {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .print-option-btn {
-            padding: 15px;
-            border: none;
-            border-radius: 8px;
-            background-color: #2196F3;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .print-option-btn:hover {
-            background-color: #0b7dda;
-            transform: translateY(-2px);
-        }
-        
-        .close-print-modal {
-            background-color: #f44336;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        
-        /* Индикатор печати */
         .print-status {
             margin-top: 15px;
             padding: 10px;
@@ -572,6 +537,79 @@
             border: 1px solid #bee5eb;
         }
         
+        /* Контейнер для предпросмотра ценника */
+        .price-tag-preview {
+            margin: 20px 0;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background: white;
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+        }
+        
+        .price-tag-canvas {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            background: white;
+        }
+        
+        .print-action-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+            width: 100%;
+            max-width: 250px;
+        }
+        
+        .print-action-btn:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .print-action-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .printer-status {
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .printer-connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .printer-disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .printer-connecting {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
         /* Модальное окно камеры */
         .modal-overlay {
             position: fixed;
@@ -939,7 +977,7 @@
     </div>
 
     <!-- Кнопка "Наверх" -->
-    <button class="scroll-to-top-btn" id="scrollToTopBtn" title="Наверх">↑</button>
+    <button class="scroll-to-top-btn" id="scrollToTopBtn" title="Наверх">&#9650;</button>
 
     <!-- Модальное окно камеры -->
     <div class="modal-overlay" id="cameraModal">
@@ -979,26 +1017,34 @@
         </div>
     </div>
 
-    <!-- Модальное окно выбора печати -->
-    <div class="print-modal" id="printModal">
-        <div class="print-modal-content">
-            <h3>Выбор варианта печати ценника</h3>
-            <div class="print-options">
-                <button class="print-option-btn" onclick="printWithOption('tspl')">TSPL (TSC)</button>
-                <button class="print-option-btn" onclick="printWithOption('epl')">EPL (Zebra)</button>
-                <button class="print-option-btn" onclick="printWithOption('zpl')">ZPL (Zebra II)</button>
-                <button class="print-option-btn" onclick="printWithOption('esc')">ESC/POS (Epson)</button>
+    <!-- Новое модальное окно печати -->
+    <div class="print-modal-new" id="printModal">
+        <div class="print-modal-content-new">
+            <h3>Печать ценника</h3>
+            
+            <div id="printerStatus" class="printer-status printer-connecting">
+                &#9203; Подключаюсь к принтеру...
             </div>
-            <button class="close-print-modal" id="closePrintModal">Закрыть</button>
+            
+            <div class="price-tag-preview">
+                <canvas id="priceTagPreviewCanvas" class="price-tag-canvas" width="440" height="284"></canvas>
+            </div>
+            
+            <button class="print-action-btn" id="printActionBtn" disabled>
+                &#128438; Распечатать
+            </button>
+            
+            <button class="close-modal" id="closePrintModal" style="margin-top: 15px;">
+                Закрыть
+            </button>
         </div>
     </div>
 
     <script>
-        // ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
-        let stream = null;
-        let barcodeDetector = null;
-        let scanInterval = null;
-        let lastScannedCode = '';
+        // ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫХ ДЛЯ СЕРИАЛЬНОГО ПОРТА =====
+        let serialPort = null;
+        let serialWriter = null;
+        let isPrinterConnected = false;
         
         // Пример данных
         const productsData = `6080010075148;KS-8001;Набор для творчества "ЧАСТИЧНАЯ ВЫКЛАДКА СТРАЗАМИ" 10*15 в пакете;70,00;70,00;7;;10;2;0,035;;0,050;0,010;;Cb010003474_1;;;200;
@@ -19957,8 +20003,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
 
         // Текущий товар для печати
         let currentProductForPrint = null;
-        // Выбранный принтер
-        let selectedPrinter = null;
 
         function parseFloatValue(value) {
             if (!value) return 0;
@@ -20118,7 +20162,350 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             `;
         }
 
-        // ===== ФУНКЦИИ ДЛЯ ПЕЧАТИ =====
+        // ===== ФУНКЦИИ ДЛЯ РАБОТЫ С СЕРИАЛЬНЫМ ПОРТОМ =====
+
+        function updatePrinterStatus(message, type = 'connecting') {
+            const statusEl = document.getElementById('printerStatus');
+            statusEl.textContent = message;
+            
+            // Удаляем все классы статуса
+            statusEl.classList.remove('printer-connected', 'printer-disconnected', 'printer-connecting');
+            
+            // Добавляем нужный класс
+            switch(type) {
+                case 'connected':
+                    statusEl.classList.add('printer-connected');
+                    statusEl.innerHTML = '&#9989; ' + message;
+                    break;
+                case 'disconnected':
+                    statusEl.classList.add('printer-disconnected');
+                    statusEl.innerHTML = '&#10060; ' + message;
+                    break;
+                case 'connecting':
+                    statusEl.classList.add('printer-connecting');
+                    statusEl.innerHTML = '&#9203; ' + message;
+                    break;
+            }
+        }
+
+        async function connectToPrinter() {
+            try {
+                updatePrinterStatus('Подключаюсь к принтеру...', 'connecting');
+                
+                if (!navigator.serial) {
+                    throw new Error('Ваш браузер не поддерживает Web Serial. Используйте Chrome/Edge 89+');
+                }
+                
+                // Пытаемся найти уже подключенные порты
+                const ports = await navigator.serial.getPorts();
+                
+                if (ports.length > 0) {
+                    serialPort = ports[0];
+                } else {
+                    // Запрашиваем новый порт
+                    serialPort = await navigator.serial.requestPort();
+                }
+                
+                await serialPort.open({
+                    baudRate: 115200,
+                    dataBits: 8,
+                    stopBits: 1,
+                    parity: 'none'
+                });
+                
+                serialWriter = serialPort.writable.getWriter();
+                isPrinterConnected = true;
+                
+                updatePrinterStatus('Принтер подключен', 'connected');
+                return true;
+                
+            } catch (error) {
+                console.error('Ошибка подключения к принтеру:', error);
+                updatePrinterStatus(`Ошибка: ${error.message}`, 'disconnected');
+                return false;
+            }
+        }
+
+        async function disconnectFromPrinter() {
+            try {
+                if (serialWriter) {
+                    serialWriter.releaseLock();
+                    serialWriter = null;
+                }
+                
+                if (serialPort) {
+                    await serialPort.close();
+                    serialPort = null;
+                }
+                
+                isPrinterConnected = false;
+                updatePrinterStatus('Принтер отключен', 'disconnected');
+                return true;
+                
+            } catch (error) {
+                console.error('Ошибка отключения:', error);
+                return false;
+            }
+        }
+
+        async function sendRawData(data) {
+            if (!isPrinterConnected || !serialWriter) {
+                throw new Error('Сначала подключите принтер');
+            }
+            
+            try {
+                await serialWriter.write(data);
+                return true;
+            } catch (error) {
+                console.error('Ошибка отправки данных:', error);
+                throw error;
+            }
+        }
+
+        // ===== ФУНКЦИИ ДЛЯ СОЗДАНИЯ И ПЕЧАТИ ЦЕННИКА =====
+
+        function createPriceTagImage(product) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 440; // 55мм
+            canvas.height = 284; // 38мм
+            const ctx = canvas.getContext('2d');
+            
+            // БЕЛЫЙ ФОН
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // ЧЕРНЫЙ ТЕКСТ
+            ctx.fillStyle = 'black';
+            ctx.textAlign = 'center';
+            
+            // БАЗОВЫЕ РАЗМЕРЫ С УВЕЛИЧЕНИЕМ 50%
+            const textScale = 1.5;
+            const baseFonts = {
+                company: 22 * textScale,    // 33px
+                article: 18 * textScale,    // 27px
+                product: 16 * textScale,    // 24px
+                price: 44 * textScale,      // 66px (+10%)
+                date: 14 * textScale        // 21px
+            };
+            
+            // 1. НАЗВАНИЕ КОМПАНИИ - ПО ЦЕНТРУ
+            ctx.font = `bold ${baseFonts.company}px "Arial"`;
+            ctx.fillText('ООО "КУБАНЬСТАР"', canvas.width / 2, 30);
+            
+            // ЖИРНАЯ линия под названием
+            ctx.beginPath();
+            ctx.moveTo(4, 40);
+            ctx.lineTo(canvas.width - 4, 40);
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // 2. АРТИКУЛ И КОЛИЧЕСТВО В КОРОБКЕ
+            ctx.font = `bold ${baseFonts.article}px "Arial"`;
+            ctx.textAlign = 'left';
+            ctx.fillText(product.article, 6, 70);
+            ctx.textAlign = 'right';
+            const boxQty = product.boxQuantity || '0';
+            ctx.fillText(`${boxQty} шт. в кор.`, canvas.width - 6, 70);
+            
+            // ЖИРНАЯ линия
+            ctx.beginPath();
+            ctx.moveTo(4, 80);
+            ctx.lineTo(canvas.width - 4, 80);
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.lineWidth = 1;
+            
+            // 3. НАЗВАНИЕ ТОВАРА - ПО ЦЕНТРУ (обрезаем если слишком длинное)
+            let productName = product.name;
+            if (productName.length > 35) {
+                productName = productName.substring(0, 35) + '...';
+            }
+            
+            ctx.font = `bold ${baseFonts.product}px "Arial"`;
+            ctx.textAlign = 'center';
+            
+            // Разбиваем название на две строки если нужно
+            const words = productName.split(' ');
+            let line1 = '';
+            let line2 = '';
+            
+            for (const word of words) {
+                if ((line1 + ' ' + word).length <= 25 && !line2) {
+                    if (line1) line1 += ' ';
+                    line1 += word;
+                } else {
+                    if (line2) line2 += ' ';
+                    line2 += word;
+                }
+            }
+            
+            ctx.fillText(line1, canvas.width / 2, 110);
+            if (line2) {
+                ctx.fillText(line2, canvas.width / 2, 135);
+            }
+            
+            // ОЧЕНЬ ЖИРНАЯ линия перед ценой
+            ctx.beginPath();
+            ctx.moveTo(4, 155);
+            ctx.lineTo(canvas.width - 4, 155);
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.lineWidth = 1;
+            
+            // 4. ЦЕНА - ПО ЦЕНТРУ
+            const price = product.discountPrice && product.discountPrice.trim() !== '' 
+                ? product.discountPrice 
+                : product.wholesalePrice;
+            
+            const priceNumber = parseFloat(price.replace(',', '.'));
+            const priceFormatted = formatNumber(Math.round(priceNumber));
+            
+            ctx.font = `bold ${baseFonts.price}px "Arial"`;
+            ctx.fillText(`${priceFormatted} Руб.`, canvas.width / 2, 207 + 12);
+            
+            // ЖИРНАЯ линия под ценой
+            ctx.beginPath();
+            ctx.moveTo(4, 225 + 12);
+            ctx.lineTo(canvas.width - 4, 225 + 12);
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // 5. ДАТА - ПО ЦЕНТРУ
+            const today = new Date();
+            const dateStr = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth()+1).toString().padStart(2, '0')}.${today.getFullYear()}`;
+            ctx.font = `${baseFonts.date}px "Arial"`;
+            ctx.fillText(dateStr, canvas.width / 2, 245 + 20);
+            
+            return canvas;
+        }
+
+        function canvasToEscPosBitmap(canvas) {
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            const bytesPerLine = Math.ceil(width / 8);
+            const bitmap = new Uint8Array(bytesPerLine * height);
+            
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const pixelIndex = (y * width + x) * 4;
+                    const r = data[pixelIndex];
+                    const g = data[pixelIndex + 1];
+                    const b = data[pixelIndex + 2];
+                    
+                    const isBlack = (r + g + b) < 384;
+                    
+                    if (isBlack) {
+                        const byteIndex = y * bytesPerLine + Math.floor(x / 8);
+                        const bitPosition = 7 - (x % 8);
+                        bitmap[byteIndex] |= (1 << bitPosition);
+                    }
+                }
+            }
+            
+            return {
+                data: bitmap,
+                width: width,
+                height: height,
+                bytesPerLine: bytesPerLine
+            };
+        }
+
+        function createEscPosImageCommand(bitmap) {
+            const width = bitmap.width;
+            const height = bitmap.height;
+            const bytesPerLine = bitmap.bytesPerLine;
+            
+            const command = new Uint8Array(bitmap.data.length + 8);
+            
+            command[0] = 0x1D; // GS
+            command[1] = 0x76; // v
+            command[2] = 0x30; // 0
+            command[3] = 0x00; // m = 0
+            
+            const xL = bytesPerLine & 0xFF;
+            const xH = (bytesPerLine >> 8) & 0xFF;
+            command[4] = xL;
+            command[5] = xH;
+            
+            const yL = height & 0xFF;
+            const yH = (height >> 8) & 0xFF;
+            command[6] = yL;
+            command[7] = yH;
+            
+            command.set(bitmap.data, 8);
+            
+            return command;
+        }
+
+        async function printPriceTag(product) {
+            try {
+                if (!isPrinterConnected) {
+                    const connected = await connectToPrinter();
+                    if (!connected) {
+                        throw new Error('Не удалось подключиться к принтеру');
+                    }
+                }
+                
+                const canvas = createPriceTagImage(product);
+                const bitmap = canvasToEscPosBitmap(canvas);
+                const imageCommand = createEscPosImageCommand(bitmap);
+                
+                // Отступ слева 1мм (8 точек)
+                const leftMargin = 8;
+                
+                const fullCommand = new Uint8Array(imageCommand.length + 10);
+                
+                // Инициализация
+                fullCommand[0] = 0x1B; // ESC
+                fullCommand[1] = 0x40; // @
+                
+                // Устанавливаем левое поле
+                fullCommand[2] = 0x1B; // ESC
+                fullCommand[3] = 0x6C; // l
+                fullCommand[4] = leftMargin;
+                
+                // Копируем команду изображения
+                fullCommand.set(imageCommand, 5);
+                
+                // Пустые строки после печати
+                const imageEnd = 5 + imageCommand.length;
+                fullCommand[imageEnd] = 0x0A; // LF
+                fullCommand[imageEnd + 1] = 0x0A; // LF
+                
+                await sendRawData(fullCommand);
+                return true;
+                
+            } catch (error) {
+                console.error('Ошибка печати:', error);
+                throw error;
+            }
+        }
+
+        function updatePriceTagPreview(product) {
+            const canvas = document.getElementById('priceTagPreviewCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Очищаем canvas
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Уменьшаем масштаб для предпросмотра
+            const scale = 0.7;
+            ctx.save();
+            ctx.scale(scale, scale);
+            
+            // Рисуем ценник
+            const previewCanvas = createPriceTagImage(product);
+            ctx.drawImage(previewCanvas, 0, 0);
+            
+            ctx.restore();
+        }
+
+        // ===== ОБНОВЛЕННЫЕ ФУНКЦИИ ДЛЯ ПЕЧАТИ =====
 
         function showPrintStatus(message, type = 'info') {
             const statusEl = document.getElementById('printStatus');
@@ -20131,522 +20518,73 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             }, 5000);
         }
 
-        function openPrintModal(product) {
+        async function openPrintModal(product) {
             currentProductForPrint = product;
+            document.getElementById('printModal').style.display = 'flex';
             
-            // Сначала пытаемся найти принтер
-            findPrinter().then(printer => {
-                if (printer) {
-                    selectedPrinter = printer;
-                    document.getElementById('printModal').style.display = 'flex';
+            // Обновляем предпросмотр
+            updatePriceTagPreview(product);
+            
+            // Отключаем кнопку печати
+            const printBtn = document.getElementById('printActionBtn');
+            printBtn.disabled = true;
+            printBtn.textContent = '&#128438;️ Подключаюсь к принтеру...';
+            
+            // Пытаемся подключиться к принтеру
+            try {
+                const connected = await connectToPrinter();
+                
+                if (connected) {
+                    printBtn.disabled = false;
+                    printBtn.textContent = '&#128438;️ Распечатать';
                 } else {
-                    showPrintStatus('Принтер не найден. Пожалуйста, подключите принтер и попробуйте снова.', 'error');
+                    printBtn.disabled = true;
+                    printBtn.textContent = '&#10060; Не удалось подключиться';
                 }
-            }).catch(error => {
-                showPrintStatus('Ошибка поиска принтера: ' + error.message, 'error');
-            });
+            } catch (error) {
+                console.error('Ошибка при подключении:', error);
+                printBtn.disabled = true;
+                printBtn.textContent = '&#10060; Ошибка подключения';
+            }
         }
 
         function closePrintModal() {
             document.getElementById('printModal').style.display = 'none';
+            
+            // Отключаемся от принтера после закрытия модального окна
+            setTimeout(() => {
+                disconnectFromPrinter();
+            }, 1000);
         }
 
-        async function findPrinter() {
-            try {
-                // Пытаемся получить доступ к USB
-                if (navigator.usb && navigator.usb.requestDevice) {
-                    showPrintStatus('Ищу USB принтер...', 'info');
-                    
-                    const filters = [
-                        { vendorId: 0x0416, productId: 0x5011 }, // Xprinter XP-P323B
-                        { vendorId: 0x0416, productId: 0x5011 }, // Xprinter
-                        { vendorId: 0x04b8, productId: 0x0202 }, // Epson
-                        { vendorId: 0x067b, productId: 0x2305 }, // Prolific
-                        { vendorId: 0x0483, productId: 0x5740 }  // STMicroelectronics
-                    ];
-                    
-                    const device = await navigator.usb.requestDevice({ filters });
-                    return device;
-                }
-                
-                // Пытаемся получить доступ к последовательному порту
-                if (navigator.serial) {
-                    showPrintStatus('Ищу Serial принтер...', 'info');
-                    
-                    const ports = await navigator.serial.getPorts();
-                    if (ports.length > 0) {
-                        return ports[0];
-                    }
-                    
-                    // Запрашиваем новый порт
-                    const port = await navigator.serial.requestPort();
-                    return port;
-                }
-                
-                showPrintStatus('WebUSB или WebSerial не поддерживаются в этом браузере', 'error');
-                return null;
-                
-            } catch (error) {
-                console.log('Поиск принтера через WebUSB/Serial не удался:', error);
-                
-                // Пробуем через Web Bluetooth
-                try {
-                    if (navigator.bluetooth) {
-                        showPrintStatus('Ищу Bluetooth принтер...', 'info');
-                        
-                        const device = await navigator.bluetooth.requestDevice({
-                            filters: [
-                                { name: 'XP-P323B' },
-                                { name: 'Xprinter' },
-                                { namePrefix: 'XP-' },
-                                { services: ['000018f0-0000-1000-8000-00805f9b34fb'] } // Serial Port Profile
-                            ],
-                            optionalServices: [
-                                '00001101-0000-1000-8000-00805f9b34fb', // Serial Port
-                                '00001800-0000-1000-8000-00805f9b34fb', // Generic Access
-                                '00001801-0000-1000-8000-00805f9b34fb'  // Generic Attribute
-                            ]
-                        });
-                        
-                        return device;
-                    }
-                } catch (bluetoothError) {
-                    console.log('Поиск через Bluetooth не удался:', bluetoothError);
-                }
-                
-                // Если ничего не работает, используем WebSocket
-                showPrintStatus('Использую WebSocket для печати', 'info');
-                return 'websocket';
-            }
-        }
-
-        async function sendToPrinter(data, printerType = 'tspl') {
-            if (!selectedPrinter) {
-                showPrintStatus('Принтер не выбран', 'error');
-                return false;
-            }
-            
-            try {
-                if (selectedPrinter === 'websocket') {
-                    // WebSocket соединение с сервером печати
-                    return await sendViaWebSocket(data, printerType);
-                } else if (selectedPrinter instanceof USBDevice) {
-                    // WebUSB
-                    return await sendViaWebUSB(data, printerType);
-                } else if ('open' in selectedPrinter) {
-                    // WebSerial
-                    return await sendViaWebSerial(data, printerType);
-                } else if (selectedPrinter.gatt) {
-                    // WebBluetooth
-                    return await sendViaBluetooth(data, printerType);
-                }
-            } catch (error) {
-                showPrintStatus('Ошибка печати: ' + error.message, 'error');
-                return false;
-            }
-            
-            return false;
-        }
-
-        async function sendViaWebSocket(data, printerType) {
-            // Для WebSocket нужен сервер, который будет пересылать данные на принтер
-            // В реальном приложении здесь должен быть URL вашего сервера
-            const ws = new WebSocket('ws://localhost:8080/print');
-            
-            return new Promise((resolve, reject) => {
-                ws.onopen = () => {
-                    const message = {
-                        type: printerType,
-                        data: data,
-                        encoding: 'binary'
-                    };
-                    ws.send(JSON.stringify(message));
-                    showPrintStatus('Данные отправлены на сервер печати', 'info');
-                    resolve(true);
-                };
-                
-                ws.onerror = (error) => {
-                    showPrintStatus('Ошибка WebSocket: ' + error.message, 'error');
-                    reject(error);
-                };
-                
-                setTimeout(() => {
-                    ws.close();
-                }, 3000);
-            });
-        }
-
-        async function sendViaWebUSB(data, printerType) {
-            await selectedPrinter.open();
-            
-            // Конфигурация для принтера
-            await selectedPrinter.selectConfiguration(1);
-            await selectedPrinter.claimInterface(0);
-            
-            // Отправляем данные
-            const encoder = new TextEncoder();
-            const dataBuffer = encoder.encode(data);
-            
-            await selectedPrinter.transferOut(1, dataBuffer);
-            await selectedPrinter.close();
-            
-            return true;
-        }
-
-        async function sendViaWebSerial(data, printerType) {
-            await selectedPrinter.open({ baudRate: 9600 });
-            
-            const encoder = new TextEncoder();
-            const writer = selectedPrinter.writable.getWriter();
-            
-            await writer.write(encoder.encode(data));
-            writer.releaseLock();
-            
-            await selectedPrinter.close();
-            
-            return true;
-        }
-
-        async function sendViaBluetooth(data, printerType) {
-            const server = await selectedPrinter.gatt.connect();
-            const service = await server.getPrimaryService('00001101-0000-1000-8000-00805f9b34fb');
-            const characteristic = await service.getCharacteristic('00001101-0000-1000-8000-00805f9b34fb');
-            
-            const encoder = new TextEncoder();
-            const dataBuffer = encoder.encode(data);
-            
-            await characteristic.writeValue(dataBuffer);
-            
-            return true;
-        }
-
-        // ===== ГЕНЕРАЦИЯ КОМАНД ДЛЯ РАЗНЫХ ЯЗЫКОВ ПРИНТЕРА =====
-
-        function generateTSPLCommands(product) {
-            const today = new Date();
-            const dateStr = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth()+1).toString().padStart(2, '0')}.${today.getFullYear()}`;
-            
-            // Получаем цену
-            let price = product.wholesalePrice;
-            if (product.discountPrice && product.discountPrice.trim() !== '') {
-                price = product.discountPrice;
-            }
-            
-            // Убираем запятую и форматируем
-            const priceStr = price.replace(',', '.').replace(/\s/g, '');
-            const boxQty = product.boxQuantity || '0';
-            
-            // TSPL команды для печати ценника 57мм
-            const commands = [
-                'SIZE 57 mm, 30 mm',       // Размер этикетки
-                'GAP 2 mm, 0 mm',           // Зазор между этикетками
-                'CLS',                      // Очистить буфер
-                'DIRECTION 1',              // Направление печати
-                'REFERENCE 0,0',            // Начало координат
-                
-                // Заголовок - ООО "КубаньСтар"
-                `TEXT 10,10,"3",0,1,1,"ООО \\"КубаньСтар\\""`,
-                
-                // Линия под заголовком
-                'BAR 5,35,150,1',
-                
-                // Артикул и количество в коробке
-                `TEXT 5,45,"2",0,1,1,"${product.article}"`,
-                `TEXT 85,45,"2",0,1,1,"${boxQty} шт."`,
-                
-                // Название товара (в две строки если нужно)
-                ...wrapText(product.name, 5, 65, 140, 25, "2", 0, 1, 1),
-                
-                // Цена (большим шрифтом)
-                `TEXT 5,105,"8",0,2,2,"${priceStr} Руб."`,
-                
-                // Дата
-                `TEXT 5,140,"2",0,1,1,"${dateStr}"`,
-                
-                'PRINT 1',                  // Печатать 1 копию
-                'EOP'                       // Конец печати
-            ];
-            
-            return commands.join('\n');
-        }
-
-        function generateEPLCommands(product) {
-            const today = new Date();
-            const dateStr = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth()+1).toString().padStart(2, '0')}.${today.getFullYear()}`;
-            
-            let price = product.wholesalePrice;
-            if (product.discountPrice && product.discountPrice.trim() !== '') {
-                price = product.discountPrice;
-            }
-            
-            const priceStr = price.replace(',', '.').replace(/\s/g, '');
-            const boxQty = product.boxQuantity || '0';
-            
-            // EPL команды (Zebra)
-            const commands = [
-                'N',                // Clear image buffer
-                'q609',             // Set label width (dots, 57mm ? 240 dots at 203 DPI)
-                'Q203,0',           // Set label length and gap
-                'S2',               // Set speed (2 = 50.8mm/s)
-                'ZT',               // Set print position to top
-                'R10,10',           // Set reference point
-                
-                // Заголовок
-                `A50,30,0,3,1,1,N,"ООО \\"КубаньСтар\\""`,
-                
-                // Линия
-                'LO100,60,200,1',
-                
-                // Артикул и количество
-                `A20,80,0,2,1,1,N,"${product.article}"`,
-                `A200,80,0,2,1,1,N,"${boxQty} шт."`,
-                
-                // Название
-                ...wrapTextEPL(product.name, 20, 110, 220, 35, 2, 1, 1),
-                
-                // Цена
-                `A20,160,0,6,2,2,N,"${priceStr} Руб."`,
-                
-                // Дата
-                `A20,220,0,2,1,1,N,"${dateStr}"`,
-                
-                'P1'                // Print 1 copy
-            ];
-            
-            return commands.join('\n');
-        }
-
-        function generateZPLCommands(product) {
-            const today = new Date();
-            const dateStr = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth()+1).toString().padStart(2, '0')}.${today.getFullYear()}`;
-            
-            let price = product.wholesalePrice;
-            if (product.discountPrice && product.discountPrice.trim() !== '') {
-                price = product.discountPrice;
-            }
-            
-            const priceStr = price.replace(',', '.').replace(/\s/g, '');
-            const boxQty = product.boxQuantity || '0';
-            
-            // ZPL команды (Zebra Programming Language II)
-            const commands = [
-                '^XA',              // Start format
-                '^PW609',           // Print width (dots)
-                '^LL203',           // Label length
-                '^LS0',             // Left shift
-                
-                // Заголовок
-                '^FO50,30',         // Field origin
-                '^A0N,30,30',       // Font
-                '^FDООО "КубаньСтар"^FS',
-                
-                // Линия
-                '^FO100,60',
-                '^GB200,1,1^FS',
-                
-                // Артикул и количество
-                `^FO20,80`,
-                '^A0N,25,25',
-                `^FD${product.article}^FS`,
-                
-                `^FO200,80`,
-                '^A0N,25,25',
-                `^FD${boxQty} шт.^FS`,
-                
-                // Название
-                ...wrapTextZPL(product.name, 20, 110, 220, 35, '0N', 20, 20),
-                
-                // Цена
-                `^FO20,160`,
-                '^A0N,50,50',
-                `^FD${priceStr} Руб.^FS`,
-                
-                // Дата
-                `^FO20,220`,
-                '^A0N,25,25',
-                `^FD${dateStr}^FS`,
-                
-                '^XZ'               // End format
-            ];
-            
-            return commands.join('\n');
-        }
-
-        function generateESCCommands(product) {
-            const today = new Date();
-            const dateStr = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth()+1).toString().padStart(2, '0')}.${today.getFullYear()}`;
-            
-            let price = product.wholesalePrice;
-            if (product.discountPrice && product.discountPrice.trim() !== '') {
-                price = product.discountPrice;
-            }
-            
-            const priceStr = price.replace(',', '.').replace(/\s/g, '');
-            const boxQty = product.boxQuantity || '0';
-            
-            // ESC/POS команды (Epson)
-            const commands = [
-                '\x1B\x40',         // Initialize printer
-                '\x1B\x61\x01',     // Center alignment
-                
-                // Заголовок
-                '\x1B\x21\x30',     // Double height and width
-                'ООО "КубаньСтар"\n',
-                
-                '\x1B\x61\x00',     // Left alignment
-                '\x1B\x21\x00',     // Normal text
-                '--------------------------------\n',
-                
-                // Артикул и количество
-                `${product.article.padEnd(15)}${(boxQty + ' шт.').padStart(15)}\n`,
-                
-                // Название
-                ...wrapTextESC(product.name, 32),
-                '\n',
-                
-                // Цена
-                '\x1B\x61\x01',     // Center alignment
-                '\x1B\x21\x30',     // Double height
-                '\x1B\x21\x10',     // Double width
-                `${priceStr} Руб.\n\n`,
-                
-                // Дата
-                '\x1B\x21\x00',     // Normal text
-                `${dateStr}\n`,
-                
-                '\x1B\x61\x00',     // Left alignment
-                '\n\n\n',
-                '\x1D\x56\x42\x00'  // Cut paper (partial cut)
-            ];
-            
-            return commands.join('');
-        }
-
-        // Вспомогательные функции для переноса текста
-        function wrapText(text, x, y, maxWidth, maxHeight, font, rotation, xMultiplier, yMultiplier) {
-            const lines = [];
-            const words = text.split(' ');
-            let currentLine = '';
-            
-            for (const word of words) {
-                const testLine = currentLine ? currentLine + ' ' + word : word;
-                if (testLine.length * 8 <= maxWidth) { // Примерная ширина символа
-                    currentLine = testLine;
-                } else {
-                    if (currentLine) lines.push(currentLine);
-                    currentLine = word;
-                }
-            }
-            if (currentLine) lines.push(currentLine);
-            
-            return lines.slice(0, 2).map((line, i) => 
-                `TEXT ${x},${y + (i * 20)},"${font}",${rotation},${xMultiplier},${yMultiplier},"${line}"`
-            );
-        }
-
-        function wrapTextEPL(text, x, y, maxWidth, maxHeight, fontHeight, fontWidth, multiplier) {
-            const lines = [];
-            const words = text.split(' ');
-            let currentLine = '';
-            
-            for (const word of words) {
-                const testLine = currentLine ? currentLine + ' ' + word : word;
-                if (testLine.length * fontWidth <= maxWidth) {
-                    currentLine = testLine;
-                } else {
-                    if (currentLine) lines.push(currentLine);
-                    currentLine = word;
-                }
-            }
-            if (currentLine) lines.push(currentLine);
-            
-            return lines.slice(0, 2).map((line, i) => 
-                `A${x},${y + (i * 25)},0,${fontHeight},${fontWidth},${multiplier},N,"${line}"`
-            );
-        }
-
-        function wrapTextZPL(text, x, y, maxWidth, maxHeight, font, charWidth, charHeight) {
-            const lines = [];
-            const words = text.split(' ');
-            let currentLine = '';
-            
-            for (const word of words) {
-                const testLine = currentLine ? currentLine + ' ' + word : word;
-                if (testLine.length * charWidth <= maxWidth) {
-                    currentLine = testLine;
-                } else {
-                    if (currentLine) lines.push(currentLine);
-                    currentLine = word;
-                }
-            }
-            if (currentLine) lines.push(currentLine);
-            
-            return lines.slice(0, 2).map((line, i) => 
-                `^FO${x},${y + (i * 25)}\n^A${font},${charWidth},${charHeight}\n^FD${line}^FS`
-            );
-        }
-
-        function wrapTextESC(text, maxChars) {
-            const lines = [];
-            const words = text.split(' ');
-            let currentLine = '';
-            
-            for (const word of words) {
-                const testLine = currentLine ? currentLine + ' ' + word : word;
-                if (testLine.length <= maxChars) {
-                    currentLine = testLine;
-                } else {
-                    if (currentLine) lines.push(currentLine);
-                    currentLine = word;
-                }
-            }
-            if (currentLine) lines.push(currentLine);
-            
-            return lines.slice(0, 2).map(line => line + '\n');
-        }
-
-        function printWithOption(option) {
+        async function handlePrint() {
             if (!currentProductForPrint) {
                 showPrintStatus('Товар не выбран', 'error');
                 return;
             }
             
-            let printData = '';
+            const printBtn = document.getElementById('printActionBtn');
+            printBtn.disabled = true;
+            printBtn.textContent = '&#128438;️ Печатаю...';
             
-            switch(option) {
-                case 'tspl':
-                    printData = generateTSPLCommands(currentProductForPrint);
-                    showPrintStatus('Генерирую TSPL команды...', 'info');
-                    break;
-                case 'epl':
-                    printData = generateEPLCommands(currentProductForPrint);
-                    showPrintStatus('Генерирую EPL команды...', 'info');
-                    break;
-                case 'zpl':
-                    printData = generateZPLCommands(currentProductForPrint);
-                    showPrintStatus('Генерирую ZPL команды...', 'info');
-                    break;
-                case 'esc':
-                    printData = generateESCCommands(currentProductForPrint);
-                    showPrintStatus('Генерирую ESC/POS команды...', 'info');
-                    break;
-                default:
-                    showPrintStatus('Неизвестный вариант печати', 'error');
-                    return;
-            }
-            
-            // Отправляем на печать
-            sendToPrinter(printData, option).then(success => {
-                if (success) {
-                    showPrintStatus('Печать запущена успешно!', 'success');
+            try {
+                await printPriceTag(currentProductForPrint);
+                showPrintStatus('Ценник успешно отправлен на печать!', 'success');
+                
+                // Закрываем модальное окно через 1.5 секунды
+                setTimeout(() => {
                     closePrintModal();
-                } else {
-                    showPrintStatus('Ошибка при отправке на печать', 'error');
-                }
-            });
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Ошибка печати:', error);
+                showPrintStatus('Ошибка печати: ' + error.message, 'error');
+                printBtn.disabled = false;
+                printBtn.textContent = '&#128438;️ Распечатать';
+            }
         }
 
-        // ===== ОСТАЛЬНЫЕ ФУНКЦИИ =====
+        // ===== ФУНКЦИИ ДЛЯ ПОКАЗА ИЗОБРАЖЕНИЯ ТОВАРА =====
 
         function showProductImage(product) {
             const modal = document.createElement('div');
@@ -21466,6 +21404,9 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         const continueScanBtn = document.getElementById('continueScanBtn');
         const closeResultBtn = document.getElementById('closeResultBtn');
 
+        // Элементы нового модального окна печати
+        const printActionBtn = document.getElementById('printActionBtn');
+
         function updateSearchUI() {
             const mode = getCurrentSearchMode();
             
@@ -21546,6 +21487,8 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         printModal.addEventListener('click', function(e) {
             if (e.target === printModal) closePrintModal();
         });
+
+        printActionBtn.addEventListener('click', handlePrint);
 
         searchModeRadios.forEach(radio => {
             radio.addEventListener('change', function() {
