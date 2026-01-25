@@ -749,35 +749,7 @@
             50% { top: 100%; }
             100% { top: 0; }
         }
-        
-        .scan-hint {
-            position: absolute;
-            bottom: -40px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            color: white;
-            font-size: 14px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-            z-index: 2;
-        }
-        
-        .barcode-supported {
-            margin-top: 10px;
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .barcode-format {
-            display: inline-block;
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 2px 6px;
-            border-radius: 3px;
-            margin: 0 2px;
-            font-size: 11px;
-        }
-        
+
         /* Модальное окно результатов сканирования */
         .scan-result-frame {
             max-width: 550px;
@@ -1002,15 +974,7 @@
                 <span class="scan-icon">&#128247;</span> Сканировать штрихкод
             </button>
         </div>
-        
-        <div class="barcode-supported">
-            Поддерживаемые форматы: 
-            <span class="barcode-format">EAN-13</span>
-            <span class="barcode-format">CODE-39</span>
-            <span class="barcode-format">UPC</span>
-            <span class="barcode-format">CODE-128</span>
-        </div>
-        
+
         <div id="printStatus" class="print-status"></div>
         
         <div class="results-container" id="resultsContainer">
@@ -1019,7 +983,7 @@
     </div>
 
     <!-- Кнопка "Наверх" -->
-    <button class="scroll-to-top-btn" id="scrollToTopBtn" title="Наверх">&#9650;</button>
+    <button class="scroll-to-top-btn" id="scrollToTopBtn" title="Наверх">&#8679;</button>
 
     <!-- Модальное окно камеры -->
     <div class="modal-overlay" id="cameraModal">
@@ -1029,7 +993,6 @@
                 <div class="scan-box">
                     <div class="scan-line"></div>
                 </div>
-                <div class="scan-hint">Наведите камеру на штрихкод EAN-13 или CODE-39</div>
                 <video id="cameraVideo" playsinline></video>
                 <div class="camera-controls">
                     <button class="camera-btn" id="stopCamera">Остановить</button>
