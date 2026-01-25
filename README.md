@@ -21246,10 +21246,6 @@ function showProductImage(product) {
                     </div>
                 </div>
                 <div style="margin-top: 15px; text-align: center;">
-                    <div style="font-size: 12px; color: #666; margin-bottom: 10px;">
-                        Код изображения: ${imageCode || 'не указан'}<br>
-                        ${alternativeImageCode ? `Альтернативный код: ${alternativeImageCode}` : ''}
-                    </div>
                     <button onclick="this.closest('.modal-overlay').style.display='none'" 
                             class="camera-btn" 
                             style="background-color: #f44336; min-width: 200px;">
