@@ -468,7 +468,7 @@
             display: none;
             justify-content: center;
             align-items: center;
-            font-size: 28px;
+            font-size: 32px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             transition: all 0.3s;
             z-index: 1000;
