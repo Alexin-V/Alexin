@@ -609,6 +609,48 @@
             color: #856404;
             border: 1px solid #ffeaa7;
         }
+        
+        /* НОВЫЙ СТИЛЬ: Выбор типа ценника */
+        .price-tag-type-selector {
+            margin: 20px 0;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .price-tag-type-option {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+            background: white;
+            transition: all 0.3s;
+        }
+        
+        .price-tag-type-option:hover {
+            border-color: #4CAF50;
+            background-color: #f9f9f9;
+        }
+        
+        .price-tag-type-option.selected {
+            border-color: #4CAF50;
+            background-color: #e8f5e9;
+        }
+        
+        .price-tag-type-radio {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+        
+        .price-tag-type-label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+        }
 
         /* Модальное окно камеры */
         .modal-overlay {
@@ -1026,6 +1068,18 @@
                 Подключаюсь к принтеру...
             </div>
             
+            <!-- НОВЫЙ БЛОК: Выбор типа ценника -->
+            <div class="price-tag-type-selector" id="priceTagTypeSelector">
+                <div class="price-tag-type-option selected" data-type="regular">
+                    <input type="radio" id="typeRegular" name="priceTagType" class="price-tag-type-radio" value="regular" checked>
+                    <label for="typeRegular" class="price-tag-type-label">Обычный</label>
+                </div>
+                <div class="price-tag-type-option" data-type="large">
+                    <input type="radio" id="typeLarge" name="priceTagType" class="price-tag-type-radio" value="large">
+                    <label for="typeLarge" class="price-tag-type-label">Большой</label>
+                </div>
+            </div>
+            
             <div class="price-tag-preview">
                 <canvas id="priceTagPreviewCanvas" class="price-tag-canvas" width="440" height="284"></canvas>
             </div>
@@ -1051,6 +1105,12 @@
         let serialPort = null;
         let serialWriter = null;
         let isPrinterConnected = false;
+        
+        // Текущий товар для печати
+        let currentProductForPrint = null;
+        
+        // НОВАЯ ПЕРЕМЕННАЯ: тип ценника (по умолчанию обычный)
+        let currentPriceTagType = 'regular';
         
         // Пример данных
         const productsData = `6080010075148;KS-8001;Набор для творчества "ЧАСТИЧНАЯ ВЫКЛАДКА СТРАЗАМИ" 10*15 в пакете;70,00;70,00;7;;10;2;0,035;;0,050;0,010;;Cb010003474_1;;;200;Cb010003474_1;
@@ -19874,9 +19934,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             return parseInt(cleanValue) || 0;
         }
 
-        // Текущий товар для печати
-        let currentProductForPrint = null;
-
         function parseFloatValue(value) {
             if (!value) return 0;
             const cleanValue = value.toString().replace(',', '.').replace(/\s/g, '');
@@ -19927,83 +19984,83 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         }
 
 
-function parseProductsData(data) {
-    const lines = data.trim().split('\n');
-    const products = [];
-    
-    for (const line of lines) {
-        if (!line.trim()) continue;
-        
-        const parts = line.split(';');
-        
-        let imageCode = '';
-        if (parts.length >= 16) {
-            imageCode = parts[14].trim();
-        } else if (parts.length === 15) {
-            imageCode = parts[13].trim();
+        function parseProductsData(data) {
+            const lines = data.trim().split('\n');
+            const products = [];
+            
+            for (const line of lines) {
+                if (!line.trim()) continue;
+                
+                const parts = line.split(';');
+                
+                let imageCode = '';
+                if (parts.length >= 16) {
+                    imageCode = parts[14].trim();
+                } else if (parts.length === 15) {
+                    imageCode = parts[13].trim();
+                }
+                
+                imageCode = imageCode.replace(/;+$/, '');
+                
+                // Извлекаем альтернативный код изображения из последней колонки
+                let alternativeImageCode = '';
+                // Если в строке больше 18 частей, значит есть альтернативный код
+                if (parts.length > 18) {
+                    alternativeImageCode = parts[parts.length - 2].trim(); // Предпоследняя колонка
+                }
+                
+                let discountPercent = '';
+                let discountPrice = '';
+                let boxQuantity = '';
+                
+                if (parts.length >= 17) {
+                    discountPercent = parts[15] || '';
+                    discountPrice = parts[16] || '';
+                    boxQuantity = parts[17] || '';
+                } else if (parts.length === 16) {
+                    discountPercent = parts[14] || '';
+                    discountPrice = parts[15] || '';
+                } else if (parts.length === 15) {
+                    discountPercent = parts[14] || '';
+                }
+                
+                discountPercent = discountPercent.trim();
+                discountPrice = discountPrice ? discountPrice.trim() : '';
+                boxQuantity = boxQuantity ? boxQuantity.trim() : '';
+                
+                products.push({
+                    barcode: parts[0] || '',
+                    article: parts[1] || '',
+                    name: parts[2] || '',
+                    wholesalePrice: parts[3] || '',
+                    retailPrice: parts[4] || '',
+                    stocks: {
+                        warehouse1: parseStockValue(parts[5]),
+                        warehouse2: parseStockValue(parts[6]),
+                        warehouse3: parseStockValue(parts[7]),
+                        warehouse4: parseStockValue(parts[8])
+                    },
+                    coefficients: {
+                        warehouse1: parseFloatValue(parts[9]),
+                        warehouse2: parseFloatValue(parts[10]),
+                        warehouse3: parseFloatValue(parts[11]),
+                        warehouse4: parseFloatValue(parts[12])
+                    },
+                    storageLocation: parts[13] || '',
+                    imageCode: imageCode,
+                    alternativeImageCode: alternativeImageCode, // Добавляем альтернативный код
+                    discountPercent: discountPercent,
+                    discountPrice: discountPrice,
+                    boxQuantity: boxQuantity
+                });
+            }
+            
+            return products;
         }
-        
-        imageCode = imageCode.replace(/;+$/, '');
-        
-        // Извлекаем альтернативный код изображения из последней колонки
-        let alternativeImageCode = '';
-        // Если в строке больше 18 частей, значит есть альтернативный код
-        if (parts.length > 18) {
-            alternativeImageCode = parts[parts.length - 2].trim(); // Предпоследняя колонка
-        }
-        
-        let discountPercent = '';
-        let discountPrice = '';
-        let boxQuantity = '';
-        
-        if (parts.length >= 17) {
-            discountPercent = parts[15] || '';
-            discountPrice = parts[16] || '';
-            boxQuantity = parts[17] || '';
-        } else if (parts.length === 16) {
-            discountPercent = parts[14] || '';
-            discountPrice = parts[15] || '';
-        } else if (parts.length === 15) {
-            discountPercent = parts[14] || '';
-        }
-        
-        discountPercent = discountPercent.trim();
-        discountPrice = discountPrice ? discountPrice.trim() : '';
-        boxQuantity = boxQuantity ? boxQuantity.trim() : '';
-        
-        products.push({
-            barcode: parts[0] || '',
-            article: parts[1] || '',
-            name: parts[2] || '',
-            wholesalePrice: parts[3] || '',
-            retailPrice: parts[4] || '',
-            stocks: {
-                warehouse1: parseStockValue(parts[5]),
-                warehouse2: parseStockValue(parts[6]),
-                warehouse3: parseStockValue(parts[7]),
-                warehouse4: parseStockValue(parts[8])
-            },
-            coefficients: {
-                warehouse1: parseFloatValue(parts[9]),
-                warehouse2: parseFloatValue(parts[10]),
-                warehouse3: parseFloatValue(parts[11]),
-                warehouse4: parseFloatValue(parts[12])
-            },
-            storageLocation: parts[13] || '',
-            imageCode: imageCode,
-            alternativeImageCode: alternativeImageCode, // Добавляем альтернативный код
-            discountPercent: discountPercent,
-            discountPrice: discountPrice,
-            boxQuantity: boxQuantity
-        });
-    }
-    
-    return products;
-}
 
-function createProductKey(product) {
-    return `${product.article}|${product.name}|${product.wholesalePrice}|${product.retailPrice}|${product.stocks.warehouse1}|${product.stocks.warehouse2}|${product.stocks.warehouse3}|${product.stocks.warehouse4}|${product.coefficients.warehouse1}|${product.coefficients.warehouse2}|${product.coefficients.warehouse3}|${product.coefficients.warehouse4}|${product.storageLocation}|${product.imageCode}|${product.alternativeImageCode}|${product.discountPercent}|${product.discountPrice}|${product.boxQuantity}`;
-}
+        function createProductKey(product) {
+            return `${product.article}|${product.name}|${product.wholesalePrice}|${product.retailPrice}|${product.stocks.warehouse1}|${product.stocks.warehouse2}|${product.stocks.warehouse3}|${product.stocks.warehouse4}|${product.coefficients.warehouse1}|${product.coefficients.warehouse2}|${product.coefficients.warehouse3}|${product.coefficients.warehouse4}|${product.storageLocation}|${product.imageCode}|${product.alternativeImageCode}|${product.discountPercent}|${product.discountPrice}|${product.boxQuantity}`;
+        }
 
         function groupProductsByKey(products) {
             const groups = {};
@@ -20178,10 +20235,19 @@ function createProductKey(product) {
 
         // ===== ФУНКЦИИ ДЛЯ СОЗДАНИЯ И ПЕЧАТИ ЦЕННИКА =====
 
-        function createPriceTagImage(product) {
+        function createPriceTagImage(product, type = 'regular') {
             const canvas = document.createElement('canvas');
-            canvas.width = 440; // 55мм
-            canvas.height = 284; // 38мм
+            
+            if (type === 'large') {
+                // ВТОРОЙ ВИД ЦЕННИКА (БОЛЬШОЙ)
+                canvas.width = 440;
+                canvas.height = 300;
+            } else {
+                // ПЕРВЫЙ ВИД ЦЕННИКА (ОБЫЧНЫЙ)
+                canvas.width = 440; // 55мм
+                canvas.height = 284; // 38мм
+            }
+            
             const ctx = canvas.getContext('2d');
             
             // БЕЛЫЙ ФОН
@@ -20194,101 +20260,203 @@ function createProductKey(product) {
             
             // БАЗОВЫЕ РАЗМЕРЫ С УВЕЛИЧЕНИЕМ 50%
             const textScale = 1.5;
-            const baseFonts = {
-                company: 22 * textScale,    // 33px
-                article: 18 * textScale,    // 27px
-                product: 16 * textScale,    // 24px
-                price: 44 * textScale,      // 66px (+10%)
-                date: 14 * textScale        // 21px
-            };
             
-            // 1. НАЗВАНИЕ КОМПАНИИ - ПО ЦЕНТРУ
-            ctx.font = `bold ${baseFonts.company}px "Arial"`;
-            ctx.fillText('ООО "КУБАНЬСТАР"', canvas.width / 2, 30);
-            
-            // ЖИРНАЯ линия под названием
-            ctx.beginPath();
-            ctx.moveTo(4, 40);
-            ctx.lineTo(canvas.width - 4, 40);
-            ctx.lineWidth = 3;
-            ctx.stroke();
-            
-            // 2. АРТИКУЛ И КОЛИЧЕСТВО В КОРОБКЕ
-            ctx.font = `bold ${baseFonts.article}px "Arial"`;
-            ctx.textAlign = 'left';
-            ctx.fillText(product.article, 6, 70);
-            ctx.textAlign = 'right';
-            const boxQty = product.boxQuantity || '0';
-            ctx.fillText(`${boxQty} шт. в кор.`, canvas.width - 6, 70);
-            
-            // ЖИРНАЯ линия
-            ctx.beginPath();
-            ctx.moveTo(4, 80);
-            ctx.lineTo(canvas.width - 4, 80);
-            ctx.lineWidth = 3;
-            ctx.stroke();
-            ctx.lineWidth = 1;
-            
-            // 3. НАЗВАНИЕ ТОВАРА - ПО ЦЕНТРУ (обрезаем если слишком длинное)
-            let productName = product.name;
-            if (productName.length > 45) {
-                productName = productName.substring(0, 45) + '...';
-            }
-            
-            ctx.font = `bold ${baseFonts.product}px "Arial"`;
-            ctx.textAlign = 'center';
-            
-            // Разбиваем название на две строки если нужно
-            const words = productName.split(' ');
-            let line1 = '';
-            let line2 = '';
-            
-            for (const word of words) {
-                if ((line1 + ' ' + word).length <= 25 && !line2) {
-                    if (line1) line1 += ' ';
-                    line1 += word;
-                } else {
-                    if (line2) line2 += ' ';
-                    line2 += word;
+            if (type === 'large') {
+                // РАЗМЕРЫ ДЛЯ БОЛЬШОГО ЦЕННИКА
+                const baseFonts = {
+                    company: 22 * textScale,
+                    article: 18 * textScale,
+                    product: 16 * textScale,
+                    price: 88 * textScale,  // Изменено с 44 на 88
+                    date: 14 * textScale
+                };
+                
+                // 1. НАЗВАНИЕ КОМПАНИИ - ПО ЦЕНТРУ
+                ctx.font = `bold ${baseFonts.company}px "Arial"`;
+                ctx.fillText('ООО "КУБАНЬСТАР"', canvas.width / 2, 30);
+                
+                // ЖИРНАЯ линия под названием
+                ctx.beginPath();
+                ctx.moveTo(4, 40);
+                ctx.lineTo(canvas.width - 4, 40);
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // 2. АРТИКУЛ И КОЛИЧЕСТВО В КОРОБКЕ
+                ctx.font = `bold ${baseFonts.article}px "Arial"`;
+                ctx.textAlign = 'left';
+                ctx.fillText(product.article, 6, 70);
+                ctx.textAlign = 'right';
+                const boxQty = product.boxQuantity || '0';
+                ctx.fillText(`${boxQty} шт. в кор.`, canvas.width - 6, 70);
+                
+                // ЖИРНАЯ линия
+                ctx.beginPath();
+                ctx.moveTo(4, 80);
+                ctx.lineTo(canvas.width - 4, 80);
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.lineWidth = 1;
+                
+                // 3. НАЗВАНИЕ ТОВАРА - ПО ЦЕНТРУ (обрезаем если слишком длинное)
+                let productName = product.name;
+                if (productName.length > 55) {
+                    productName = productName.substring(0, 55) + '...';
                 }
+                
+                ctx.font = `bold ${baseFonts.product}px "Arial"`;
+                ctx.textAlign = 'center';
+                
+                // Разбиваем название на две строки если нужно
+                const words = productName.split(' ');
+                let line1 = '';
+                let line2 = '';
+                
+                for (const word of words) {
+                    if ((line1 + ' ' + word).length <= 25 && !line2) {
+                        if (line1) line1 += ' ';
+                        line1 += word;
+                    } else {
+                        if (line2) line2 += ' ';
+                        line2 += word;
+                    }
+                }
+                
+                ctx.fillText(line1, canvas.width / 2, 110);
+                if (line2) {
+                    ctx.fillText(line2, canvas.width / 2, 135);
+                }
+                
+                // ОЧЕНЬ ЖИРНАЯ линия перед ценой
+                ctx.beginPath();
+                ctx.moveTo(4, 145);
+                ctx.lineTo(canvas.width - 4, 145);
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.lineWidth = 1;
+                
+                // 4. ЦЕНА - ПО ЦЕНТРУ
+                const price = product.discountPrice && product.discountPrice.trim() !== '' 
+                    ? product.discountPrice 
+                    : product.wholesalePrice;
+                
+                // Используем исправленную функцию formatNumber с флагом isPrice
+                const priceFormatted = formatNumber(price, true);
+                
+                ctx.font = `bold ${baseFonts.price}px "Arial"`;
+                ctx.fillText(`${priceFormatted} Руб.`, canvas.width / 2, 255);
+                
+                // ЖИРНАЯ линия под ценой
+                ctx.beginPath();
+                ctx.moveTo(4, 271);
+                ctx.lineTo(canvas.width - 4, 271);
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // 5. ДАТА - ПО ЦЕНТРУ
+                const today = new Date();
+                const dateStr = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth()+1).toString().padStart(2, '0')}.${today.getFullYear()}`;
+                ctx.font = `${baseFonts.date}px "Arial"`;
+                ctx.fillText(dateStr, canvas.width / 2, 291);
+                
+            } else {
+                // РАЗМЕРЫ ДЛЯ ОБЫЧНОГО ЦЕННИКА
+                const baseFonts = {
+                    company: 22 * textScale,    // 33px
+                    article: 18 * textScale,    // 27px
+                    product: 16 * textScale,    // 24px
+                    price: 44 * textScale,      // 66px (+10%)
+                    date: 14 * textScale        // 21px
+                };
+                
+                // 1. НАЗВАНИЕ КОМПАНИИ - ПО ЦЕНТРУ
+                ctx.font = `bold ${baseFonts.company}px "Arial"`;
+                ctx.fillText('ООО "КУБАНЬСТАР"', canvas.width / 2, 30);
+                
+                // ЖИРНАЯ линия под названием
+                ctx.beginPath();
+                ctx.moveTo(4, 40);
+                ctx.lineTo(canvas.width - 4, 40);
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // 2. АРТИКУЛ И КОЛИЧЕСТВО В КОРОБКЕ
+                ctx.font = `bold ${baseFonts.article}px "Arial"`;
+                ctx.textAlign = 'left';
+                ctx.fillText(product.article, 6, 70);
+                ctx.textAlign = 'right';
+                const boxQty = product.boxQuantity || '0';
+                ctx.fillText(`${boxQty} шт. в кор.`, canvas.width - 6, 70);
+                
+                // ЖИРНАЯ линия
+                ctx.beginPath();
+                ctx.moveTo(4, 80);
+                ctx.lineTo(canvas.width - 4, 80);
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.lineWidth = 1;
+                
+                // 3. НАЗВАНИЕ ТОВАРА - ПО ЦЕНТРУ (обрезаем если слишком длинное)
+                let productName = product.name;
+                if (productName.length > 55) {
+                    productName = productName.substring(0, 55) + '...';
+                }
+                
+                ctx.font = `bold ${baseFonts.product}px "Arial"`;
+                ctx.textAlign = 'center';
+                
+                // Разбиваем название на две строки если нужно
+                const words = productName.split(' ');
+                let line1 = '';
+                let line2 = '';
+                
+                for (const word of words) {
+                    if ((line1 + ' ' + word).length <= 25 && !line2) {
+                        if (line1) line1 += ' ';
+                        line1 += word;
+                    } else {
+                        if (line2) line2 += ' ';
+                        line2 += word;
+                    }
+                }
+                
+                ctx.fillText(line1, canvas.width / 2, 110);
+                if (line2) {
+                    ctx.fillText(line2, canvas.width / 2, 135);
+                }
+                
+                // ОЧЕНЬ ЖИРНАЯ линия перед ценой
+                ctx.beginPath();
+                ctx.moveTo(4, 155);
+                ctx.lineTo(canvas.width - 4, 155);
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.lineWidth = 1;
+                
+                // 4. ЦЕНА - ПО ЦЕНТРУ
+                const price = product.discountPrice && product.discountPrice.trim() !== '' 
+                    ? product.discountPrice 
+                    : product.wholesalePrice;
+                
+                // Используем исправленную функцию formatNumber с флагом isPrice
+                const priceFormatted = formatNumber(price, true);
+                
+                ctx.font = `bold ${baseFonts.price}px "Arial"`;
+                ctx.fillText(`${priceFormatted} Руб.`, canvas.width / 2, 207 + 12);
+                
+                // ЖИРНАЯ линия под ценой
+                ctx.beginPath();
+                ctx.moveTo(4, 225 + 12);
+                ctx.lineTo(canvas.width - 4, 225 + 12);
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // 5. ДАТА - ПО ЦЕНТРУ
+                const today = new Date();
+                const dateStr = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth()+1).toString().padStart(2, '0')}.${today.getFullYear()}`;
+                ctx.font = `${baseFonts.date}px "Arial"`;
+                ctx.fillText(dateStr, canvas.width / 2, 245 + 20);
             }
-            
-            ctx.fillText(line1, canvas.width / 2, 110);
-            if (line2) {
-                ctx.fillText(line2, canvas.width / 2, 135);
-            }
-            
-            // ОЧЕНЬ ЖИРНАЯ линия перед ценой
-            ctx.beginPath();
-            ctx.moveTo(4, 155);
-            ctx.lineTo(canvas.width - 4, 155);
-            ctx.lineWidth = 3;
-            ctx.stroke();
-            ctx.lineWidth = 1;
-            
-            // 4. ЦЕНА - ПО ЦЕНТРУ
-            const price = product.discountPrice && product.discountPrice.trim() !== '' 
-                ? product.discountPrice 
-                : product.wholesalePrice;
-            
-            // Используем исправленную функцию formatNumber с флагом isPrice
-            const priceFormatted = formatNumber(price, true);
-            
-            ctx.font = `bold ${baseFonts.price}px "Arial"`;
-            ctx.fillText(`${priceFormatted} Руб.`, canvas.width / 2, 207 + 12);
-            
-            // ЖИРНАЯ линия под ценой
-            ctx.beginPath();
-            ctx.moveTo(4, 225 + 12);
-            ctx.lineTo(canvas.width - 4, 225 + 12);
-            ctx.lineWidth = 3;
-            ctx.stroke();
-            
-            // 5. ДАТА - ПО ЦЕНТРУ
-            const today = new Date();
-            const dateStr = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth()+1).toString().padStart(2, '0')}.${today.getFullYear()}`;
-            ctx.font = `${baseFonts.date}px "Arial"`;
-            ctx.fillText(dateStr, canvas.width / 2, 245 + 20);
             
             return canvas;
         }
@@ -20355,7 +20523,7 @@ function createProductKey(product) {
             return command;
         }
 
-        async function printPriceTag(product) {
+        async function printPriceTag(product, type = 'regular') {
             try {
                 if (!isPrinterConnected) {
                     const connected = await connectToPrinter();
@@ -20364,7 +20532,7 @@ function createProductKey(product) {
                     }
                 }
                 
-                const canvas = createPriceTagImage(product);
+                const canvas = createPriceTagImage(product, type);
                 const bitmap = canvasToEscPosBitmap(canvas);
                 const imageCommand = createEscPosImageCommand(bitmap);
                 
@@ -20399,7 +20567,7 @@ function createProductKey(product) {
             }
         }
 
-        function updatePriceTagPreview(product) {
+        function updatePriceTagPreview(product, type = 'regular') {
             const canvas = document.getElementById('priceTagPreviewCanvas');
             const ctx = canvas.getContext('2d');
             
@@ -20407,13 +20575,22 @@ function createProductKey(product) {
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
+            // Устанавливаем размеры canvas в зависимости от типа ценника
+            if (type === 'large') {
+                canvas.width = 440;
+                canvas.height = 300;
+            } else {
+                canvas.width = 440;
+                canvas.height = 284;
+            }
+            
             // Уменьшаем масштаб для предпросмотра
             const scale = 0.7;
             ctx.save();
             ctx.scale(scale, scale);
             
             // Рисуем ценник
-            const previewCanvas = createPriceTagImage(product);
+            const previewCanvas = createPriceTagImage(product, type);
             ctx.drawImage(previewCanvas, 0, 0);
             
             ctx.restore();
@@ -20436,8 +20613,19 @@ function createProductKey(product) {
             currentProductForPrint = product;
             document.getElementById('printModal').style.display = 'flex';
             
-            // Обновляем предпросмотр
-            updatePriceTagPreview(product);
+            // Сбрасываем выбор типа ценника на обычный
+            currentPriceTagType = 'regular';
+            document.querySelectorAll('.price-tag-type-option').forEach(option => {
+                if (option.getAttribute('data-type') === 'regular') {
+                    option.classList.add('selected');
+                    option.querySelector('input').checked = true;
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+            
+            // Обновляем предпросмотр с обычным ценником
+            updatePriceTagPreview(product, 'regular');
             
             // Отключаем кнопку печати
             const printBtn = document.getElementById('printActionBtn');
@@ -20482,7 +20670,7 @@ function createProductKey(product) {
             printBtn.textContent = 'Печатаю...';
             
             try {
-                await printPriceTag(currentProductForPrint);
+                await printPriceTag(currentProductForPrint, currentPriceTagType);
                 showPrintStatus('Ценник успешно отправлен на печать!', 'success');
                 
                 // Закрываем модальное окно через 1.5 секунды
@@ -20498,7 +20686,7 @@ function createProductKey(product) {
             }
         }
 
-        // ===== ФУНКЦИИ ДЛЯ СКАНИРОВАНИЯ (ВОССТАНОВЛЕНЫ) =====
+        // ===== ФУНКЦИИ ДЛЯ СКАНИРОВАНИЯ =====
 
         function isIOS() {
             return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -21204,136 +21392,136 @@ function createProductKey(product) {
             resultsContainer.style.display = 'none';
         }
 
-function showProductImage(product) {
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.id = 'imageModal';
-    modal.style.display = 'flex';
-    
-    // Получаем основной код изображения
-    let imageCode = product.imageCode || '';
-    // Получаем альтернативный код из конца строки (последняя колонка)
-    let alternativeImageCode = product.alternativeImageCode || '';
-    
-    let imageUrl = '';
-    let errorMessage = '';
-    
-    // Сначала пробуем основной код
-    if (imageCode) {
-        const cleanCode = imageCode.trim();
-        let fileName = cleanCode;
-        if (!fileName.includes('.jpg') && !fileName.includes('.jpeg') && 
-            !fileName.includes('.png') && !fileName.includes('.gif')) {
-            fileName += '.jpg';
-        }
-        imageUrl = `https://kubanstar.ru/images/virtuemart/product/${fileName}`;
-    }
-    
-    modal.innerHTML = `
-        <div class="modal-frame" style="max-width: 90%; max-height: 90%;">
-            <div style="text-align: center; padding: 20px;">
-                <h3 style="margin-bottom: 20px;">${product.article} - ${product.name}</h3>
-                <div style="max-height: 70vh; overflow: auto; margin: 20px 0;" id="imageContainer">
-                    <img id="productImage" 
-                         src="${imageUrl || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%25%22 y=%2250%25%22 font-size=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22>&#128247;</text></svg>'}" 
-                         style="max-width: 100%; max-height: 60vh; border-radius: 8px; display: block; margin: 0 auto;"
-                         onerror="handleImageError(this, '${alternativeImageCode.replace(/'/g, "\\'")}')"
-                         alt="Изображение товара">
-                    <div id="imageError" style="display: none; padding: 40px; color: #999;">
-                        <div style="font-size: 48px; margin-bottom: 20px;">&#128247;</div>
-                        <div style="font-size: 18px; font-weight: bold; color: #666;">Изображение не найдено</div>
-                        <div style="font-size: 12px; margin-top: 10px; color: #999;">Пробуем альтернативный код...</div>
-                    </div>
-                </div>
-                <div style="margin-top: 15px; text-align: center;">
-                    <button onclick="this.closest('.modal-overlay').style.display='none'" 
-                            class="camera-btn" 
-                            style="background-color: #f44336; min-width: 200px;">
-                        Закрыть
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    const oldModal = document.getElementById('imageModal');
-    if (oldModal) {
-        oldModal.remove();
-    }
-    
-    document.body.appendChild(modal);
-    
-    modal.onclick = function(e) {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-        }
-    };
-}
-
-// Новая функция для обработки ошибок загрузки изображения
-function handleImageError(imgElement, alternativeImageCode) {
-    const errorDiv = document.getElementById('imageError');
-    const imageContainer = document.getElementById('imageContainer');
-    
-    if (alternativeImageCode && alternativeImageCode.trim() !== '') {
-        // Пробуем загрузить альтернативное изображение
-        const cleanCode = alternativeImageCode.trim();
-        let fileName = cleanCode;
-        if (!fileName.includes('.jpg') && !fileName.includes('.jpeg') && 
-            !fileName.includes('.png') && !fileName.includes('.gif')) {
-            fileName += '.jpg';
-        }
-        const alternativeUrl = `https://kubanstar.ru/images/virtuemart/product/${fileName}`;
-        
-        // Показываем сообщение о попытке загрузки альтернативного изображения
-        if (errorDiv) {
-            errorDiv.style.display = 'block';
-            errorDiv.innerHTML = `
-                <div style="font-size: 48px; margin-bottom: 20px;">&#128260;</div>
-                <div style="font-size: 18px; font-weight: bold; color: #666;">Загружаем альтернативное изображение...</div>
-                <div style="font-size: 12px; margin-top: 10px; color: #999;">Код: ${alternativeImageCode}</div>
-            `;
-        }
-        
-        // Создаем новое изображение с альтернативным URL
-        const newImg = new Image();
-        newImg.onload = function() {
-            // Успешная загрузка альтернативного изображения
-            imgElement.src = alternativeUrl;
-            imgElement.style.display = 'block';
-            if (errorDiv) errorDiv.style.display = 'none';
-        };
-        newImg.onerror = function() {
-            // Альтернативное изображение тоже не загрузилось
-            if (errorDiv) {
-                errorDiv.style.display = 'block';
-                errorDiv.innerHTML = `
-                    <div style="font-size: 48px; margin-bottom: 20px;">&#10060;</div>
-                    <div style="font-size: 18px; font-weight: bold; color: #666;">Изображение не найдено</div>
-                    <div style="font-size: 12px; margin-top: 10px; color: #999;">
-                        Основной код: ${imgElement.src.includes('kubanstar.ru') ? imgElement.src.split('/').pop() : 'не указан'}<br>
-                        Альтернативный код: ${alternativeImageCode || 'не указан'}
-                    </div>
-                `;
+        function showProductImage(product) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.id = 'imageModal';
+            modal.style.display = 'flex';
+            
+            // Получаем основной код изображения
+            let imageCode = product.imageCode || '';
+            // Получаем альтернативный код из конца строки (последняя колонка)
+            let alternativeImageCode = product.alternativeImageCode || '';
+            
+            let imageUrl = '';
+            let errorMessage = '';
+            
+            // Сначала пробуем основной код
+            if (imageCode) {
+                const cleanCode = imageCode.trim();
+                let fileName = cleanCode;
+                if (!fileName.includes('.jpg') && !fileName.includes('.jpeg') && 
+                    !fileName.includes('.png') && !fileName.includes('.gif')) {
+                    fileName += '.jpg';
+                }
+                imageUrl = `https://kubanstar.ru/images/virtuemart/product/${fileName}`;
             }
-            imgElement.style.display = 'none';
-        };
-        newImg.src = alternativeUrl;
-    } else {
-        // Нет альтернативного кода
-        if (errorDiv) {
-            errorDiv.style.display = 'block';
-            errorDiv.innerHTML = `
-                <div style="font-size: 48px; margin-bottom: 20px;">&#10060;</div>
-                <div style="font-size: 18px; font-weight: bold; color: #666;">Изображение не найдено</div>
-                <div style="font-size: 12px; margin-top: 10px; color: #999;">
-                    Код изображения: ${imgElement.src.includes('kubanstar.ru') ? imgElement.src.split('/').pop() : 'не указан'}
+            
+            modal.innerHTML = `
+                <div class="modal-frame" style="max-width: 90%; max-height: 90%;">
+                    <div style="text-align: center; padding: 20px;">
+                        <h3 style="margin-bottom: 20px;">${product.article} - ${product.name}</h3>
+                        <div style="max-height: 70vh; overflow: auto; margin: 20px 0;" id="imageContainer">
+                            <img id="productImage" 
+                                 src="${imageUrl || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%25%22 y=%2250%25%22 font-size=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22>&#128247;</text></svg>'}" 
+                                 style="max-width: 100%; max-height: 60vh; border-radius: 8px; display: block; margin: 0 auto;"
+                                 onerror="handleImageError(this, '${alternativeImageCode.replace(/'/g, "\\'")}')"
+                                 alt="Изображение товара">
+                            <div id="imageError" style="display: none; padding: 40px; color: #999;">
+                                <div style="font-size: 48px; margin-bottom: 20px;">&#128247;</div>
+                                <div style="font-size: 18px; font-weight: bold; color: #666;">Изображение не найдено</div>
+                                <div style="font-size: 12px; margin-top: 10px; color: #999;">Пробуем альтернативный код...</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px; text-align: center;">
+                            <button onclick="this.closest('.modal-overlay').style.display='none'" 
+                                    class="camera-btn" 
+                                    style="background-color: #f44336; min-width: 200px;">
+                                Закрыть
+                            </button>
+                        </div>
+                    </div>
                 </div>
             `;
+            
+            const oldModal = document.getElementById('imageModal');
+            if (oldModal) {
+                oldModal.remove();
+            }
+            
+            document.body.appendChild(modal);
+            
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            };
         }
-        imgElement.style.display = 'none';
-    }
-}
+
+        // Новая функция для обработки ошибок загрузки изображения
+        function handleImageError(imgElement, alternativeImageCode) {
+            const errorDiv = document.getElementById('imageError');
+            const imageContainer = document.getElementById('imageContainer');
+            
+            if (alternativeImageCode && alternativeImageCode.trim() !== '') {
+                // Пробуем загрузить альтернативное изображение
+                const cleanCode = alternativeImageCode.trim();
+                let fileName = cleanCode;
+                if (!fileName.includes('.jpg') && !fileName.includes('.jpeg') && 
+                    !fileName.includes('.png') && !fileName.includes('.gif')) {
+                    fileName += '.jpg';
+                }
+                const alternativeUrl = `https://kubanstar.ru/images/virtuemart/product/${fileName}`;
+                
+                // Показываем сообщение о попытке загрузки альтернативного изображения
+                if (errorDiv) {
+                    errorDiv.style.display = 'block';
+                    errorDiv.innerHTML = `
+                        <div style="font-size: 48px; margin-bottom: 20px;">&#128260;</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #666;">Загружаем альтернативное изображение...</div>
+                        <div style="font-size: 12px; margin-top: 10px; color: #999;">Код: ${alternativeImageCode}</div>
+                    `;
+                }
+                
+                // Создаем новое изображение с альтернативным URL
+                const newImg = new Image();
+                newImg.onload = function() {
+                    // Успешная загрузка альтернативного изображения
+                    imgElement.src = alternativeUrl;
+                    imgElement.style.display = 'block';
+                    if (errorDiv) errorDiv.style.display = 'none';
+                };
+                newImg.onerror = function() {
+                    // Альтернативное изображение тоже не загрузилось
+                    if (errorDiv) {
+                        errorDiv.style.display = 'block';
+                        errorDiv.innerHTML = `
+                            <div style="font-size: 48px; margin-bottom: 20px;">&#10060;</div>
+                            <div style="font-size: 18px; font-weight: bold; color: #666;">Изображение не найдено</div>
+                            <div style="font-size: 12px; margin-top: 10px; color: #999;">
+                                Основной код: ${imgElement.src.includes('kubanstar.ru') ? imgElement.src.split('/').pop() : 'не указан'}<br>
+                                Альтернативный код: ${alternativeImageCode || 'не указан'}
+                            </div>
+                        `;
+                    }
+                    imgElement.style.display = 'none';
+                };
+                newImg.src = alternativeUrl;
+            } else {
+                // Нет альтернативного кода
+                if (errorDiv) {
+                    errorDiv.style.display = 'block';
+                    errorDiv.innerHTML = `
+                        <div style="font-size: 48px; margin-bottom: 20px;">&#10060;</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #666;">Изображение не найдено</div>
+                        <div style="font-size: 12px; margin-top: 10px; color: #999;">
+                            Код изображения: ${imgElement.src.includes('kubanstar.ru') ? imgElement.src.split('/').pop() : 'не указан'}
+                        </div>
+                    `;
+                }
+                imgElement.style.display = 'none';
+            }
+        }
 
         // ===== ФУНКЦИИ ДЛЯ КНОПКИ "НАВЕРХ" =====
         
@@ -21392,6 +21580,9 @@ function handleImageError(imgElement, alternativeImageCode) {
         // Элементы нового модального окна печати
         const printActionBtn = document.getElementById('printActionBtn');
 
+        // НОВЫЕ ЭЛЕМЕНТЫ: Выбор типа ценника
+        const priceTagTypeSelector = document.getElementById('priceTagTypeSelector');
+
         function updateSearchUI() {
             const mode = getCurrentSearchMode();
             
@@ -21404,6 +21595,49 @@ function handleImageError(imgElement, alternativeImageCode) {
             }
             
             updateClearButton();
+        }
+
+        // НОВАЯ ФУНКЦИЯ: Обработка выбора типа ценника
+        function setupPriceTagTypeSelector() {
+            const options = priceTagTypeSelector.querySelectorAll('.price-tag-type-option');
+            
+            options.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Удаляем класс selected у всех вариантов
+                    options.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // Добавляем класс selected текущему варианту
+                    this.classList.add('selected');
+                    
+                    // Помечаем соответствующий радиобаттон как выбранный
+                    const radio = this.querySelector('input[type="radio"]');
+                    radio.checked = true;
+                    
+                    // Обновляем текущий тип ценника
+                    currentPriceTagType = this.getAttribute('data-type');
+                    
+                    // Обновляем предпросмотр
+                    if (currentProductForPrint) {
+                        updatePriceTagPreview(currentProductForPrint, currentPriceTagType);
+                    }
+                });
+            });
+            
+            // Также обрабатываем клик по радиобаттону
+            const radios = priceTagTypeSelector.querySelectorAll('input[type="radio"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        const option = this.closest('.price-tag-type-option');
+                        currentPriceTagType = option.getAttribute('data-type');
+                        
+                        // Обновляем предпросмотр
+                        if (currentProductForPrint) {
+                            updatePriceTagPreview(currentProductForPrint, currentPriceTagType);
+                        }
+                    }
+                });
+            });
         }
 
         // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
@@ -21492,6 +21726,7 @@ function handleImageError(imgElement, alternativeImageCode) {
             searchInput.focus();
             setupPlatformUI();
             initScrollToTopButton(); // Инициализация кнопки "Наверх"
+            setupPriceTagTypeSelector(); // Инициализация выбора типа ценника
         });
 
         searchInput.addEventListener('keydown', function(e) {
