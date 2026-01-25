@@ -20344,7 +20344,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 const priceFormatted = formatNumber(price, true);
                 
                 ctx.font = `bold ${baseFonts.price}px "Arial"`;
-                ctx.fillText(`${priceFormatted} Руб.`, canvas.width / 2, 255);
+                ctx.fillText(priceFormatted, canvas.width / 2, 255);
                 
                 // ЖИРНАЯ линия под ценой
                 ctx.beginPath();
