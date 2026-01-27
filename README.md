@@ -20373,8 +20373,8 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 
                 // ЖИРНАЯ линия под названием
                 ctx.beginPath();
-                ctx.moveTo(4, 40);
-                ctx.lineTo(canvas.width - 4, 40);
+                ctx.moveTo(0, 40);
+                ctx.lineTo(canvas.width - 0, 40);
                 ctx.lineWidth = 3;
                 ctx.stroke();
                 
@@ -20388,8 +20388,8 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 
                 // ЖИРНАЯ линия
                 ctx.beginPath();
-                ctx.moveTo(4, 80);
-                ctx.lineTo(canvas.width - 4, 80);
+                ctx.moveTo(0, 80);
+                ctx.lineTo(canvas.width - 0, 80);
                 ctx.lineWidth = 3;
                 ctx.stroke();
                 ctx.lineWidth = 1;
@@ -20425,8 +20425,8 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 
                 // ОЧЕНЬ ЖИРНАЯ линия перед ценой
                 ctx.beginPath();
-                ctx.moveTo(4, 145);
-                ctx.lineTo(canvas.width - 4, 145);
+                ctx.moveTo(0, 145);
+                ctx.lineTo(canvas.width - 0, 145);
                 ctx.lineWidth = 3;
                 ctx.stroke();
                 ctx.lineWidth = 1;
@@ -20444,8 +20444,8 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 
                 // ЖИРНАЯ линия под ценой
                 ctx.beginPath();
-                ctx.moveTo(4, 271);
-                ctx.lineTo(canvas.width - 4, 271);
+                ctx.moveTo(0, 271);
+                ctx.lineTo(canvas.width - 0, 271);
                 ctx.lineWidth = 3;
                 ctx.stroke();
                 
@@ -20471,8 +20471,8 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 
                 // ЖИРНАЯ линия под названием
                 ctx.beginPath();
-                ctx.moveTo(4, 40);
-                ctx.lineTo(canvas.width - 4, 40);
+                ctx.moveTo(0, 40);
+                ctx.lineTo(canvas.width - 0, 40);
                 ctx.lineWidth = 3;
                 ctx.stroke();
                 
@@ -20486,8 +20486,8 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 
                 // ЖИРНАЯ линия
                 ctx.beginPath();
-                ctx.moveTo(4, 80);
-                ctx.lineTo(canvas.width - 4, 80);
+                ctx.moveTo(0, 80);
+                ctx.lineTo(canvas.width - 0, 80);
                 ctx.lineWidth = 3;
                 ctx.stroke();
                 ctx.lineWidth = 1;
@@ -20523,8 +20523,8 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 
                 // ОЧЕНЬ ЖИРНАЯ линия перед ценой
                 ctx.beginPath();
-                ctx.moveTo(4, 155);
-                ctx.lineTo(canvas.width - 4, 155);
+                ctx.moveTo(0, 155);
+                ctx.lineTo(canvas.width - 0, 155);
                 ctx.lineWidth = 3;
                 ctx.stroke();
                 ctx.lineWidth = 1;
@@ -20542,8 +20542,8 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 
                 // ЖИРНАЯ линия под ценой
                 ctx.beginPath();
-                ctx.moveTo(4, 225 + 12);
-                ctx.lineTo(canvas.width - 4, 225 + 12);
+                ctx.moveTo(0, 225 + 12);
+                ctx.lineTo(canvas.width - 0, 225 + 12);
                 ctx.lineWidth = 3;
                 ctx.stroke();
                 
