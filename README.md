@@ -1,4 +1,4 @@
-﻿<html lang="ru">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1004,6 +1004,240 @@
             margin-bottom: 5px;
         }
 
+        /* Стили для Android сканера (html5-qrcode) */
+        .android-scanner-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 3000;
+        }
+        
+        .android-scanner-content {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .android-scanner-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #android-qr-reader {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        /* Кастомные стили для Html5-QRCode на Android */
+        #android-html5-qrcode-anchor-scan-type-change,
+        #android-html5qr-code-full-region__scan_region {
+            display: none !important;
+        }
+        
+        #android-qr-reader__scan_region {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 400px;
+            height: 200px;
+            z-index: 3010;
+        }
+        
+        #android-qr-reader__scan_region img {
+            display: none;
+        }
+        
+        #android-qr-reader__scan_region hr {
+            display: none;
+        }
+        
+        .android-scan-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 3005;
+        }
+        
+        .android-scan-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 400px;
+            height: 200px;
+            border: 4px solid rgba(76, 175, 80, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+        
+        .android-scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                #4CAF50, 
+                transparent);
+            animation: android-scan 2s ease-in-out infinite;
+            box-shadow: 0 0 10px #4CAF50;
+        }
+        
+        @keyframes android-scan {
+            0% { top: 0; opacity: 1; }
+            50% { top: 100%; opacity: 1; }
+            51% { opacity: 0; }
+            100% { top: 0; opacity: 0; }
+        }
+        
+        .android-scanner-info {
+            position: absolute;
+            top: calc(50% + 120px);
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 16px;
+            padding: 0 20px;
+            z-index: 3010;
+        }
+        
+        .android-modal-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            gap: 12px;
+            z-index: 3100;
+        }
+        
+        .android-modal-btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .android-modal-btn-danger {
+            background: rgba(255, 59, 48, 0.8);
+            color: white;
+        }
+        
+        .android-modal-btn-primary {
+            background: rgba(76, 175, 80, 0.8);
+            color: white;
+        }
+        
+        .android-status-message {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 3100;
+            display: none;
+        }
+        
+        .android-scanned-badge {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(76, 175, 80, 0.95);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            display: none;
+            z-index: 3100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: android-badgeAppear 0.5s ease-out;
+        }
+        
+        @keyframes android-badgeAppear {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        
+        .android-loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #4CAF50;
+            animation: android-spin 1s linear infinite;
+            z-index: 3100;
+            display: none;
+        }
+        
+        @keyframes android-spin {
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .android-permission-hint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 300px;
+            z-index: 3100;
+            display: none;
+        }
+        
+        .android-no-camera {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 320px;
+            z-index: 3100;
+            display: none;
+        }
+
         /* Стили для iOS сканера */
         .ios-scanner-modal {
             display: none;
@@ -1322,20 +1556,39 @@
     <!-- Кнопка "Наверх" -->
     <button class="scroll-to-top-btn" id="scrollToTopBtn" title="Наверх">&#9650;</button>
 
-    <!-- Модальное окно камеры для Android -->
-    <div class="modal-overlay" id="cameraModal">
-        <div class="modal-frame">
-            <h3>Сканирование штрихкода</h3>
-            <div class="video-wrapper" id="videoContainer">
-                <div class="scan-box">
-                    <div class="scan-line"></div>
+    <!-- Модальное окно камеры для Android (html5-qrcode) -->
+    <div class="android-scanner-modal" id="androidScannerModal">
+        <div class="android-scanner-content">
+            <div class="android-scanner-container">
+                <div id="android-qr-reader"></div>
+                
+                <div class="android-scan-overlay">
+                    <div class="android-scan-frame">
+                        <div class="android-scan-line"></div>
+                    </div>
                 </div>
-                <video id="cameraVideo" playsinline></video>
-                <div class="camera-controls">
-                    <button class="camera-btn" id="stopCamera">Остановить</button>
+                
+                <div class="android-scanner-info">
+                    Наведите камеру на штрихкод в рамке
+                </div>
+                
+                <div class="android-status-message" id="androidScannerStatus"></div>
+                <div class="android-loader" id="androidScannerLoader">Загрузка...</div>
+                
+                <div class="android-no-camera" id="androidNoCameraMessage">
+                    <h3 style="color: #ff3b30; margin-bottom:15px;">Камера недоступна</h3>
+                    <p>Не удалось получить доступ к камере.</p>
                 </div>
             </div>
-            <button class="close-modal" id="closeCameraModal">Закрыть</button>
+            
+            <div class="android-modal-controls">
+                <button class="android-modal-btn android-modal-btn-danger" id="closeAndroidScanner">
+                    ✕ Закрыть сканер
+                </button>
+                <button class="android-modal-btn android-modal-btn-primary" id="switchAndroidCamera" style="display: none;">
+                    Переключить камеру
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1474,6 +1727,12 @@
         
         // Переменная: тип ценника (по умолчанию обычный)
         let currentPriceTagType = 'regular';
+        
+        // ===== ПЕРЕМЕННЫЕ ДЛЯ ANDROID СКАНЕРА (html5-qrcode) =====
+        let androidHtml5QrCode = null;
+        let androidIsScanning = false;
+        let androidLastScannedCode = '';
+        let androidCurrentFacingMode = 'environment';
         
         // ===== ПЕРЕМЕННЫЕ ДЛЯ iOS СКАНЕРА =====
         let iosHtml5QrCode = null;
@@ -21421,7 +21680,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             document.getElementById('datesModal').style.display = 'none';
         }
 
-        // ===== ФУНКЦИИ ДЛЯ СКАНИРОВАНИЯ (Android) =====
+        // ===== ФУНКЦИИ ДЛЯ СКАНИРОВАНИЯ =====
 
         function isIOS() {
             return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -21429,6 +21688,11 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
 
         function isAndroid() {
             return /Android/.test(navigator.userAgent);
+        }
+
+        function isOnePlus15() {
+            // Проверяем OnePlus 15
+            return /OnePlus 15|OnePlus15|OP15/i.test(navigator.userAgent);
         }
 
         function isBarcodeDetectorSupported() {
@@ -21459,20 +21723,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             }
         }
 
-        function isHTTPS() {
-            return window.location.protocol === 'https:';
-        }
-
-        function isLocalhost() {
-            return window.location.hostname === 'localhost' || 
-                   window.location.hostname === '127.0.0.1' ||
-                   window.location.hostname === '';
-        }
-
-        function canUseCamera() {
-            return true;
-        }
-
         function setupPlatformUI() {
             const scanButtonAndroid = document.getElementById('scanButtonAndroid');
             const scanButtonIOS = document.getElementById('scanButtonIOS');
@@ -21481,207 +21731,210 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 scanButtonAndroid.style.display = 'none';
                 scanButtonIOS.style.display = 'flex';
                 searchButton.style.maxWidth = '300px';
-            } else if (isAndroid()) {
-                scanButtonAndroid.style.display = 'flex';
-                scanButtonIOS.style.display = 'none';
-                setTimeout(() => {
-                    initBarcodeDetector();
-                }, 1000);
             } else {
+                // Для Android (включая OnePlus 15) используем html5-qrcode
                 scanButtonAndroid.style.display = 'flex';
                 scanButtonIOS.style.display = 'none';
-                setTimeout(() => {
-                    initBarcodeDetector();
-                }, 1000);
             }
         }
 
-// ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ANDROID (OnePlus 15) =====
-async function openCamera() {
-    try {
-        stopCameraStream();
-        
-        // Пробуем разные комбинации настроек для OnePlus 15
-        const constraintsList = [
-            // Вариант 1: Явно просим широкий угол
-            {
-                video: {
-                    facingMode: { exact: "environment" },
-                    width: { min: 1920, ideal: 2560 },
-                    height: { min: 1080, ideal: 1440 },
-                    advanced: [{
-                        torch: false,
-                        focusMode: "continuous",
-                        exposureMode: "continuous",
-                        whiteBalanceMode: "continuous"
-                    }]
-                },
-                audio: false
-            },
-            // Вариант 2: Максимальное разрешение
-            {
-                video: {
-                    facingMode: "environment",
-                    width: { ideal: 4096 },
-                    height: { ideal: 2160 }
-                },
-                audio: false
-            },
-            // Вариант 3: Минимальное разрешение (может переключить на основную камеру)
-            {
-                video: {
-                    facingMode: "environment",
-                    width: { ideal: 640 },
-                    height: { ideal: 480 }
-                },
-                audio: false
-            },
-            // Вариант 4: Без указания разрешения
-            {
-                video: { facingMode: "environment" },
-                audio: false
-            }
-        ];
-        
-        let stream = null;
-        let lastError = null;
-        
-        // Пробуем все варианты по очереди
-        for (let i = 0; i < constraintsList.length; i++) {
-            try {
-                console.log(`Пробуем вариант ${i + 1}...`);
-                stream = await navigator.mediaDevices.getUserMedia(constraintsList[i]);
-                
-                // Если получили поток - выходим
-                if (stream) {
-                    console.log(`Вариант ${i + 1} сработал`);
-                    break;
-                }
-            } catch (e) {
-                console.log(`Вариант ${i + 1} не сработал:`, e);
-                lastError = e;
-            }
-        }
-        
-        // Если ни один вариант не сработал
-        if (!stream) {
-            throw lastError || new Error('Не удалось получить доступ к камере');
-        }
-        
-        // Получаем информацию о камере
-        const videoTrack = stream.getVideoTracks()[0];
-        const settings = videoTrack.getSettings();
-        console.log('Используется камера:', videoTrack.label);
-        console.log('Настройки:', settings);
-        
-        // Пробуем установить минимальный зум (если поддерживается)
-        try {
-            if (videoTrack.getCapabilities && videoTrack.getCapabilities().zoom) {
-                const capabilities = videoTrack.getCapabilities();
-                // Устанавливаем минимальный зум (наиболее отдаленно)
-                if (capabilities.zoom && capabilities.zoom.min !== undefined) {
-                    await videoTrack.applyConstraints({
-                        advanced: [{ zoom: capabilities.zoom.min }]
-                    });
-                    console.log('Установлен зум:', capabilities.zoom.min);
-                }
-            }
-        } catch (zoomError) {
-            console.log('Не удалось настроить зум:', zoomError);
-        }
-        
-        // Пробуем отключить макрорежим (если есть такой параметр)
-        try {
-            await videoTrack.applyConstraints({
-                advanced: [{ focusMode: "continuous" }]
-            });
-        } catch (focusError) {
-            console.log('Не удалось настроить фокус:', focusError);
-        }
-        
-        // Показываем видео
-        const cameraVideo = document.getElementById('cameraVideo');
-        cameraVideo.srcObject = stream;
-        document.getElementById('cameraModal').style.display = 'flex';
-        
-        await cameraVideo.play();
-        
-        // Инициализируем детектор
-        if (!barcodeDetector) {
-            barcodeDetector = await initBarcodeDetector();
-        }
-        
-        if (!barcodeDetector) {
-            alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
-            stopCameraStream();
-            return;
-        }
-        
-        startBarcodeDetection(barcodeDetector);
-        
-    } catch (error) {
-        console.error('Ошибка доступа к камере:', error);
-        alert('Не удалось получить доступ к камере. Пожалуйста, разрешите доступ к камере в настройках браузера.');
-    }
-}
-
-        function startBarcodeDetection(detector) {
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            const cameraVideo = document.getElementById('cameraVideo');
+        // ===== ФУНКЦИИ ДЛЯ ANDROID СКАНЕРА (html5-qrcode) =====
+        async function openAndroidScanner() {
+            console.log('Открытие Android сканера (html5-qrcode)...');
             
-            scanInterval = setInterval(async () => {
-                if (cameraVideo.readyState === cameraVideo.HAVE_ENOUGH_DATA) {
-                    canvas.width = cameraVideo.videoWidth;
-                    canvas.height = cameraVideo.videoHeight;
-                    
-                    context.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
-                    
-                    try {
-                        const barcodes = await detector.detect(canvas);
-                        
-                        if (barcodes && barcodes.length > 0) {
-                            const barcode = barcodes[0];
-                            handleScannedCode(barcode.rawValue);
-                            return;
-                        }
-                        
-                    } catch (error) {
-                        console.error('Ошибка детектирования штрихкода:', error);
-                    }
-                }
+            const androidModal = document.getElementById('androidScannerModal');
+            androidModal.style.display = 'block';
+            
+            document.getElementById('androidScannerLoader').style.display = 'block';
+            showAndroidScannerStatus('Инициализация камеры...');
+
+            setTimeout(() => {
+                initAndroidBarcodeScanner();
             }, 300);
         }
 
-        function stopCameraStream() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
-            if (scanInterval) {
-                clearInterval(scanInterval);
-                scanInterval = null;
-            }
-            const cameraVideo = document.getElementById('cameraVideo');
-            if (cameraVideo) {
-                cameraVideo.srcObject = null;
+        function initAndroidBarcodeScanner() {
+            try {
+                if (androidHtml5QrCode && androidIsScanning) {
+                    androidHtml5QrCode.stop().then(() => {
+                        androidHtml5QrCode.clear();
+                        androidHtml5QrCode = null;
+                    }).catch(() => {
+                        androidHtml5QrCode = null;
+                    });
+                }
+
+                // Специальные настройки для OnePlus 15
+                const isOnePlus = isOnePlus15();
+                
+                const config = {
+                    fps: 10,
+                    qrbox: { width: 250, height: 150 },
+                    rememberLastUsedCamera: true,
+                    supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+                    videoConstraints: {
+                        width: { min: 640, ideal: 1280, max: 1920 },
+                        height: { min: 480, ideal: 720, max: 1080 },
+                        facingMode: { ideal: "environment" },
+                        advanced: [{
+                            focusMode: "continuous",
+                            zoom: { ideal: 1.0 } // Просим без зума
+                        }]
+                    }
+                };
+
+                // Для OnePlus 15 добавляем специальные настройки
+                if (isOnePlus) {
+                    console.log('Обнаружен OnePlus 15, применяем специальные настройки');
+                    config.videoConstraints.advanced.push({
+                        // Запрещаем макрорежим
+                        focusDistance: { ideal: 1.0 },
+                        // Явно выбираем основную камеру
+                        facingMode: { exact: "environment" }
+                    });
+                }
+
+                androidHtml5QrCode = new Html5Qrcode("android-qr-reader");
+
+                androidHtml5QrCode.start(
+                    { facingMode: "environment" },
+                    config,
+                    onAndroidScanSuccess,
+                    onAndroidScanError
+                ).then(() => {
+                    console.log('Android сканирование запущено успешно');
+                    androidIsScanning = true;
+
+                    document.getElementById('androidScannerLoader').style.display = 'none';
+                    document.getElementById('androidNoCameraMessage').style.display = 'none';
+                    hideAndroidScannerStatus();
+
+                    // Для OnePlus 15 дополнительно настраиваем после запуска
+                    if (isOnePlus && androidHtml5QrCode) {
+                        setTimeout(() => {
+                            try {
+                                androidHtml5QrCode.applyVideoConstraints({
+                                    advanced: [{ zoom: 1.0 }]
+                                }).catch(e => console.warn('Не удалось установить зум:', e));
+                            } catch (e) {
+                                console.warn('Ошибка доп. настройки:', e);
+                            }
+                        }, 1000);
+                    }
+
+                }).catch(err => {
+                    console.error('Ошибка запуска Android сканера:', err);
+                    
+                    // Fallback с упрощенными настройками
+                    if (androidHtml5QrCode) {
+                        androidHtml5QrCode.start(
+                            { facingMode: "environment" },
+                            {
+                                fps: 10,
+                                qrbox: { width: 250, height: 150 },
+                                rememberLastUsedCamera: true
+                            },
+                            onAndroidScanSuccess,
+                            onAndroidScanError
+                        ).then(() => {
+                            androidIsScanning = true;
+                            document.getElementById('androidScannerLoader').style.display = 'none';
+                            hideAndroidScannerStatus();
+                        }).catch(err2 => {
+                            console.error('Fallback тоже не сработал:', err2);
+                            showAndroidNoCameraMessage();
+                        });
+                    } else {
+                        showAndroidNoCameraMessage();
+                    }
+                });
+
+            } catch (error) {
+                console.error('Критическая ошибка инициализации Android сканера:', error);
+                showAndroidNoCameraMessage();
             }
         }
 
-        function handleScannedCode(code) {
-            if (!code || code.trim().length === 0) return;
+        function onAndroidScanSuccess(decodedText, decodedResult) {
+            console.log('Android сканирование успешно:', decodedText);
             
-            stopCameraStream();
-            document.getElementById('modeBarcode').checked = true;
-            updateSearchUI();
+            if (androidLastScannedCode === decodedText) {
+                return;
+            }
             
-            const cleanCode = code.toString().trim();
-            const searchInput = document.getElementById('searchInput');
-            searchInput.value = cleanCode;
-            updateClearButton();
+            androidLastScannedCode = decodedText;
+
+            if (androidHtml5QrCode && androidIsScanning) {
+                androidHtml5QrCode.stop().then(() => {
+                    androidIsScanning = false;
+                }).catch(() => {
+                    androidIsScanning = false;
+                });
+            }
+
+            setTimeout(() => { 
+                closeAndroidScanner();
+                
+                document.getElementById('modeBarcode').checked = true;
+                updateSearchUI();
+                
+                const cleanCode = decodedText.toString().trim();
+                const searchInput = document.getElementById('searchInput');
+                searchInput.value = cleanCode;
+                updateClearButton();
+                
+                const results = performSimpleSearch(cleanCode, 'barcode');
+                showScanResults(cleanCode, results);
+                
+                setTimeout(() => {
+                    androidLastScannedCode = '';
+                }, 3000);
+            }, 5);
+        }
+
+        function onAndroidScanError(error) {
+            if (!error.includes('NotFoundException')) {
+                console.warn('Ошибка Android сканирования:', error);
+            }
+        }
+
+        function showAndroidScannerStatus(message) {
+            const status = document.getElementById('androidScannerStatus');
+            status.textContent = message;
+            status.style.display = 'block';
+        }
+
+        function hideAndroidScannerStatus() {
+            document.getElementById('androidScannerStatus').style.display = 'none';
+        }
+
+        function showAndroidNoCameraMessage() {
+            document.getElementById('androidScannerLoader').style.display = 'none';
+            document.getElementById('androidNoCameraMessage').style.display = 'block';
+            hideAndroidScannerStatus();
+        }
+
+        function closeAndroidScanner() {
+            console.log('Закрытие Android сканера...');
             
-            const results = performSimpleSearch(cleanCode, 'barcode');
-            showScanResults(cleanCode, results);
+            if (androidHtml5QrCode && androidIsScanning) {
+                androidHtml5QrCode.stop().then(() => {
+                    console.log('Android сканирование остановлено');
+                    androidHtml5QrCode.clear();
+                    androidHtml5QrCode = null;
+                    androidIsScanning = false;
+                }).catch(err => {
+                    console.log('Ошибка остановки Android сканера:', err);
+                    androidHtml5QrCode = null;
+                    androidIsScanning = false;
+                });
+            }
+            
+            document.getElementById('androidScannerModal').style.display = 'none';
+            document.getElementById('androidNoCameraMessage').style.display = 'none';
+            hideAndroidScannerStatus();
+            
+            androidCurrentFacingMode = 'environment';
         }
 
         // ===== ФУНКЦИИ ДЛЯ iOS СКАНЕРА =====
@@ -21694,7 +21947,6 @@ async function openCamera() {
             
             document.getElementById('iosScannerLoader').style.display = 'block';
             showIOSScannerStatus('Инициализация камеры...');
-      
 
             setTimeout(() => {
                 initIOSBarcodeScanner();
@@ -21722,7 +21974,7 @@ async function openCamera() {
                         height: { min: 480, ideal: 720, max: 1080 },
                         facingMode: { ideal: "environment" },
                         advanced: [{
-                            focusMode: "continuous",
+                            focusMode: "continuous"
                         }]
                     }
                 };
@@ -21742,33 +21994,11 @@ async function openCamera() {
                     document.getElementById('iosNoCameraMessage').style.display = 'none';
                     hideIOSScannerStatus();
 
-                    setTimeout(() => {
-                        if (iosHtml5QrCode && iosIsScanning) {
-                            try {
-                                iosHtml5QrCode.applyVideoConstraints({
-                                    focusMode: "continuous"
-                                }).catch(e => console.warn('Не удалось установить focusMode:', e));
-
-                                const isNewIPhone = /iPhone 1[1-9]|iPhone 2[0-9]|iPhone 1[0-9] Pro/.test(navigator.userAgent);
-                                if (isNewIPhone) {
-                                    setTimeout(() => {
-                                        iosHtml5QrCode.applyVideoConstraints({
-                                            advanced: [{ zoom: 2.2 }]
-                                        }).catch(e => console.warn('Зум не поддерживается:', e));
-                                    }, 500);
-                                }
-
-                            } catch (e) {
-                                console.warn('Ошибка при настройке камеры:', e);
-                            }
-                        }
-                    }, 1500);
-
                 }).catch(err => {
                     console.error('Ошибка запуска iOS сканера:', err);
 
                     if (err.toString().includes('Overconstrained') || err.toString().includes('environment')) {
-                        console.log('Запасной план: без сложных constraints');
+                        console.log('Запасной план для iOS');
                         showIOSScannerStatus('Настройка камеры...');
 
                         iosHtml5QrCode.start(
@@ -21785,7 +22015,7 @@ async function openCamera() {
                             document.getElementById('iosScannerLoader').style.display = 'none';
                             hideIOSScannerStatus();
                         }).catch(err2 => {
-                            console.error('Запасной план тоже не сработал:', err2);
+                            console.error('Запасной план не сработал:', err2);
                             showIOSNoCameraMessage();
                         });
                     } else {
@@ -21808,7 +22038,6 @@ async function openCamera() {
             
             iosLastScannedCode = decodedText;
 
-            
             if (iosHtml5QrCode && iosIsScanning) {
                 iosHtml5QrCode.stop().then(() => {
                     iosIsScanning = false;
@@ -21816,7 +22045,7 @@ async function openCamera() {
                     iosIsScanning = false;
                 });
             }
- 
+
             setTimeout(() => { 
                 closeIOSScanner();
                 
@@ -21834,7 +22063,7 @@ async function openCamera() {
                 setTimeout(() => {
                     iosLastScannedCode = '';
                 }, 3000);
-            }, 5);				
+            }, 5);
         }
 
         function onIOSScanError(error) {
@@ -21882,37 +22111,6 @@ async function openCamera() {
             document.getElementById('iosScannerStatus').style.display = 'none';
         }
 
-        function switchIOSCamera() {
-            if (!iosHtml5QrCode || !iosIsScanning) return;
-            
-            iosCurrentFacingMode = iosCurrentFacingMode === 'environment' ? 'user' : 'environment';
-            
-            showIOSScannerStatus('Переключение камеры...');
-            
-            iosHtml5QrCode.stop().then(() => {
-                iosHtml5QrCode.clear();
-                
-                const config = {
-                    fps: 10,
-                    qrbox: { width: 250, height: 150 },
-                    rememberLastUsedCamera: true,
-                    supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
-                };
-                
-                iosHtml5QrCode.start(
-                    { facingMode: iosCurrentFacingMode },
-                    config,
-                    onIOSScanSuccess,
-                    onIOSScanError
-                ).then(() => {
-                    hideIOSScannerStatus();
-                }).catch(err => {
-                    console.error('Ошибка переключения камеры:', err);
-                    showIOSScannerStatus('Ошибка переключения камеры');
-                });
-            }).catch(() => {});
-        }
-
         // ===== ОБЩИЕ ФУНКЦИИ =====
 
         function showScanResults(code, results) {
@@ -21920,7 +22118,8 @@ async function openCamera() {
             
             const resultCount = document.getElementById('resultCount');
             const resultProducts = document.getElementById('resultProducts');
-            const cameraModal = document.getElementById('cameraModal');
+            const androidModal = document.getElementById('androidScannerModal');
+            const iosModal = document.getElementById('iosScannerModal');
             const resultModal = document.getElementById('resultModal');
             
             if (results.length === 0) {
@@ -21977,8 +22176,8 @@ async function openCamera() {
                 });
             }
             
-            cameraModal.style.display = 'none';
-            document.getElementById('iosScannerModal').style.display = 'none';
+            if (androidModal) androidModal.style.display = 'none';
+            if (iosModal) iosModal.style.display = 'none';
             resultModal.style.display = 'flex';
         }
 
@@ -22611,16 +22810,13 @@ async function openCamera() {
         const nameInput = document.getElementById('nameInput');
         const barcodeInput = document.getElementById('barcodeInput');
         
-        const cameraModal = document.getElementById('cameraModal');
+        const androidScannerModal = document.getElementById('androidScannerModal');
+        const iosScannerModal = document.getElementById('iosScannerModal');
         const resultModal = document.getElementById('resultModal');
         const printModal = document.getElementById('printModal');
         const datesModal = document.getElementById('datesModal');
-        const closeCameraModal = document.getElementById('closeCameraModal');
         const closePrintModalBtn = document.getElementById('closePrintModal');
         const closeDatesModalBtn = document.getElementById('closeDatesModal');
-        
-        const cameraVideo = document.getElementById('cameraVideo');
-        const stopCameraBtn = document.getElementById('stopCamera');
         
         const resultCount = document.getElementById('resultCount');
         const resultProducts = document.getElementById('resultProducts');
@@ -22630,6 +22826,10 @@ async function openCamera() {
         const printActionBtn = document.getElementById('printActionBtn');
 
         const priceTagTypeSelector = document.getElementById('priceTagTypeSelector');
+
+        // Элементы Android сканера
+        const closeAndroidScannerBtn = document.getElementById('closeAndroidScanner');
+        const switchAndroidCameraBtn = document.getElementById('switchAndroidCamera');
 
         // Элементы iOS сканера
         const closeIOSScannerBtn = document.getElementById('closeIOSScanner');
@@ -22711,25 +22911,97 @@ async function openCamera() {
             if (e.key === 'Enter') searchProducts();
         });
 
-        scanButtonAndroid.addEventListener('click', openCamera);
+        scanButtonAndroid.addEventListener('click', openAndroidScanner);
         scanButtonIOS.addEventListener('click', openIOSScanner);
 
-        closeCameraModal.addEventListener('click', function() {
-            stopCameraStream();
-            cameraModal.style.display = 'none';
-        });
+        // Обработчики Android сканера
+        if (closeAndroidScannerBtn) {
+            closeAndroidScannerBtn.addEventListener('click', closeAndroidScanner);
+        }
+        
+        if (switchAndroidCameraBtn) {
+            switchAndroidCameraBtn.addEventListener('click', function() {
+                // Переключение камеры для Android
+                if (androidHtml5QrCode && androidIsScanning) {
+                    androidCurrentFacingMode = androidCurrentFacingMode === 'environment' ? 'user' : 'environment';
+                    
+                    showAndroidScannerStatus('Переключение камеры...');
+                    
+                    androidHtml5QrCode.stop().then(() => {
+                        androidHtml5QrCode.clear();
+                        
+                        const config = {
+                            fps: 10,
+                            qrbox: { width: 250, height: 150 },
+                            rememberLastUsedCamera: true,
+                            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+                        };
+                        
+                        androidHtml5QrCode.start(
+                            { facingMode: androidCurrentFacingMode },
+                            config,
+                            onAndroidScanSuccess,
+                            onAndroidScanError
+                        ).then(() => {
+                            hideAndroidScannerStatus();
+                        }).catch(err => {
+                            console.error('Ошибка переключения камеры:', err);
+                            showAndroidScannerStatus('Ошибка переключения камеры');
+                        });
+                    }).catch(() => {});
+                }
+            });
+        }
 
-        cameraModal.addEventListener('click', function(e) {
-            if (e.target === cameraModal) {
-                stopCameraStream();
-                cameraModal.style.display = 'none';
-            }
-        });
+        if (androidScannerModal) {
+            androidScannerModal.addEventListener('click', function(e) {
+                if (e.target === androidScannerModal) closeAndroidScanner();
+            });
+        }
 
-        stopCameraBtn.addEventListener('click', function() {
-            stopCameraStream();
-            cameraModal.style.display = 'none';
-        });
+        // Обработчики iOS сканера
+        if (closeIOSScannerBtn) {
+            closeIOSScannerBtn.addEventListener('click', closeIOSScanner);
+        }
+        
+        if (switchIOSCameraBtn) {
+            switchIOSCameraBtn.addEventListener('click', function() {
+                if (!iosHtml5QrCode || !iosIsScanning) return;
+                
+                iosCurrentFacingMode = iosCurrentFacingMode === 'environment' ? 'user' : 'environment';
+                
+                showIOSScannerStatus('Переключение камеры...');
+                
+                iosHtml5QrCode.stop().then(() => {
+                    iosHtml5QrCode.clear();
+                    
+                    const config = {
+                        fps: 10,
+                        qrbox: { width: 250, height: 150 },
+                        rememberLastUsedCamera: true,
+                        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+                    };
+                    
+                    iosHtml5QrCode.start(
+                        { facingMode: iosCurrentFacingMode },
+                        config,
+                        onIOSScanSuccess,
+                        onIOSScanError
+                    ).then(() => {
+                        hideIOSScannerStatus();
+                    }).catch(err => {
+                        console.error('Ошибка переключения камеры:', err);
+                        showIOSScannerStatus('Ошибка переключения камеры');
+                    });
+                }).catch(() => {});
+            });
+        }
+
+        if (iosScannerModal) {
+            iosScannerModal.addEventListener('click', function(e) {
+                if (e.target === iosScannerModal) closeIOSScanner();
+            });
+        }
 
         continueScanBtn.addEventListener('click', function() {
             resultModal.style.display = 'none';
@@ -22737,7 +23009,7 @@ async function openCamera() {
                 if (isIOS()) {
                     openIOSScanner();
                 } else {
-                    openCamera();
+                    openAndroidScanner();
                 }
             }, 300);
         });
@@ -22765,16 +23037,6 @@ async function openCamera() {
         printActionBtn.addEventListener('click', handlePrint);
 
         document.getElementById('current-date').addEventListener('click', openDatesModal);
-
-        // Обработчики iOS сканера
-        closeIOSScannerBtn.addEventListener('click', closeIOSScanner);
-        
-        switchIOSCameraBtn.addEventListener('click', switchIOSCamera);
-
-        const iosScannerModal = document.getElementById('iosScannerModal');
-        iosScannerModal.addEventListener('click', function(e) {
-            if (e.target === iosScannerModal) closeIOSScanner();
-        });
 
         searchModeRadios.forEach(radio => {
             radio.addEventListener('change', function() {
@@ -22821,20 +23083,29 @@ async function openCamera() {
             }
         });
 
-        // Обработчик видимости страницы для iOS
+        // Обработчик видимости страницы
         document.addEventListener('visibilitychange', function() {
-            if (document.hidden && iosIsScanning) {
-                closeIOSScanner();
+            if (document.hidden) {
+                if (iosIsScanning) closeIOSScanner();
+                if (androidIsScanning) closeAndroidScanner();
             }
         });
 
-        // Обработчик ориентации для iOS
+        // Обработчик ориентации
         window.addEventListener('orientationchange', function() {
             if (iosIsScanning) {
                 setTimeout(() => {
                     if (iosIsScanning) {
                         closeIOSScanner();
                         setTimeout(openIOSScanner, 500);
+                    }
+                }, 300);
+            }
+            if (androidIsScanning) {
+                setTimeout(() => {
+                    if (androidIsScanning) {
+                        closeAndroidScanner();
+                        setTimeout(openAndroidScanner, 500);
                     }
                 }, 300);
             }
