@@ -21738,6 +21738,79 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             }
         }
 
+        // ===== ФУНКЦИЯ ДЛЯ ОТЛАДКИ КАМЕР =====
+        async function debugCameras() {
+            console.log('=== НАЧАЛО ОТЛАДКИ КАМЕР ===');
+            
+            try {
+                // Сначала запрашиваем разрешение на камеру
+                const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                tempStream.getTracks().forEach(track => track.stop());
+                
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                
+                console.log('Доступные камеры:', videoDevices.map((d, index) => ({ 
+                    index: index,
+                    label: d.label, 
+                    deviceId: d.deviceId,
+                    kind: d.kind
+                })));
+
+                // Тестируем каждую камеру
+                for (let i = 0; i < videoDevices.length; i++) {
+                    try {
+                        console.log(`\n=== ТЕСТ КАМЕРЫ ${i}: ${videoDevices[i].label} ===`);
+                        
+                        const testStream = await navigator.mediaDevices.getUserMedia({
+                            video: { 
+                                deviceId: { exact: videoDevices[i].deviceId },
+                                width: { ideal: 1280 },
+                                height: { ideal: 720 }
+                            }
+                        });
+                        
+                        const track = testStream.getVideoTracks()[0];
+                        
+                        // Получаем возможности камеры
+                        if (track.getCapabilities) {
+                            const capabilities = track.getCapabilities();
+                            console.log('Capabilities:', capabilities);
+                        }
+                        
+                        // Получаем текущие настройки
+                        const settings = track.getSettings();
+                        console.log('Settings:', settings);
+                        
+                        // Проверяем, поддерживает ли зум
+                        if (track.getCapabilities && track.getCapabilities().zoom) {
+                            console.log('✅ Поддерживает зум, диапазон:', track.getCapabilities().zoom);
+                        } else {
+                            console.log('❌ Не поддерживает зум');
+                        }
+                        
+                        // Проверяем фокусное расстояние (признак широкоугольной камеры)
+                        if (settings.focalLength) {
+                            console.log(`Фокусное расстояние: ${settings.focalLength}mm`);
+                            if (settings.focalLength < 5) {
+                                console.log('✅ Скорее всего широкоугольная камера');
+                            }
+                        }
+                        
+                        track.stop();
+                        
+                    } catch (e) {
+                        console.log(`❌ Ошибка теста камеры ${i}:`, e.message);
+                    }
+                }
+                
+                console.log('=== ОТЛАДКА ЗАВЕРШЕНА ===');
+                
+            } catch (error) {
+                console.error('Ошибка отладки камер:', error);
+            }
+        }
+
         // ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ANDROID (OnePlus 15) =====
         async function openAndroidScanner() {
             console.log('Открытие Android сканера (html5-qrcode)...');
@@ -21749,52 +21822,51 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             showAndroidScannerStatus('Поиск широкоугольной камеры...');
 
             try {
+                // Сначала запрашиваем разрешение на камеру
+                const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                tempStream.getTracks().forEach(track => track.stop());
+                
                 // Получаем список всех камер
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 const videoDevices = devices.filter(device => device.kind === 'videoinput');
                 
-                console.log('Доступные камеры:', videoDevices.map(d => ({ 
+                console.log('Доступные камеры:', videoDevices.map((d, index) => ({ 
+                    index: index,
                     label: d.label, 
                     deviceId: d.deviceId 
                 })));
 
-                // Ищем широкоугольную камеру (не макро, не телефото)
+                // Для OnePlus 15: нам нужна камера с самым широким углом
                 let selectedDeviceId = null;
                 let selectedDeviceLabel = '';
 
-                // Приоритет: камеры с пометкой wide/ultrawide
+                // Приоритет 1: Камеры с пометкой ultrawide/0.6x
                 for (const device of videoDevices) {
                     const label = device.label.toLowerCase();
-                    
-                    // Пропускаем макро-камеры
-                    if (label.includes('macro') || label.includes('макро')) {
-                        console.log('Пропускаем макро-камеру:', label);
-                        continue;
-                    }
-                    
-                    // Пропускаем телефото-камеры
-                    if (label.includes('tele') || label.includes('теле')) {
-                        console.log('Пропускаем телефото-камеру:', label);
-                        continue;
-                    }
-                    
-                    // Ищем широкоугольную камеру
-                    if (label.includes('wide') || label.includes('широко') || 
-                        label.includes('ultrawide') || label.includes('сверхширок')) {
+                    if (label.includes('ultrawide') || label.includes('ultra wide') || 
+                        label.includes('сверхширок') || label.includes('0.6') ||
+                        label.includes('0.5') || label.includes('wide angle')) {
                         selectedDeviceId = device.deviceId;
                         selectedDeviceLabel = device.label;
-                        console.log('✅ Найдена широкоугольная камера:', selectedDeviceLabel);
+                        console.log('✅ Найдена сверхширокоугольная камера:', selectedDeviceLabel);
                         break;
                     }
                 }
 
-                // Если не нашли широкоугольную, ищем основную заднюю
+                // Приоритет 2: Основная камера (не макро, не телефото)
                 if (!selectedDeviceId) {
                     for (const device of videoDevices) {
                         const label = device.label.toLowerCase();
-                        if ((label.includes('back') || label.includes('задняя') || 
-                             label.includes('main') || label.includes('основная')) &&
-                            !label.includes('macro') && !label.includes('макро')) {
+                        
+                        // Пропускаем макро и телефото
+                        if (label.includes('macro') || label.includes('макро') ||
+                            label.includes('tele') || label.includes('теле')) {
+                            console.log('Пропускаем:', label);
+                            continue;
+                        }
+                        
+                        if (label.includes('back') || label.includes('задняя') || 
+                            label.includes('main') || label.includes('основная')) {
                             selectedDeviceId = device.deviceId;
                             selectedDeviceLabel = device.label;
                             console.log('✅ Найдена основная камера:', selectedDeviceLabel);
@@ -21803,7 +21875,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                     }
                 }
 
-                // Если всё ещё нет, берем первую подходящую
+                // Приоритет 3: Первая камера, которая не макро
                 if (!selectedDeviceId && videoDevices.length > 0) {
                     for (const device of videoDevices) {
                         const label = device.label.toLowerCase();
@@ -21811,13 +21883,13 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                             !label.includes('tele') && !label.includes('теле')) {
                             selectedDeviceId = device.deviceId;
                             selectedDeviceLabel = device.label;
-                            console.log('✅ Выбрана камера:', selectedDeviceLabel);
+                            console.log('✅ Выбрана камера (не макро):', selectedDeviceLabel);
                             break;
                         }
                     }
                 }
 
-                // Если ничего не нашли, берем первую
+                // Приоритет 4: Любая камера
                 if (!selectedDeviceId && videoDevices.length > 0) {
                     selectedDeviceId = videoDevices[0].deviceId;
                     selectedDeviceLabel = videoDevices[0].label;
@@ -21852,7 +21924,8 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                         facingMode: { ideal: "environment" },
                         advanced: [{
                             focusMode: "continuous",
-                            zoom: 1.0 // Явно указываем zoom = 1x
+                            // Просим минимальный зум (широкий угол)
+                            zoom: { ideal: 1.0, min: 1.0 }
                         }]
                     }
                 };
