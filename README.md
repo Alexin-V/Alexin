@@ -21496,123 +21496,186 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             }
         }
 
-        // ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ANDROID (OnePlus 15) =====
-        async function openCamera() {
-            try {
-                stopCameraStream();
-                
-                // Получаем список доступных камер
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevices = devices.filter(device => device.kind === 'videoinput');
-                
-                console.log('Доступные камеры:', videoDevices.map(d => ({ label: d.label, deviceId: d.deviceId })));
-                
-                // Стратегия для OnePlus 15: выбираем заднюю камеру
-                let selectedDeviceId = null;
-                
-                // Пытаемся найти заднюю камеру по label
-                for (const device of videoDevices) {
-                    const label = device.label.toLowerCase();
-                    if (label.includes('back') || label.includes('задняя') || label.includes('environment') || 
-                        label.includes('rear') || label.includes('main')) {
-                        selectedDeviceId = device.deviceId;
-                        break;
-                    }
-                }
-                
-                // Если не нашли, используем первую камеру
-                if (!selectedDeviceId && videoDevices.length > 0) {
-                    selectedDeviceId = videoDevices[0].deviceId;
-                }
-                
-                // СПЕЦИАЛЬНО ДЛЯ ONEPLUS 15: отключаем зум и используем широкий угол
-                const constraints = {
-                    video: {
-                        deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
-                        facingMode: { ideal: "environment" },
-                        width: { min: 640, ideal: 1280, max: 1920 },
-                        height: { min: 480, ideal: 720, max: 1080 },
-                        // ВАЖНО: Запрашиваем zoom = 1x (без приближения)
-                        zoom: { ideal: 1.0, min: 1.0 },
-                        advanced: [{
-                            focusMode: "continuous",
-                            focusDistance: { ideal: 1.0 }
-                        }]
-                    },
-                    audio: false
-                };
-                
-                // Запрашиваем доступ к камере
-                stream = await navigator.mediaDevices.getUserMedia(constraints);
-                
-                const videoTrack = stream.getVideoTracks()[0];
-                console.log('Выбрана камера:', videoTrack.label);
-                
-                // Принудительно устанавливаем минимальный зум
-                try {
-                    if (videoTrack.getCapabilities && videoTrack.getCapabilities().zoom) {
-                        const capabilities = videoTrack.getCapabilities();
-                        await videoTrack.applyConstraints({
-                            advanced: [{ zoom: capabilities.zoom.min }]
-                        });
-                        console.log('Зум установлен на минимум:', capabilities.zoom.min);
-                    }
-                } catch (e) {
-                    console.warn('Не удалось настроить зум:', e);
-                }
-                
-                const cameraVideo = document.getElementById('cameraVideo');
-                cameraVideo.srcObject = stream;
-                document.getElementById('cameraModal').style.display = 'flex';
-                
-                await cameraVideo.play();
-                
-                if (!barcodeDetector) {
-                    barcodeDetector = await initBarcodeDetector();
-                }
-                
-                if (!barcodeDetector) {
-                    alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
-                    stopCameraStream();
-                    return;
-                }
-                
-                startBarcodeDetection(barcodeDetector);
-                
-            } catch (error) {
-                console.error('Ошибка доступа к камере:', error);
-                
-                // Fallback: упрощенные настройки
-                try {
-                    const fallbackStream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: 'environment' },
-                        audio: false
-                    });
-                    
-                    const cameraVideo = document.getElementById('cameraVideo');
-                    cameraVideo.srcObject = fallbackStream;
-                    document.getElementById('cameraModal').style.display = 'flex';
-                    
-                    await cameraVideo.play();
-                    stream = fallbackStream;
-                    
-                    if (!barcodeDetector) {
-                        barcodeDetector = await initBarcodeDetector();
-                    }
-                    
-                    if (barcodeDetector) {
-                        startBarcodeDetection(barcodeDetector);
-                    } else {
-                        alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
-                        stopCameraStream();
-                    }
-                    
-                } catch (fallbackError) {
-                    console.error('Ошибка fallback доступа к камере:', fallbackError);
-                    alert('Не удалось получить доступ к камере. Пожалуйста, разрешите доступ к камере в настройках браузера.');
+// ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ANDROID (OnePlus 15) =====
+async function openCamera() {
+    try {
+        stopCameraStream();
+        
+        // Получаем список всех камер
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        
+        console.log('Все камеры:', videoDevices.map(d => ({ 
+            label: d.label, 
+            deviceId: d.deviceId 
+        })));
+        
+        // Стратегия для OnePlus 15: ищем основную камеру
+        let selectedDeviceId = null;
+        let selectedDeviceLabel = '';
+        
+        // Приоритет: ищем камеру с самым широким углом (не макро, не телефото)
+        for (const device of videoDevices) {
+            const label = device.label.toLowerCase();
+            
+            // Исключаем макро-камеры
+            if (label.includes('macro') || label.includes('макро')) {
+                console.log('Пропускаем макро-камеру:', label);
+                continue;
+            }
+            
+            // Исключаем телефото-камеры (они для зума)
+            if (label.includes('tele') || label.includes('теле')) {
+                console.log('Пропускаем телефото-камеру:', label);
+                continue;
+            }
+            
+            // Приоритет: основная камера
+            if (label.includes('back') || label.includes('задняя') || 
+                label.includes('main') || label.includes('основная') ||
+                label.includes('wide') || label.includes('широко')) {
+                selectedDeviceId = device.deviceId;
+                selectedDeviceLabel = device.label;
+                console.log('Выбрана основная камера:', selectedDeviceLabel);
+                break;
+            }
+        }
+        
+        // Если не нашли, берем первую камеру (не макро)
+        if (!selectedDeviceId && videoDevices.length > 0) {
+            for (const device of videoDevices) {
+                const label = device.label.toLowerCase();
+                if (!label.includes('macro') && !label.includes('макро')) {
+                    selectedDeviceId = device.deviceId;
+                    selectedDeviceLabel = device.label;
+                    console.log('Выбрана первая доступная камера (не макро):', selectedDeviceLabel);
+                    break;
                 }
             }
         }
+        
+        // Если всё еще нет, берем любую
+        if (!selectedDeviceId && videoDevices.length > 0) {
+            selectedDeviceId = videoDevices[0].deviceId;
+            selectedDeviceLabel = videoDevices[0].label;
+            console.log('Выбрана любая камера:', selectedDeviceLabel);
+        }
+        
+        // СПЕЦИАЛЬНО ДЛЯ ONEPLUS 15: запрашиваем широкий угол
+        const constraints = {
+            video: {
+                deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+                // Просим широкий угол (минимальный фокус)
+                facingMode: { ideal: "environment" },
+                width: { min: 640, ideal: 1280, max: 1920 },
+                height: { min: 480, ideal: 720, max: 1080 },
+                // ВАЖНО: Запрещаем макрорежим
+                focusMode: { ideal: "continuous" },
+                // Явно указываем, что не хотим макро
+                advanced: [{
+                    // Запрещаем макро
+                    focusDistance: { ideal: 1.0 },
+                    // Для OnePlus: явно выбираем широкоугольный модуль
+                    facingMode: { exact: "environment" }
+                }]
+            },
+            audio: false
+        };
+        
+        console.log('Запрашиваем камеру с constraints:', constraints);
+        
+        // Запрашиваем доступ
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        const videoTrack = stream.getVideoTracks()[0];
+        const settings = videoTrack.getSettings();
+        console.log('Активная камера:', videoTrack.label);
+        console.log('Настройки:', settings);
+        
+        // Проверяем, не макро ли это
+        if (videoTrack.label.toLowerCase().includes('macro') || 
+            videoTrack.label.toLowerCase().includes('макро')) {
+            console.warn('ОШИБКА: Всё равно выбрана макро-камера!');
+            
+            // Пробуем переключиться принудительно
+            const alternativeDevice = videoDevices.find(d => 
+                !d.label.toLowerCase().includes('macro') && 
+                !d.label.toLowerCase().includes('макро') &&
+                d.deviceId !== selectedDeviceId
+            );
+            
+            if (alternativeDevice) {
+                console.log('Пробуем переключиться на:', alternativeDevice.label);
+                stopCameraStream();
+                
+                const newStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        deviceId: { exact: alternativeDevice.deviceId },
+                        facingMode: { ideal: "environment" }
+                    },
+                    audio: false
+                });
+                
+                stream = newStream;
+                console.log('Переключились на:', alternativeDevice.label);
+            }
+        }
+        
+        // Показываем видео
+        const cameraVideo = document.getElementById('cameraVideo');
+        cameraVideo.srcObject = stream;
+        document.getElementById('cameraModal').style.display = 'flex';
+        
+        await cameraVideo.play();
+        
+        // Инициализируем детектор
+        if (!barcodeDetector) {
+            barcodeDetector = await initBarcodeDetector();
+        }
+        
+        if (!barcodeDetector) {
+            alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
+            stopCameraStream();
+            return;
+        }
+        
+        startBarcodeDetection(barcodeDetector);
+        
+    } catch (error) {
+        console.error('Ошибка доступа к камере:', error);
+        
+        // Fallback: просто задняя камера
+        try {
+            console.log('Пробуем fallback: только задняя камера');
+            const fallbackStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' },
+                audio: false
+            });
+            
+            const cameraVideo = document.getElementById('cameraVideo');
+            cameraVideo.srcObject = fallbackStream;
+            document.getElementById('cameraModal').style.display = 'flex';
+            
+            await cameraVideo.play();
+            stream = fallbackStream;
+            
+            if (!barcodeDetector) {
+                barcodeDetector = await initBarcodeDetector();
+            }
+            
+            if (barcodeDetector) {
+                startBarcodeDetection(barcodeDetector);
+            } else {
+                alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
+                stopCameraStream();
+            }
+            
+        } catch (fallbackError) {
+            console.error('Ошибка fallback:', fallbackError);
+            alert('Не удалось получить доступ к камере. Разрешите доступ в настройках браузера.');
+        }
+    }
+}
 
         function startBarcodeDetection(detector) {
             const canvas = document.createElement('canvas');
