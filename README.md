@@ -21501,124 +21501,102 @@ async function openCamera() {
     try {
         stopCameraStream();
         
-        // Получаем список всех камер
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter(device => device.kind === 'videoinput');
-        
-        console.log('Все камеры:', videoDevices.map(d => ({ 
-            label: d.label, 
-            deviceId: d.deviceId 
-        })));
-        
-        // Стратегия для OnePlus 15: ищем основную камеру
-        let selectedDeviceId = null;
-        let selectedDeviceLabel = '';
-        
-        // Приоритет: ищем камеру с самым широким углом (не макро, не телефото)
-        for (const device of videoDevices) {
-            const label = device.label.toLowerCase();
-            
-            // Исключаем макро-камеры
-            if (label.includes('macro') || label.includes('макро')) {
-                console.log('Пропускаем макро-камеру:', label);
-                continue;
+        // Пробуем разные комбинации настроек для OnePlus 15
+        const constraintsList = [
+            // Вариант 1: Явно просим широкий угол
+            {
+                video: {
+                    facingMode: { exact: "environment" },
+                    width: { min: 1920, ideal: 2560 },
+                    height: { min: 1080, ideal: 1440 },
+                    advanced: [{
+                        torch: false,
+                        focusMode: "continuous",
+                        exposureMode: "continuous",
+                        whiteBalanceMode: "continuous"
+                    }]
+                },
+                audio: false
+            },
+            // Вариант 2: Максимальное разрешение
+            {
+                video: {
+                    facingMode: "environment",
+                    width: { ideal: 4096 },
+                    height: { ideal: 2160 }
+                },
+                audio: false
+            },
+            // Вариант 3: Минимальное разрешение (может переключить на основную камеру)
+            {
+                video: {
+                    facingMode: "environment",
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                },
+                audio: false
+            },
+            // Вариант 4: Без указания разрешения
+            {
+                video: { facingMode: "environment" },
+                audio: false
             }
-            
-            // Исключаем телефото-камеры (они для зума)
-            if (label.includes('tele') || label.includes('теле')) {
-                console.log('Пропускаем телефото-камеру:', label);
-                continue;
-            }
-            
-            // Приоритет: основная камера
-            if (label.includes('back') || label.includes('задняя') || 
-                label.includes('main') || label.includes('основная') ||
-                label.includes('wide') || label.includes('широко')) {
-                selectedDeviceId = device.deviceId;
-                selectedDeviceLabel = device.label;
-                console.log('Выбрана основная камера:', selectedDeviceLabel);
-                break;
-            }
-        }
+        ];
         
-        // Если не нашли, берем первую камеру (не макро)
-        if (!selectedDeviceId && videoDevices.length > 0) {
-            for (const device of videoDevices) {
-                const label = device.label.toLowerCase();
-                if (!label.includes('macro') && !label.includes('макро')) {
-                    selectedDeviceId = device.deviceId;
-                    selectedDeviceLabel = device.label;
-                    console.log('Выбрана первая доступная камера (не макро):', selectedDeviceLabel);
+        let stream = null;
+        let lastError = null;
+        
+        // Пробуем все варианты по очереди
+        for (let i = 0; i < constraintsList.length; i++) {
+            try {
+                console.log(`Пробуем вариант ${i + 1}...`);
+                stream = await navigator.mediaDevices.getUserMedia(constraintsList[i]);
+                
+                // Если получили поток - выходим
+                if (stream) {
+                    console.log(`Вариант ${i + 1} сработал`);
                     break;
                 }
+            } catch (e) {
+                console.log(`Вариант ${i + 1} не сработал:`, e);
+                lastError = e;
             }
         }
         
-        // Если всё еще нет, берем любую
-        if (!selectedDeviceId && videoDevices.length > 0) {
-            selectedDeviceId = videoDevices[0].deviceId;
-            selectedDeviceLabel = videoDevices[0].label;
-            console.log('Выбрана любая камера:', selectedDeviceLabel);
+        // Если ни один вариант не сработал
+        if (!stream) {
+            throw lastError || new Error('Не удалось получить доступ к камере');
         }
         
-        // СПЕЦИАЛЬНО ДЛЯ ONEPLUS 15: запрашиваем широкий угол
-        const constraints = {
-            video: {
-                deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
-                // Просим широкий угол (минимальный фокус)
-                facingMode: { ideal: "environment" },
-                width: { min: 640, ideal: 1280, max: 1920 },
-                height: { min: 480, ideal: 720, max: 1080 },
-                // ВАЖНО: Запрещаем макрорежим
-                focusMode: { ideal: "continuous" },
-                // Явно указываем, что не хотим макро
-                advanced: [{
-                    // Запрещаем макро
-                    focusDistance: { ideal: 1.0 },
-                    // Для OnePlus: явно выбираем широкоугольный модуль
-                    facingMode: { exact: "environment" }
-                }]
-            },
-            audio: false
-        };
-        
-        console.log('Запрашиваем камеру с constraints:', constraints);
-        
-        // Запрашиваем доступ
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
-        
+        // Получаем информацию о камере
         const videoTrack = stream.getVideoTracks()[0];
         const settings = videoTrack.getSettings();
-        console.log('Активная камера:', videoTrack.label);
+        console.log('Используется камера:', videoTrack.label);
         console.log('Настройки:', settings);
         
-        // Проверяем, не макро ли это
-        if (videoTrack.label.toLowerCase().includes('macro') || 
-            videoTrack.label.toLowerCase().includes('макро')) {
-            console.warn('ОШИБКА: Всё равно выбрана макро-камера!');
-            
-            // Пробуем переключиться принудительно
-            const alternativeDevice = videoDevices.find(d => 
-                !d.label.toLowerCase().includes('macro') && 
-                !d.label.toLowerCase().includes('макро') &&
-                d.deviceId !== selectedDeviceId
-            );
-            
-            if (alternativeDevice) {
-                console.log('Пробуем переключиться на:', alternativeDevice.label);
-                stopCameraStream();
-                
-                const newStream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        deviceId: { exact: alternativeDevice.deviceId },
-                        facingMode: { ideal: "environment" }
-                    },
-                    audio: false
-                });
-                
-                stream = newStream;
-                console.log('Переключились на:', alternativeDevice.label);
+        // Пробуем установить минимальный зум (если поддерживается)
+        try {
+            if (videoTrack.getCapabilities && videoTrack.getCapabilities().zoom) {
+                const capabilities = videoTrack.getCapabilities();
+                // Устанавливаем минимальный зум (наиболее отдаленно)
+                if (capabilities.zoom && capabilities.zoom.min !== undefined) {
+                    await videoTrack.applyConstraints({
+                        advanced: [{ zoom: capabilities.zoom.min }]
+                    });
+                    console.log('Установлен зум:', capabilities.zoom.min);
+                }
             }
+        } catch (zoomError) {
+            console.log('Не удалось настроить зум:', zoomError);
+        }
+        
+        // Пробуем отключить макрорежим (если есть такой параметр)
+        try {
+            await videoTrack.applyConstraints({
+                advanced: [{ focusMode: "continuous" }]
+            });
+        } catch (focusError) {
+            console.log('Не удалось настроить фокус:', focusError);
         }
         
         // Показываем видео
@@ -21643,37 +21621,7 @@ async function openCamera() {
         
     } catch (error) {
         console.error('Ошибка доступа к камере:', error);
-        
-        // Fallback: просто задняя камера
-        try {
-            console.log('Пробуем fallback: только задняя камера');
-            const fallbackStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' },
-                audio: false
-            });
-            
-            const cameraVideo = document.getElementById('cameraVideo');
-            cameraVideo.srcObject = fallbackStream;
-            document.getElementById('cameraModal').style.display = 'flex';
-            
-            await cameraVideo.play();
-            stream = fallbackStream;
-            
-            if (!barcodeDetector) {
-                barcodeDetector = await initBarcodeDetector();
-            }
-            
-            if (barcodeDetector) {
-                startBarcodeDetection(barcodeDetector);
-            } else {
-                alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
-                stopCameraStream();
-            }
-            
-        } catch (fallbackError) {
-            console.error('Ошибка fallback:', fallbackError);
-            alert('Не удалось получить доступ к камере. Разрешите доступ в настройках браузера.');
-        }
+        alert('Не удалось получить доступ к камере. Пожалуйста, разрешите доступ к камере в настройках браузера.');
     }
 }
 
