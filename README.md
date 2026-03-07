@@ -21738,7 +21738,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             }
         }
 
-        // ===== ФУНКЦИИ ДЛЯ ANDROID СКАНЕРА (html5-qrcode) =====
+        // ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ANDROID (OnePlus 15) =====
         async function openAndroidScanner() {
             console.log('Открытие Android сканера (html5-qrcode)...');
             
@@ -21746,112 +21746,183 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             androidModal.style.display = 'block';
             
             document.getElementById('androidScannerLoader').style.display = 'block';
-            showAndroidScannerStatus('Инициализация камеры...');
+            showAndroidScannerStatus('Поиск широкоугольной камеры...');
 
-            setTimeout(() => {
-                initAndroidBarcodeScanner();
-            }, 300);
-        }
-
-        function initAndroidBarcodeScanner() {
             try {
-                if (androidHtml5QrCode && androidIsScanning) {
-                    androidHtml5QrCode.stop().then(() => {
-                        androidHtml5QrCode.clear();
-                        androidHtml5QrCode = null;
-                    }).catch(() => {
-                        androidHtml5QrCode = null;
-                    });
+                // Получаем список всех камер
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                
+                console.log('Доступные камеры:', videoDevices.map(d => ({ 
+                    label: d.label, 
+                    deviceId: d.deviceId 
+                })));
+
+                // Ищем широкоугольную камеру (не макро, не телефото)
+                let selectedDeviceId = null;
+                let selectedDeviceLabel = '';
+
+                // Приоритет: камеры с пометкой wide/ultrawide
+                for (const device of videoDevices) {
+                    const label = device.label.toLowerCase();
+                    
+                    // Пропускаем макро-камеры
+                    if (label.includes('macro') || label.includes('макро')) {
+                        console.log('Пропускаем макро-камеру:', label);
+                        continue;
+                    }
+                    
+                    // Пропускаем телефото-камеры
+                    if (label.includes('tele') || label.includes('теле')) {
+                        console.log('Пропускаем телефото-камеру:', label);
+                        continue;
+                    }
+                    
+                    // Ищем широкоугольную камеру
+                    if (label.includes('wide') || label.includes('широко') || 
+                        label.includes('ultrawide') || label.includes('сверхширок')) {
+                        selectedDeviceId = device.deviceId;
+                        selectedDeviceLabel = device.label;
+                        console.log('✅ Найдена широкоугольная камера:', selectedDeviceLabel);
+                        break;
+                    }
                 }
 
-                // Специальные настройки для OnePlus 15
-                const isOnePlus = isOnePlus15();
-                
+                // Если не нашли широкоугольную, ищем основную заднюю
+                if (!selectedDeviceId) {
+                    for (const device of videoDevices) {
+                        const label = device.label.toLowerCase();
+                        if ((label.includes('back') || label.includes('задняя') || 
+                             label.includes('main') || label.includes('основная')) &&
+                            !label.includes('macro') && !label.includes('макро')) {
+                            selectedDeviceId = device.deviceId;
+                            selectedDeviceLabel = device.label;
+                            console.log('✅ Найдена основная камера:', selectedDeviceLabel);
+                            break;
+                        }
+                    }
+                }
+
+                // Если всё ещё нет, берем первую подходящую
+                if (!selectedDeviceId && videoDevices.length > 0) {
+                    for (const device of videoDevices) {
+                        const label = device.label.toLowerCase();
+                        if (!label.includes('macro') && !label.includes('макро') &&
+                            !label.includes('tele') && !label.includes('теле')) {
+                            selectedDeviceId = device.deviceId;
+                            selectedDeviceLabel = device.label;
+                            console.log('✅ Выбрана камера:', selectedDeviceLabel);
+                            break;
+                        }
+                    }
+                }
+
+                // Если ничего не нашли, берем первую
+                if (!selectedDeviceId && videoDevices.length > 0) {
+                    selectedDeviceId = videoDevices[0].deviceId;
+                    selectedDeviceLabel = videoDevices[0].label;
+                    console.log('✅ Выбрана первая доступная камера:', selectedDeviceLabel);
+                }
+
+                if (!selectedDeviceId) {
+                    throw new Error('Камера не найдена');
+                }
+
+                showAndroidScannerStatus(`Используем: ${selectedDeviceLabel.substring(0, 30)}...`);
+
+                // Останавливаем предыдущий экземпляр если есть
+                if (androidHtml5QrCode && androidIsScanning) {
+                    await androidHtml5QrCode.stop();
+                    androidHtml5QrCode = null;
+                }
+
+                // Создаем новый экземпляр
+                androidHtml5QrCode = new Html5Qrcode("android-qr-reader");
+
+                // Настройки для OnePlus 15
                 const config = {
                     fps: 10,
                     qrbox: { width: 250, height: 150 },
                     rememberLastUsedCamera: true,
                     supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
                     videoConstraints: {
+                        deviceId: selectedDeviceId,
                         width: { min: 640, ideal: 1280, max: 1920 },
                         height: { min: 480, ideal: 720, max: 1080 },
                         facingMode: { ideal: "environment" },
                         advanced: [{
                             focusMode: "continuous",
-                            zoom: { ideal: 1.0 } // Просим без зума
+                            zoom: 1.0 // Явно указываем zoom = 1x
                         }]
                     }
                 };
 
-                // Для OnePlus 15 добавляем специальные настройки
-                if (isOnePlus) {
-                    console.log('Обнаружен OnePlus 15, применяем специальные настройки');
-                    config.videoConstraints.advanced.push({
-                        // Запрещаем макрорежим
-                        focusDistance: { ideal: 1.0 },
-                        // Явно выбираем основную камеру
-                        facingMode: { exact: "environment" }
-                    });
-                }
-
-                androidHtml5QrCode = new Html5Qrcode("android-qr-reader");
-
-                androidHtml5QrCode.start(
-                    { facingMode: "environment" },
+                // Запускаем сканирование
+                await androidHtml5QrCode.start(
+                    { deviceId: selectedDeviceId },
                     config,
                     onAndroidScanSuccess,
                     onAndroidScanError
-                ).then(() => {
-                    console.log('Android сканирование запущено успешно');
-                    androidIsScanning = true;
+                );
 
-                    document.getElementById('androidScannerLoader').style.display = 'none';
-                    document.getElementById('androidNoCameraMessage').style.display = 'none';
-                    hideAndroidScannerStatus();
+                console.log('Android сканирование запущено успешно');
+                androidIsScanning = true;
 
-                    // Для OnePlus 15 дополнительно настраиваем после запуска
-                    if (isOnePlus && androidHtml5QrCode) {
-                        setTimeout(() => {
-                            try {
-                                androidHtml5QrCode.applyVideoConstraints({
-                                    advanced: [{ zoom: 1.0 }]
-                                }).catch(e => console.warn('Не удалось установить зум:', e));
-                            } catch (e) {
-                                console.warn('Ошибка доп. настройки:', e);
-                            }
-                        }, 1000);
+                document.getElementById('androidScannerLoader').style.display = 'none';
+                document.getElementById('androidNoCameraMessage').style.display = 'none';
+                hideAndroidScannerStatus();
+
+                // Дополнительная настройка после запуска
+                setTimeout(async () => {
+                    if (androidHtml5QrCode && androidIsScanning) {
+                        try {
+                            // Пытаемся установить минимальный зум
+                            await androidHtml5QrCode.applyVideoConstraints({
+                                advanced: [{ zoom: 1.0 }]
+                            });
+                            console.log('✅ Зум установлен на 1x');
+                        } catch (e) {
+                            console.warn('Не удалось установить зум:', e);
+                        }
                     }
-
-                }).catch(err => {
-                    console.error('Ошибка запуска Android сканера:', err);
-                    
-                    // Fallback с упрощенными настройками
-                    if (androidHtml5QrCode) {
-                        androidHtml5QrCode.start(
-                            { facingMode: "environment" },
-                            {
-                                fps: 10,
-                                qrbox: { width: 250, height: 150 },
-                                rememberLastUsedCamera: true
-                            },
-                            onAndroidScanSuccess,
-                            onAndroidScanError
-                        ).then(() => {
-                            androidIsScanning = true;
-                            document.getElementById('androidScannerLoader').style.display = 'none';
-                            hideAndroidScannerStatus();
-                        }).catch(err2 => {
-                            console.error('Fallback тоже не сработал:', err2);
-                            showAndroidNoCameraMessage();
-                        });
-                    } else {
-                        showAndroidNoCameraMessage();
-                    }
-                });
+                }, 1000);
 
             } catch (error) {
-                console.error('Критическая ошибка инициализации Android сканера:', error);
-                showAndroidNoCameraMessage();
+                console.error('Ошибка запуска Android сканера:', error);
+                showAndroidScannerStatus('Ошибка: ' + error.message);
+                
+                // Fallback с упрощенными настройками
+                try {
+                    showAndroidScannerStatus('Пробуем упрощенные настройки...');
+                    
+                    if (androidHtml5QrCode) {
+                        await androidHtml5QrCode.stop();
+                        androidHtml5QrCode = null;
+                    }
+                    
+                    androidHtml5QrCode = new Html5Qrcode("android-qr-reader");
+                    
+                    await androidHtml5QrCode.start(
+                        { facingMode: "environment" },
+                        {
+                            fps: 10,
+                            qrbox: { width: 250, height: 150 },
+                            rememberLastUsedCamera: true
+                        },
+                        onAndroidScanSuccess,
+                        onAndroidScanError
+                    );
+                    
+                    androidIsScanning = true;
+                    document.getElementById('androidScannerLoader').style.display = 'none';
+                    hideAndroidScannerStatus();
+                    
+                } catch (fallbackError) {
+                    console.error('Fallback тоже не сработал:', fallbackError);
+                    document.getElementById('androidScannerLoader').style.display = 'none';
+                    document.getElementById('androidNoCameraMessage').style.display = 'block';
+                    hideAndroidScannerStatus();
+                }
             }
         }
 
@@ -21906,12 +21977,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
 
         function hideAndroidScannerStatus() {
             document.getElementById('androidScannerStatus').style.display = 'none';
-        }
-
-        function showAndroidNoCameraMessage() {
-            document.getElementById('androidScannerLoader').style.display = 'none';
-            document.getElementById('androidNoCameraMessage').style.display = 'block';
-            hideAndroidScannerStatus();
         }
 
         function closeAndroidScanner() {
@@ -22918,40 +22983,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         if (closeAndroidScannerBtn) {
             closeAndroidScannerBtn.addEventListener('click', closeAndroidScanner);
         }
-        
-        if (switchAndroidCameraBtn) {
-            switchAndroidCameraBtn.addEventListener('click', function() {
-                // Переключение камеры для Android
-                if (androidHtml5QrCode && androidIsScanning) {
-                    androidCurrentFacingMode = androidCurrentFacingMode === 'environment' ? 'user' : 'environment';
-                    
-                    showAndroidScannerStatus('Переключение камеры...');
-                    
-                    androidHtml5QrCode.stop().then(() => {
-                        androidHtml5QrCode.clear();
-                        
-                        const config = {
-                            fps: 10,
-                            qrbox: { width: 250, height: 150 },
-                            rememberLastUsedCamera: true,
-                            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
-                        };
-                        
-                        androidHtml5QrCode.start(
-                            { facingMode: androidCurrentFacingMode },
-                            config,
-                            onAndroidScanSuccess,
-                            onAndroidScanError
-                        ).then(() => {
-                            hideAndroidScannerStatus();
-                        }).catch(err => {
-                            console.error('Ошибка переключения камеры:', err);
-                            showAndroidScannerStatus('Ошибка переключения камеры');
-                        });
-                    }).catch(() => {});
-                }
-            });
-        }
 
         if (androidScannerModal) {
             androidScannerModal.addEventListener('click', function(e) {
@@ -22962,39 +22993,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         // Обработчики iOS сканера
         if (closeIOSScannerBtn) {
             closeIOSScannerBtn.addEventListener('click', closeIOSScanner);
-        }
-        
-        if (switchIOSCameraBtn) {
-            switchIOSCameraBtn.addEventListener('click', function() {
-                if (!iosHtml5QrCode || !iosIsScanning) return;
-                
-                iosCurrentFacingMode = iosCurrentFacingMode === 'environment' ? 'user' : 'environment';
-                
-                showIOSScannerStatus('Переключение камеры...');
-                
-                iosHtml5QrCode.stop().then(() => {
-                    iosHtml5QrCode.clear();
-                    
-                    const config = {
-                        fps: 10,
-                        qrbox: { width: 250, height: 150 },
-                        rememberLastUsedCamera: true,
-                        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
-                    };
-                    
-                    iosHtml5QrCode.start(
-                        { facingMode: iosCurrentFacingMode },
-                        config,
-                        onIOSScanSuccess,
-                        onIOSScanError
-                    ).then(() => {
-                        hideIOSScannerStatus();
-                    }).catch(err => {
-                        console.error('Ошибка переключения камеры:', err);
-                        showIOSScannerStatus('Ошибка переключения камеры');
-                    });
-                }).catch(() => {});
-            });
         }
 
         if (iosScannerModal) {
