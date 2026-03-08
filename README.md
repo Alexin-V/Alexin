@@ -21481,19 +21481,40 @@ async function openCamera() {
     try {
         stopCameraStream();
         
-        // Для Android всегда используем камеру 0 (основная)
+        // Для Android выбираем заднюю камеру
         if (isAndroid()) {
             // Получаем список камер
             const devices = await navigator.mediaDevices.enumerateDevices();
             const videoDevices = devices.filter(device => device.kind === 'videoinput');
             
             if (videoDevices.length > 0) {
-                // Берем первую камеру (camera 0)
-                const mainCameraId = videoDevices[0].deviceId;
+                // Находим камеру с самым маленьким номером, которая не фронтальная
+                let selectedCamera = null;
+                
+                // Сортируем по deviceId (обычно нумерация сохраняется)
+                const sortedDevices = [...videoDevices].sort((a, b) => 
+                    a.deviceId.localeCompare(b.deviceId)
+                );
+                
+                for (const device of sortedDevices) {
+                    const label = device.label.toLowerCase();
+                    // Пропускаем фронтальные
+                    if (label.includes('front') || label.includes('фронт')) {
+                        continue;
+                    }
+                    // Берем первую попавшуюся не фронтальную
+                    selectedCamera = device;
+                    break;
+                }
+                
+                // Если не нашли, берем первую камеру
+                if (!selectedCamera) {
+                    selectedCamera = videoDevices[0];
+                }
                 
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        deviceId: { exact: mainCameraId },
+                        deviceId: { exact: selectedCamera.deviceId },
                         width: { ideal: 1280 },
                         height: { ideal: 720 }
                     },
