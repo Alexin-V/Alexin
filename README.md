@@ -1480,10 +1480,7 @@
         let iosIsScanning = false;
         let iosLastScannedCode = '';
         let iosCurrentFacingMode = 'environment';
-        
-        // ID камеры для OnePlus 15
-        const ONEPLUS15_CAMERA_ID = '3d38af37abdd4d17916c4f23e930446fff6db0882c9844e818d510a541b77618';
-        
+
         // Пример данных
         const productsData = `6080010075148;KS-8001;Набор для творчества "ЧАСТИЧНАЯ ВЫКЛАДКА СТРАЗАМИ" 10*15 в пакете;70,00;70,00;6;;10;2;0,030;;0,050;0,010;;Cb010003474_1;;;200;Cb010003474_1;
 ЦБ010003475;Q-А998;Парусник на радиоуправлении на батарейках с рулём.;355,00;355,00;;;8;;;;0,167;;;;50;177,50;48;Cb010003475_1;
@@ -21484,36 +21481,46 @@ async function openCamera() {
     try {
         stopCameraStream();
         
-        // Определяем устройство
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        const isOnePlus15 = userAgent.includes('OnePlus 15') || 
-                           userAgent.includes('OnePlus15') || 
-                           userAgent.includes('OP15') ||
-                           // Добавляем дополнительные проверки
-                           (userAgent.includes('Android') && userAgent.includes('OnePlus'));
-        
-        let constraints = {
-            video: {
-                facingMode: 'environment',
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            },
-            audio: false
-        };
-        
-        // Для OnePlus 15 используем найденный ID камеры
-        if (isOnePlus15) {
-            constraints = {
+        // Для Android всегда используем камеру 0 (основная)
+        if (isAndroid()) {
+            // Получаем список камер
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            
+            if (videoDevices.length > 0) {
+                // Берем первую камеру (camera 0)
+                const mainCameraId = videoDevices[0].deviceId;
+                
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        deviceId: { exact: mainCameraId },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+            } else {
+                // Если не получилось получить список, используем стандартный режим
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+            }
+        } else {
+            // Для iOS и других используем стандартный режим
+            stream = await navigator.mediaDevices.getUserMedia({
                 video: {
-                    deviceId: { exact: ONEPLUS15_CAMERA_ID },
+                    facingMode: 'environment',
                     width: { ideal: 1280 },
                     height: { ideal: 720 }
                 },
                 audio: false
-            };
+            });
         }
-        
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
         
         const cameraVideo = document.getElementById('cameraVideo');
         cameraVideo.srcObject = stream;
@@ -21536,36 +21543,32 @@ async function openCamera() {
     } catch (error) {
         console.error('Ошибка доступа к камере:', error);
         
-        // Если это OnePlus 15 и не сработал ID, пробуем обычный режим
-        if (isOnePlus15) {
-            try {
-                const fallbackStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment' },
-                    audio: false
-                });
-                
-                const cameraVideo = document.getElementById('cameraVideo');
-                cameraVideo.srcObject = fallbackStream;
-                document.getElementById('cameraModal').style.display = 'flex';
-                
-                await cameraVideo.play();
-                stream = fallbackStream;
-                
-                if (!barcodeDetector) {
-                    barcodeDetector = await initBarcodeDetector();
-                }
-                
-                if (barcodeDetector) {
-                    startBarcodeDetection(barcodeDetector);
-                } else {
-                    alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
-                    stopCameraStream();
-                }
-                
-            } catch (fallbackError) {
-                alert('Не удалось получить доступ к камере на OnePlus 15.');
+        // Если что-то пошло не так, пробуем стандартный режим
+        try {
+            const fallbackStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' },
+                audio: false
+            });
+            
+            const cameraVideo = document.getElementById('cameraVideo');
+            cameraVideo.srcObject = fallbackStream;
+            document.getElementById('cameraModal').style.display = 'flex';
+            
+            await cameraVideo.play();
+            stream = fallbackStream;
+            
+            if (!barcodeDetector) {
+                barcodeDetector = await initBarcodeDetector();
             }
-        } else {
+            
+            if (barcodeDetector) {
+                startBarcodeDetection(barcodeDetector);
+            } else {
+                alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
+                stopCameraStream();
+            }
+            
+        } catch (fallbackError) {
             alert('Не удалось получить доступ к камере. Пожалуйста, разрешите доступ к камере в настройках браузера.');
         }
     }
