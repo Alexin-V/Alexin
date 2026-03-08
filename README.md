@@ -1004,159 +1004,7 @@
             margin-bottom: 5px;
         }
 
-        /* Стили для Android сканера (BarcodeDetector) */
-        .android-scanner-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            z-index: 3000;
-        }
-        
-        .android-scanner-content {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .android-scanner-container {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .android-scanner-video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .android-scan-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 3005;
-        }
-        
-        .android-scan-frame {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            max-width: 400px;
-            height: 200px;
-            border: 4px solid rgba(76, 175, 80, 0.8);
-            border-radius: 15px;
-            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5);
-            overflow: hidden;
-        }
-        
-        .android-scan-line {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, 
-                transparent, 
-                #4CAF50, 
-                transparent);
-            animation: android-scan 2s ease-in-out infinite;
-            box-shadow: 0 0 10px #4CAF50;
-        }
-        
-        @keyframes android-scan {
-            0% { top: 0; opacity: 1; }
-            50% { top: 100%; opacity: 1; }
-            51% { opacity: 0; }
-            100% { top: 0; opacity: 0; }
-        }
-        
-        .android-scanner-info {
-            position: absolute;
-            top: calc(50% + 120px);
-            left: 0;
-            width: 100%;
-            text-align: center;
-            color: white;
-            font-size: 16px;
-            padding: 0 20px;
-            z-index: 3010;
-        }
-        
-        .android-modal-controls {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            gap: 12px;
-            z-index: 3100;
-        }
-        
-        .android-modal-btn {
-            flex: 1;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .android-modal-btn-danger {
-            background: rgba(255, 59, 48, 0.8);
-            color: white;
-        }
-        
-        .android-modal-btn-primary {
-            background: rgba(76, 175, 80, 0.8);
-            color: white;
-        }
-        
-        .android-status-message {
-            position: absolute;
-            top: 20px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            color: white;
-            font-size: 18px;
-            font-weight: 600;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 3100;
-            display: none;
-        }
-        
-        .android-no-camera {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            max-width: 320px;
-            z-index: 3100;
-            display: none;
-        }
-
-        /* Стили для iOS сканера (Html5Qrcode) */
+        /* Стили для iOS сканера */
         .ios-scanner-modal {
             display: none;
             position: fixed;
@@ -1188,6 +1036,7 @@
             position: relative;
         }
         
+        /* Кастомные стили для Html5-QRCode */
         #ios-html5-qrcode-anchor-scan-type-change,
         #ios-html5qr-code-full-region__scan_region {
             display: none !important;
@@ -1317,6 +1166,63 @@
             display: none;
         }
         
+        .ios-scanned-badge {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(76, 175, 80, 0.95);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            display: none;
+            z-index: 3100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: ios-badgeAppear 0.5s ease-out;
+        }
+        
+        @keyframes ios-badgeAppear {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        
+        .ios-loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #4CAF50;
+            animation: ios-spin 1s linear infinite;
+            z-index: 3100;
+            display: none;
+        }
+        
+        @keyframes ios-spin {
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .ios-permission-hint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 300px;
+            z-index: 3100;
+            display: none;
+        }
+        
         .ios-no-camera {
             position: absolute;
             top: 50%;
@@ -1402,9 +1308,9 @@
             </button>
         </div>
 
-        <div class="barcode-supported">
-            <span class="barcode-format" id="current-date" title="Нажмите для просмотра дат изменения файлов"></span>
-        </div>
+		<div class="barcode-supported">
+			<span class="barcode-format" id="current-date" title="Нажмите для просмотра дат изменения файлов"></span>
+		</div>
 
         <div id="printStatus" class="print-status"></div>
         
@@ -1416,34 +1322,24 @@
     <!-- Кнопка "Наверх" -->
     <button class="scroll-to-top-btn" id="scrollToTopBtn" title="Наверх">&#9650;</button>
 
-    <!-- Модальное окно камеры для Android (BarcodeDetector) -->
-    <div class="android-scanner-modal" id="androidScannerModal">
-        <div class="android-scanner-content">
-            <div class="android-scanner-container">
-                <video id="androidCameraVideo" class="android-scanner-video" playsinline></video>
-                
-                <div class="android-scan-overlay">
-                    <div class="android-scan-frame">
-                        <div class="android-scan-line"></div>
-                    </div>
+    <!-- Модальное окно камеры для Android -->
+    <div class="modal-overlay" id="cameraModal">
+        <div class="modal-frame">
+            <h3>Сканирование штрихкода</h3>
+            <div class="video-wrapper" id="videoContainer">
+                <div class="scan-box">
+                    <div class="scan-line"></div>
                 </div>
-                
-                <div class="android-scanner-info">
-                    Наведите камеру на штрихкод
+                <video id="cameraVideo" playsinline></video>
+                <div class="camera-controls">
+                    <button class="camera-btn" id="stopCamera">Остановить</button>
                 </div>
-                
-                <div class="android-status-message" id="androidScannerStatus"></div>
             </div>
-            
-            <div class="android-modal-controls">
-                <button class="android-modal-btn android-modal-btn-danger" id="closeAndroidScanner">
-                    ✕ Закрыть сканер
-                </button>
-            </div>
+            <button class="close-modal" id="closeCameraModal">Закрыть</button>
         </div>
     </div>
 
-    <!-- Модальное окно сканера для iOS (Html5Qrcode) -->
+    <!-- Модальное окно сканера для iOS -->
     <div class="ios-scanner-modal" id="iosScannerModal">
         <div class="ios-scanner-content">
             <div class="ios-scanner-container">
@@ -1553,7 +1449,7 @@
     </div>
 
     <script>
-        // ===== ДАТА =====
+		// ===== ДАТА =====
         const DATA_UPDATE_DATE = ""; // Будет заполнена AHK скриптом: "04.02.2026"
         
         // ===== ДАТЫ ИЗМЕНЕНИЯ ФАЙЛОВ =====
@@ -1585,7 +1481,7 @@
         let iosLastScannedCode = '';
         let iosCurrentFacingMode = 'environment';
         
-        // ID правильной камеры для OnePlus 15
+        // ID камеры для OnePlus 15
         const ONEPLUS15_CAMERA_ID = '3d38af37abdd4d17916c4f23e930446fff6db0882c9844e818d510a541b77618';
         
         // Пример данных
@@ -20732,6 +20628,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             return num.toFixed(3).replace('.', ',');
         }
 
+
         function parseProductsData(data) {
             const lines = data.trim().split('\n');
             const products = [];
@@ -20975,246 +20872,248 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             }
         }
 
-        // ===== ФУНКЦИИ ДЛЯ СОЗДАНИЯ И ПЕЧАТИ ЦЕННИКА =====
+		// ===== ФУНКЦИИ ДЛЯ СОЗДАНИЯ И ПЕЧАТИ ЦЕННИКА =====
 
-        function createPriceTagImage(product, type = 'regular') {
-            const canvas = document.createElement('canvas');
+		function createPriceTagImage(product, type = 'regular') {
+			const canvas = document.createElement('canvas');
     
-            if (type === 'large') {
-                canvas.width = 440;
-                canvas.height = 300;
-            } else {
-                canvas.width = 440;
-                canvas.height = 284;
-            }
+			if (type === 'large') {
+				canvas.width = 440;
+				canvas.height = 300;
+			} else {
+				canvas.width = 440;
+				canvas.height = 284;
+			}
     
-            const ctx = canvas.getContext('2d');
+			const ctx = canvas.getContext('2d');
     
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+			ctx.fillStyle = 'white';
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-            ctx.fillStyle = 'black';
-            ctx.textAlign = 'center';
+			ctx.fillStyle = 'black';
+			ctx.textAlign = 'center';
     
-            const textScale = 1.5;
+			const textScale = 1.5;
     
-            if (type === 'large') {
-                const baseFonts = {
-                    company: 22 * textScale,
-                    article: 18 * textScale,
-                    product: 16 * textScale,
-                    price: 88 * textScale,
-                    date: 14 * textScale
-                };
-                
-                ctx.font = `bold ${baseFonts.company}px "Arial"`;
-                ctx.fillText('ООО "КУБАНЬСТАР"', canvas.width / 2, 30);
-                
-                ctx.beginPath();
-                ctx.moveTo(-8, 40);
-                ctx.lineTo(canvas.width - 0, 40);
-                ctx.lineWidth = 3;
-                ctx.stroke();
-                
-                ctx.font = `bold ${baseFonts.article}px "Arial"`;
-                ctx.textAlign = 'left';
-                ctx.fillText(product.article, 6, 70);
-                ctx.textAlign = 'right';
-                const boxQty = product.boxQuantity || '0';
-                ctx.fillText(`${boxQty} шт. в кор.`, canvas.width - 6, 70);
-                
-                ctx.beginPath();
-                ctx.moveTo(-8, 80);
-                ctx.lineTo(canvas.width - 0, 80);
-                ctx.lineWidth = 3;
-                ctx.stroke();
-                ctx.lineWidth = 1;
-                
-                let productName = product.name;
-                if (productName.length > 59) {
-                    productName = productName.substring(0, 59) + '...';
-                }
-                
-                ctx.font = `bold ${baseFonts.product}px "Arial"`;
-                ctx.textAlign = 'center';
-                
-                const words = productName.split(' ');
-                let line1 = '';
-                let line2 = '';
-                
-                for (const word of words) {
-                    if ((line1 + ' ' + word).length <= 32 && !line2) {
-                        if (line1) line1 += ' ';
-                        line1 += word;
-                    } else {
-                        if (line2) line2 += ' ';
-                        line2 += word;
-                    }
-                }
-                
-                ctx.fillText(line1, canvas.width / 2, 110);
-                if (line2) {
-                    ctx.fillText(line2, canvas.width / 2, 135);
-                }
-                
-                ctx.beginPath();
-                ctx.moveTo(-8, 145);
-                ctx.lineTo(canvas.width - 0, 145);
-                ctx.lineWidth = 3;
-                ctx.stroke();
-                ctx.lineWidth = 1;
-                
-                const price = product.discountPrice && product.discountPrice.trim() !== '' 
-                    ? product.discountPrice 
-                    : product.wholesalePrice;
-                
-                const priceFormatted = formatNumber(price, true);
-                
-                ctx.font = `bold ${baseFonts.price}px "Arial"`;
-                ctx.fillText(priceFormatted, canvas.width / 2, 255);
-                
-                ctx.beginPath();
-                ctx.moveTo(-8, 271);
-                ctx.lineTo(canvas.width - 0, 271);
-                ctx.lineWidth = 3;
-                ctx.stroke();
-                
-                const today = new Date();
-                const dateStr = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth()+1).toString().padStart(2, '0')}.${today.getFullYear()}`;
-                ctx.font = `${baseFonts.date}px "Arial"`;
-                ctx.fillText(dateStr, canvas.width / 2, 291);
-                
-            } else {
-                const baseFonts = {
-                    company: 22 * textScale,
-                    article: 18 * textScale,
-                    product: 16 * textScale,
-                    price: 44 * textScale,
-                    date: 14 * textScale
-                };
-                
-                ctx.font = `bold ${baseFonts.company}px "Arial"`;
-                ctx.fillText('ООО "КУБАНЬСТАР"', canvas.width / 2, 30);
-                
-                ctx.beginPath();
-                ctx.moveTo(-8, 40);
-                ctx.lineTo(canvas.width - 0, 40);
-                ctx.lineWidth = 3;
-                ctx.stroke();
-                
-                ctx.font = `bold ${baseFonts.article}px "Arial"`;
-                ctx.textAlign = 'left';
-                ctx.fillText(product.article, 6, 70);
-                ctx.textAlign = 'right';
-                const boxQty = product.boxQuantity || '0';
-                ctx.fillText(`${boxQty} шт. в кор.`, canvas.width - 6, 70);
-                
-                ctx.beginPath();
-                ctx.moveTo(-8, 80);
-                ctx.lineTo(canvas.width - 0, 80);
-                ctx.lineWidth = 3;
-                ctx.stroke();
-                ctx.lineWidth = 1;
-                
-                let productName = product.name;
-                if (productName.length > 59) {
-                    productName = productName.substring(0, 59) + '...';
-                }
-                
-                ctx.font = `bold ${baseFonts.product}px "Arial"`;
-                ctx.textAlign = 'center';
-                
-                const words = productName.split(' ');
-                let line1 = '';
-                let line2 = '';
-                
-                for (const word of words) {
-                    if ((line1 + ' ' + word).length <= 32 && !line2) {
-                        if (line1) line1 += ' ';
-                        line1 += word;
-                    } else {
-                        if (line2) line2 += ' ';
-                        line2 += word;
-                    }
-                }
-                
-                ctx.fillText(line1, canvas.width / 2, 110);
-                if (line2) {
-                    ctx.fillText(line2, canvas.width / 2, 135);
-                }
-                
-                ctx.beginPath();
-                ctx.moveTo(-8, 155);
-                ctx.lineTo(canvas.width - 0, 155);
-                ctx.lineWidth = 3;
-                ctx.stroke();
-                ctx.lineWidth = 1;
-              
-                const hasDiscount = product.discountPrice && product.discountPrice.trim() !== '';
+			if (type === 'large') {
 
-                if (hasDiscount) {
-                    const originalPriceFormatted = formatNumber(product.wholesalePrice, true);
-                    const discountPriceFormatted = formatNumber(product.discountPrice, true);
-            
-                    const originalNum = parseFloat(product.wholesalePrice) || 0;
-                    const discountNum = parseFloat(product.discountPrice) || 0;
-                    let discountPercent = '';
-                    if (originalNum > 0 && discountNum > 0) {
-                        const percent = Math.round((1 - discountNum / originalNum) * 100);
-                        discountPercent = `-${percent}%`;
-                    }
-            
-                    ctx.textAlign = 'left';
-            
-                    ctx.font = `bold italic ${baseFonts.price * 0.5}px "Arial"`;
-                    ctx.fillStyle = '#666666';
-                    const oldPriceX = 20;
-                    const oldPriceY = 193;
-                    ctx.fillText(originalPriceFormatted, oldPriceX, oldPriceY);
-            
-                    const oldPriceWidth = ctx.measureText(originalPriceFormatted).width;
-                    ctx.beginPath();
-                    ctx.moveTo(oldPriceX, oldPriceY - 30);
-                    ctx.lineTo(oldPriceX + oldPriceWidth, oldPriceY + 4);
-                    ctx.strokeStyle = '#666666';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-            
-                    if (discountPercent) {
-                        ctx.font = `bold italic ${baseFonts.price * 0.4}px "Arial"`;
-                        ctx.fillStyle = '#666666';
-                        ctx.fillText(discountPercent, oldPriceX, oldPriceY + 30);
-                    }
-            
-                    ctx.textAlign = 'right';
-                    ctx.font = `bold ${baseFonts.price * 0.76}px "Arial"`;
-                    ctx.fillStyle = 'black';
-                    ctx.fillText(`${discountPriceFormatted} Руб.`, canvas.width - 15, oldPriceY + 20);
-            
-                    ctx.textAlign = 'center';
-                } else {
-                    ctx.textAlign = 'center';
-                    const price = product.wholesalePrice;
-                    const priceFormatted = formatNumber(price, true);
-            
-                    ctx.font = `bold ${baseFonts.price}px "Arial"`;
-                    ctx.fillText(`${priceFormatted} Руб.`, canvas.width / 2, 207 + 12);
-                }
-                
-                ctx.beginPath();
-                ctx.moveTo(-8, 225 + 12);
-                ctx.lineTo(canvas.width - 0, 225 + 12);
-                ctx.lineWidth = 3;
-                ctx.stroke();
-            
-                const today = new Date();
-                const dateStr = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth()+1).toString().padStart(2, '0')}.${today.getFullYear()}`;
-                ctx.font = `${baseFonts.date}px "Arial"`;
-                ctx.fillText(dateStr, canvas.width / 2, 245 + 20);
-            }
-            
-            return canvas;
+        const baseFonts = {
+            company: 22 * textScale,
+            article: 18 * textScale,
+            product: 16 * textScale,
+            price: 88 * textScale,
+            date: 14 * textScale
+        };
+        
+        ctx.font = `bold ${baseFonts.company}px "Arial"`;
+        ctx.fillText('ООО "КУБАНЬСТАР"', canvas.width / 2, 30);
+        
+        ctx.beginPath();
+        ctx.moveTo(-8, 40);
+        ctx.lineTo(canvas.width - 0, 40);
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        ctx.font = `bold ${baseFonts.article}px "Arial"`;
+        ctx.textAlign = 'left';
+        ctx.fillText(product.article, 6, 70);
+        ctx.textAlign = 'right';
+        const boxQty = product.boxQuantity || '0';
+        ctx.fillText(`${boxQty} шт. в кор.`, canvas.width - 6, 70);
+        
+        ctx.beginPath();
+        ctx.moveTo(-8, 80);
+        ctx.lineTo(canvas.width - 0, 80);
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.lineWidth = 1;
+        
+        let productName = product.name;
+        if (productName.length > 59) {
+            productName = productName.substring(0, 59) + '...';
         }
+        
+        ctx.font = `bold ${baseFonts.product}px "Arial"`;
+        ctx.textAlign = 'center';
+        
+        const words = productName.split(' ');
+        let line1 = '';
+        let line2 = '';
+        
+        for (const word of words) {
+            if ((line1 + ' ' + word).length <= 32 && !line2) {
+                if (line1) line1 += ' ';
+                line1 += word;
+            } else {
+                if (line2) line2 += ' ';
+                line2 += word;
+            }
+        }
+        
+        ctx.fillText(line1, canvas.width / 2, 110);
+        if (line2) {
+            ctx.fillText(line2, canvas.width / 2, 135);
+        }
+        
+        ctx.beginPath();
+        ctx.moveTo(-8, 145);
+        ctx.lineTo(canvas.width - 0, 145);
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.lineWidth = 1;
+        
+        const price = product.discountPrice && product.discountPrice.trim() !== '' 
+            ? product.discountPrice 
+            : product.wholesalePrice;
+        
+        const priceFormatted = formatNumber(price, true);
+        
+        ctx.font = `bold ${baseFonts.price}px "Arial"`;
+        ctx.fillText(priceFormatted, canvas.width / 2, 255);
+        
+        ctx.beginPath();
+        ctx.moveTo(-8, 271);
+        ctx.lineTo(canvas.width - 0, 271);
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        const today = new Date();
+        const dateStr = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth()+1).toString().padStart(2, '0')}.${today.getFullYear()}`;
+        ctx.font = `${baseFonts.date}px "Arial"`;
+        ctx.fillText(dateStr, canvas.width / 2, 291);
+        
+    } else {
+
+        const baseFonts = {
+            company: 22 * textScale,
+            article: 18 * textScale,
+            product: 16 * textScale,
+            price: 44 * textScale,
+            date: 14 * textScale
+        };
+        
+        ctx.font = `bold ${baseFonts.company}px "Arial"`;
+        ctx.fillText('ООО "КУБАНЬСТАР"', canvas.width / 2, 30);
+        
+        ctx.beginPath();
+        ctx.moveTo(-8, 40);
+        ctx.lineTo(canvas.width - 0, 40);
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        ctx.font = `bold ${baseFonts.article}px "Arial"`;
+        ctx.textAlign = 'left';
+        ctx.fillText(product.article, 6, 70);
+        ctx.textAlign = 'right';
+        const boxQty = product.boxQuantity || '0';
+        ctx.fillText(`${boxQty} шт. в кор.`, canvas.width - 6, 70);
+        
+        ctx.beginPath();
+        ctx.moveTo(-8, 80);
+        ctx.lineTo(canvas.width - 0, 80);
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.lineWidth = 1;
+        
+        let productName = product.name;
+        if (productName.length > 59) {
+            productName = productName.substring(0, 59) + '...';
+        }
+        
+        ctx.font = `bold ${baseFonts.product}px "Arial"`;
+        ctx.textAlign = 'center';
+        
+        const words = productName.split(' ');
+        let line1 = '';
+        let line2 = '';
+        
+        for (const word of words) {
+            if ((line1 + ' ' + word).length <= 32 && !line2) {
+                if (line1) line1 += ' ';
+                line1 += word;
+            } else {
+                if (line2) line2 += ' ';
+                line2 += word;
+            }
+        }
+        
+        ctx.fillText(line1, canvas.width / 2, 110);
+        if (line2) {
+            ctx.fillText(line2, canvas.width / 2, 135);
+        }
+        
+        ctx.beginPath();
+        ctx.moveTo(-8, 155);
+        ctx.lineTo(canvas.width - 0, 155);
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.lineWidth = 1;
+      
+		const hasDiscount = product.discountPrice && product.discountPrice.trim() !== '';
+
+		if (hasDiscount) {
+			const originalPriceFormatted = formatNumber(product.wholesalePrice, true);
+			const discountPriceFormatted = formatNumber(product.discountPrice, true);
+    
+			const originalNum = parseFloat(product.wholesalePrice) || 0;
+			const discountNum = parseFloat(product.discountPrice) || 0;
+			let discountPercent = '';
+			if (originalNum > 0 && discountNum > 0) {
+				const percent = Math.round((1 - discountNum / originalNum) * 100);
+				discountPercent = `-${percent}%`;
+			}
+    
+			ctx.textAlign = 'left';
+    
+			ctx.font = `bold italic ${baseFonts.price * 0.5}px "Arial"`;
+			ctx.fillStyle = '#666666';
+			const oldPriceX = 20; // Слева с отступом
+			const oldPriceY = 193;
+			ctx.fillText(originalPriceFormatted, oldPriceX, oldPriceY);
+    
+			const oldPriceWidth = ctx.measureText(originalPriceFormatted).width;
+			ctx.beginPath();
+			ctx.moveTo(oldPriceX, oldPriceY - 30);
+			ctx.lineTo(oldPriceX + oldPriceWidth, oldPriceY + 4);
+			ctx.strokeStyle = '#666666';
+			ctx.lineWidth = 2;
+			ctx.stroke();
+    
+			if (discountPercent) {
+				ctx.font = `bold italic ${baseFonts.price * 0.4}px "Arial"`;
+				ctx.fillStyle = '#666666';
+				ctx.fillText(discountPercent, oldPriceX, oldPriceY + 30);
+			}
+    
+			ctx.textAlign = 'right';
+			ctx.font = `bold ${baseFonts.price * 0.76}px "Arial"`;
+			ctx.fillStyle = 'black';
+			ctx.fillText(`${discountPriceFormatted} Руб.`, canvas.width - 15, oldPriceY + 20);
+    
+			ctx.textAlign = 'center';
+		} else {
+			ctx.textAlign = 'center';
+			const price = product.wholesalePrice;
+			const priceFormatted = formatNumber(price, true);
+    
+			ctx.font = `bold ${baseFonts.price}px "Arial"`;
+			ctx.fillText(`${priceFormatted} Руб.`, canvas.width / 2, 207 + 12);
+		}
+        
+			ctx.beginPath();
+			ctx.moveTo(-8, 225 + 12);
+			ctx.lineTo(canvas.width - 0, 225 + 12);
+			ctx.lineWidth = 3;
+			ctx.stroke();
+        
+			const today = new Date();
+			const dateStr = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth()+1).toString().padStart(2, '0')}.${today.getFullYear()}`;
+			ctx.font = `${baseFonts.date}px "Arial"`;
+			ctx.fillText(dateStr, canvas.width / 2, 245 + 20);
+		}
+    
+    return canvas;
+}
 
         function canvasToEscPosBitmap(canvas) {
             const ctx = canvas.getContext('2d');
@@ -21525,7 +21424,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             document.getElementById('datesModal').style.display = 'none';
         }
 
-        // ===== ФУНКЦИИ ДЛЯ СКАНИРОВАНИЯ =====
+        // ===== ФУНКЦИИ ДЛЯ СКАНИРОВАНИЯ (Android) =====
 
         function isIOS() {
             return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -21535,12 +21434,17 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             return /Android/.test(navigator.userAgent);
         }
 
+        function isOnePlus15() {
+            return /OnePlus 15|OnePlus15|OP15/i.test(navigator.userAgent);
+        }
+
         function isBarcodeDetectorSupported() {
             return ('BarcodeDetector' in window);
         }
 
         async function initBarcodeDetector() {
             if (!isBarcodeDetectorSupported()) {
+                console.warn('BarcodeDetector API не поддерживается в этом браузере');
                 return null;
             }
             
@@ -21551,11 +21455,13 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 );
                 
                 if (supportedFormats.length === 0) {
+                    console.warn('Нет поддержки нужных форматов штрихкодов');
                     return null;
                 }
                 
                 return new BarcodeDetector({ formats: supportedFormats });
             } catch (error) {
+                console.error('Ошибка инициализации BarcodeDetector:', error);
                 return null;
             }
         }
@@ -21567,135 +21473,134 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             if (isIOS()) {
                 scanButtonAndroid.style.display = 'none';
                 scanButtonIOS.style.display = 'flex';
+                searchButton.style.maxWidth = '300px';
             } else {
                 scanButtonAndroid.style.display = 'flex';
                 scanButtonIOS.style.display = 'none';
             }
         }
 
-        // ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ANDROID (OnePlus 15) =====
-        async function openAndroidScanner() {
-            const androidModal = document.getElementById('androidScannerModal');
-            androidModal.style.display = 'block';
-            
+        async function openCamera() {
             try {
-                // Останавливаем предыдущий стрим если был
-                if (stream) {
-                    stream.getTracks().forEach(track => {
-                        track.stop();
-                        track.enabled = false;
-                    });
-                    stream = null;
-                }
+                stopCameraStream();
                 
-                if (scanInterval) {
-                    clearInterval(scanInterval);
-                    scanInterval = null;
-                }
-                
-                // Запрашиваем доступ к камере с конкретным ID
-                stream = await navigator.mediaDevices.getUserMedia({
+                let constraints = {
                     video: {
-                        deviceId: { exact: ONEPLUS15_CAMERA_ID },
+                        facingMode: 'environment',
                         width: { ideal: 1280 },
                         height: { ideal: 720 }
-                    }
-                });
+                    },
+                    audio: false
+                };
                 
-                const video = document.getElementById('androidCameraVideo');
-                video.srcObject = stream;
-                
-                // Ждем пока видео начнет воспроизводиться
-                await new Promise((resolve) => {
-                    video.onloadedmetadata = () => {
-                        video.play().then(resolve);
+                // Для OnePlus 15 используем конкретный ID камеры
+                if (isOnePlus15()) {
+                    constraints = {
+                        video: {
+                            deviceId: { exact: ONEPLUS15_CAMERA_ID },
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        },
+                        audio: false
                     };
-                });
+                }
                 
-                // Инициализируем детектор штрихкодов
-                const detector = await initBarcodeDetector();
-                if (!detector) {
-                    alert('BarcodeDetector не поддерживается в этом браузере');
-                    stopAndroidScanner();
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                const cameraVideo = document.getElementById('cameraVideo');
+                cameraVideo.srcObject = stream;
+                document.getElementById('cameraModal').style.display = 'flex';
+                
+                await cameraVideo.play();
+                
+                if (!barcodeDetector) {
+                    barcodeDetector = await initBarcodeDetector();
+                }
+                
+                if (!barcodeDetector) {
+                    alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
+                    stopCameraStream();
                     return;
                 }
                 
-                // Создаем canvas для анализа кадров
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                
-                // Запускаем интервал сканирования
-                scanInterval = setInterval(async () => {
-                    if (video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        
-                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                        
-                        try {
-                            const barcodes = await detector.detect(canvas);
-                            if (barcodes && barcodes.length > 0) {
-                                // Вибрация при успешном сканировании (если поддерживается)
-                                if (navigator.vibrate) {
-                                    navigator.vibrate(200);
-                                }
-                                handleScannedCode(barcodes[0].rawValue);
-                            }
-                        } catch (error) {
-                            // Игнорируем ошибки детекции
-                        }
-                    }
-                }, 300);
+                startBarcodeDetection(barcodeDetector);
                 
             } catch (error) {
                 console.error('Ошибка доступа к камере:', error);
-                stopAndroidScanner();
-                
-                let errorMessage = 'Не удалось получить доступ к камере.';
-                if (error.name === 'NotAllowedError') {
-                    errorMessage = 'Доступ к камере запрещен. Разрешите доступ в настройках браузера.';
-                } else if (error.name === 'NotFoundError') {
-                    errorMessage = 'Камера не найдена.';
-                } else if (error.name === 'OverconstrainedError') {
-                    errorMessage = 'Камера не поддерживает требуемые параметры.';
-                }
-                alert(errorMessage);
+                alert('Не удалось получить доступ к камере. Пожалуйста, разрешите доступ к камере в настройках браузера.');
             }
         }
 
-        function stopAndroidScanner() {
-            try {
-                if (stream) {
-                    stream.getTracks().forEach(track => {
-                        track.stop();
-                        track.enabled = false;
-                    });
-                    stream = null;
-                }
-            } catch (e) {
-                console.error('Ошибка при остановке видео:', e);
-            }
+        function startBarcodeDetection(detector) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            const cameraVideo = document.getElementById('cameraVideo');
             
+            scanInterval = setInterval(async () => {
+                if (cameraVideo.readyState === cameraVideo.HAVE_ENOUGH_DATA) {
+                    canvas.width = cameraVideo.videoWidth;
+                    canvas.height = cameraVideo.videoHeight;
+                    
+                    context.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+                    
+                    try {
+                        const barcodes = await detector.detect(canvas);
+                        
+                        if (barcodes && barcodes.length > 0) {
+                            const barcode = barcodes[0];
+                            handleScannedCode(barcode.rawValue);
+                            return;
+                        }
+                        
+                    } catch (error) {
+                        console.error('Ошибка детектирования штрихкода:', error);
+                    }
+                }
+            }, 300);
+        }
+
+        function stopCameraStream() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
             if (scanInterval) {
                 clearInterval(scanInterval);
                 scanInterval = null;
             }
-            
-            const video = document.getElementById('androidCameraVideo');
-            if (video) {
-                video.srcObject = null;
+            const cameraVideo = document.getElementById('cameraVideo');
+            if (cameraVideo) {
+                cameraVideo.srcObject = null;
             }
+        }
+
+        function handleScannedCode(code) {
+            if (!code || code.trim().length === 0) return;
             
-            document.getElementById('androidScannerModal').style.display = 'none';
+            stopCameraStream();
+            document.getElementById('modeBarcode').checked = true;
+            updateSearchUI();
+            
+            const cleanCode = code.toString().trim();
+            const searchInput = document.getElementById('searchInput');
+            searchInput.value = cleanCode;
+            updateClearButton();
+            
+            const results = performSimpleSearch(cleanCode, 'barcode');
+            showScanResults(cleanCode, results);
         }
 
         // ===== ФУНКЦИИ ДЛЯ iOS СКАНЕРА =====
 
         async function openIOSScanner() {
+            console.log('Открытие iOS сканера...');
+            
             const iosModal = document.getElementById('iosScannerModal');
             iosModal.style.display = 'block';
             
             document.getElementById('iosScannerLoader').style.display = 'block';
+            showIOSScannerStatus('Инициализация камеры...');
+      
 
             setTimeout(() => {
                 initIOSBarcodeScanner();
@@ -21721,7 +21626,10 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                     videoConstraints: {
                         width: { min: 640, ideal: 1280, max: 1920 },
                         height: { min: 480, ideal: 720, max: 1080 },
-                        facingMode: { ideal: "environment" }
+                        facingMode: { ideal: "environment" },
+                        advanced: [{
+                            focusMode: "continuous",
+                        }]
                     }
                 };
 
@@ -21733,24 +21641,80 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                     onIOSScanSuccess,
                     onIOSScanError
                 ).then(() => {
+                    console.log('iOS сканирование запущено успешно');
                     iosIsScanning = true;
+
                     document.getElementById('iosScannerLoader').style.display = 'none';
-                }).catch(() => {
-                    showIOSNoCameraMessage();
+                    document.getElementById('iosNoCameraMessage').style.display = 'none';
+                    hideIOSScannerStatus();
+
+                    setTimeout(() => {
+                        if (iosHtml5QrCode && iosIsScanning) {
+                            try {
+                                iosHtml5QrCode.applyVideoConstraints({
+                                    focusMode: "continuous"
+                                }).catch(e => console.warn('Не удалось установить focusMode:', e));
+
+                                const isNewIPhone = /iPhone 1[1-9]|iPhone 2[0-9]|iPhone 1[0-9] Pro/.test(navigator.userAgent);
+                                if (isNewIPhone) {
+                                    setTimeout(() => {
+                                        iosHtml5QrCode.applyVideoConstraints({
+                                            advanced: [{ zoom: 2.2 }]
+                                        }).catch(e => console.warn('Зум не поддерживается:', e));
+                                    }, 500);
+                                }
+
+                            } catch (e) {
+                                console.warn('Ошибка при настройке камеры:', e);
+                            }
+                        }
+                    }, 1500);
+
+                }).catch(err => {
+                    console.error('Ошибка запуска iOS сканера:', err);
+
+                    if (err.toString().includes('Overconstrained') || err.toString().includes('environment')) {
+                        console.log('Запасной план: без сложных constraints');
+                        showIOSScannerStatus('Настройка камеры...');
+
+                        iosHtml5QrCode.start(
+                            { facingMode: "environment" },
+                            {
+                                fps: 10,
+                                qrbox: { width: 250, height: 150 },
+                                rememberLastUsedCamera: true
+                            },
+                            onIOSScanSuccess,
+                            onIOSScanError
+                        ).then(() => {
+                            iosIsScanning = true;
+                            document.getElementById('iosScannerLoader').style.display = 'none';
+                            hideIOSScannerStatus();
+                        }).catch(err2 => {
+                            console.error('Запасной план тоже не сработал:', err2);
+                            showIOSNoCameraMessage();
+                        });
+                    } else {
+                        showIOSNoCameraMessage();
+                    }
                 });
 
             } catch (error) {
+                console.error('Критическая ошибка инициализации iOS сканера:', error);
                 showIOSNoCameraMessage();
             }
         }
 
-        function onIOSScanSuccess(decodedText) {
+        function onIOSScanSuccess(decodedText, decodedResult) {
+            console.log('iOS сканирование успешно:', decodedText);
+            
             if (iosLastScannedCode === decodedText) {
                 return;
             }
             
             iosLastScannedCode = decodedText;
 
+            
             if (iosHtml5QrCode && iosIsScanning) {
                 iosHtml5QrCode.stop().then(() => {
                     iosIsScanning = false;
@@ -21758,15 +21722,16 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                     iosIsScanning = false;
                 });
             }
-
-            setTimeout(() => { 
+ 
+			setTimeout(() => { 
                 closeIOSScanner();
                 
                 document.getElementById('modeBarcode').checked = true;
                 updateSearchUI();
                 
                 const cleanCode = decodedText.toString().trim();
-                document.getElementById('searchInput').value = cleanCode;
+                const searchInput = document.getElementById('searchInput');
+                searchInput.value = cleanCode;
                 updateClearButton();
                 
                 const results = performSimpleSearch(cleanCode, 'barcode');
@@ -21775,23 +21740,32 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 setTimeout(() => {
                     iosLastScannedCode = '';
                 }, 3000);
-            }, 5);
+			}, 5);				
         }
 
-        function onIOSScanError(error) {}
+        function onIOSScanError(error) {
+            if (!error.includes('NotFoundException') && !error.includes('No multi format readers configured')) {
+                console.warn('Ошибка iOS сканирования:', error);
+            }
+        }
 
         function showIOSNoCameraMessage() {
             document.getElementById('iosScannerLoader').style.display = 'none';
             document.getElementById('iosNoCameraMessage').style.display = 'block';
+            hideIOSScannerStatus();
         }
 
         function closeIOSScanner() {
+            console.log('Закрытие iOS сканера...');
+            
             if (iosHtml5QrCode && iosIsScanning) {
                 iosHtml5QrCode.stop().then(() => {
+                    console.log('iOS сканирование остановлено');
                     iosHtml5QrCode.clear();
                     iosHtml5QrCode = null;
                     iosIsScanning = false;
-                }).catch(() => {
+                }).catch(err => {
+                    console.log('Ошибка остановки iOS сканера:', err);
                     iosHtml5QrCode = null;
                     iosIsScanning = false;
                 });
@@ -21799,6 +21773,50 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             
             document.getElementById('iosScannerModal').style.display = 'none';
             document.getElementById('iosNoCameraMessage').style.display = 'none';
+            hideIOSScannerStatus();
+            
+            iosCurrentFacingMode = 'environment';
+        }
+
+        function showIOSScannerStatus(message) {
+            const status = document.getElementById('iosScannerStatus');
+            status.textContent = message;
+            status.style.display = 'block';
+        }
+
+        function hideIOSScannerStatus() {
+            document.getElementById('iosScannerStatus').style.display = 'none';
+        }
+
+        function switchIOSCamera() {
+            if (!iosHtml5QrCode || !iosIsScanning) return;
+            
+            iosCurrentFacingMode = iosCurrentFacingMode === 'environment' ? 'user' : 'environment';
+            
+            showIOSScannerStatus('Переключение камеры...');
+            
+            iosHtml5QrCode.stop().then(() => {
+                iosHtml5QrCode.clear();
+                
+                const config = {
+                    fps: 10,
+                    qrbox: { width: 250, height: 150 },
+                    rememberLastUsedCamera: true,
+                    supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+                };
+                
+                iosHtml5QrCode.start(
+                    { facingMode: iosCurrentFacingMode },
+                    config,
+                    onIOSScanSuccess,
+                    onIOSScanError
+                ).then(() => {
+                    hideIOSScannerStatus();
+                }).catch(err => {
+                    console.error('Ошибка переключения камеры:', err);
+                    showIOSScannerStatus('Ошибка переключения камеры');
+                });
+            }).catch(() => {});
         }
 
         // ===== ОБЩИЕ ФУНКЦИИ =====
@@ -21806,44 +21824,68 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         function showScanResults(code, results) {
             lastScannedCode = code;
             
+            const resultCount = document.getElementById('resultCount');
+            const resultProducts = document.getElementById('resultProducts');
+            const cameraModal = document.getElementById('cameraModal');
+            const resultModal = document.getElementById('resultModal');
+            
             if (results.length === 0) {
-                document.getElementById('resultCount').textContent = 'Товары не найдены';
-                document.getElementById('resultProducts').innerHTML = '<div class="scan-result-card" style="text-align: center; color: #666; font-style: italic;">По этому штрихкоду товары не найдены в базе данных</div>';
+                resultCount.textContent = 'Товары не найдены';
+                resultCount.style.color = '#f44336';
+                resultProducts.innerHTML = '<div class="scan-result-card" style="text-align: center; color: #666; font-style: italic;">По этому штрихкоду товары не найдены в базе данных</div>';
             } else {
                 const groupedResults = groupProductsByKey(results);
-                document.getElementById('resultCount').textContent = `Найдено товаров: ${results.length} (${groupedResults.length} уникальных)`;
+                resultCount.textContent = `Найдено товаров: ${results.length} (${groupedResults.length} уникальных)`;
+                resultCount.style.color = '#4CAF50';
                 
-                let productsHtml = '';
+                resultProducts.innerHTML = '';
+                
                 groupedResults.forEach(product => {
-                    const hasImage = product.imageCode && product.imageCode.trim() !== '';
+                    const productCard = document.createElement('div');
+                    productCard.className = 'scan-result-card';
                     
-                    productsHtml += `
-                        <div class="scan-result-card">
-                            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">
-                                <strong>Штрихкод:</strong> ${product.count > 1 ? `Несколько (${product.count})` : product.barcode}
-                            </div>
-                            <div style="font-weight: bold; color: #333; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center;">
-                                    <strong>Артикул:</strong> ${product.article}
-                                    ${hasImage ? '<span style="margin-left: 10px;">&#127750;</span>' : '<span class="no-image-text">(без изображения)</span>'}
-                                </div>
-                                <button class="print-button" onclick="openPrintModal(${JSON.stringify(product).replace(/"/g, '&quot;')})" title="Печать ценника">&#129534;</button>
-                            </div>
-                            <div style="font-size: 16px; color: #222; margin-bottom: 8px;">
-                                ${product.name}
-                            </div>
-                            ${formatPriceWithDiscountModal(product)}
-                            ${formatStockInfoModal(product)}
+                    const hasImage = product.imageCode && product.imageCode.trim() !== '';
+                    const printButtonHTML = `<button class="print-button" onclick="openPrintModal(${JSON.stringify(product).replace(/"/g, '&quot;')})" title="Печать ценника">&#129534;</button>`;
+
+                    productCard.innerHTML = `
+                        <div style="font-size: 12px; color: #666; margin-bottom: 5px;">
+                            <strong>Штрихкод:</strong> ${product.count > 1 ? `Несколько (${product.count})` : product.barcode}
                         </div>
+                        <div style="font-weight: bold; color: #333; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center;" id="articleContainer_${product.article.replace(/[^a-zA-Z0-9]/g, '_')}">
+                                <strong>Артикул:</strong> ${product.article}
+                                ${hasImage ? '<button class="image-button" style="margin-left: 10px;">&#127750;</button>' : '<span class="no-image-text">(без изображения)</span>'}
+                            </div>
+                            ${printButtonHTML}
+                        </div>
+                        <div style="font-size: 16px; color: #222; margin-bottom: 8px;">
+                            ${product.name}
+                        </div>
+                        ${formatPriceWithDiscountModal(product)}
+                        ${formatStockInfoModal(product)}
                     `;
+                    
+                    if (hasImage) {
+                        setTimeout(() => {
+                            const container = productCard.querySelector(`#articleContainer_${product.article.replace(/[^a-zA-Z0-9]/g, '_')}`);
+                            if (container) {
+                                const imageButton = container.querySelector('.image-button');
+                                if (imageButton) {
+                                    imageButton.onclick = function() {
+                                        showProductImage(product);
+                                    };
+                                }
+                            }
+                        }, 0);
+                    }
+                    
+                    resultProducts.appendChild(productCard);
                 });
-                
-                document.getElementById('resultProducts').innerHTML = productsHtml;
             }
             
-            document.getElementById('androidScannerModal').style.display = 'none';
+            cameraModal.style.display = 'none';
             document.getElementById('iosScannerModal').style.display = 'none';
-            document.getElementById('resultModal').style.display = 'flex';
+            resultModal.style.display = 'flex';
         }
 
         function formatStockInfoModal(product) {
@@ -21894,6 +21936,25 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             return html;
         }
 
+        function createMultipleBarcodesHTML(barcodes, query) {
+            const uniqueBarcodes = [...new Set(barcodes)];
+            const barcodesCount = uniqueBarcodes.length;
+            
+            let html = `<span class="multiple-barcodes" onclick="showBarcodeTooltip(event, this)">Несколько (${barcodesCount})</span>`;
+            html += `<div class="barcode-tooltip">`;
+            html += `<div class="barcode-list">`;
+            
+            uniqueBarcodes.forEach(barcode => {
+                const highlightedBarcode = highlightMatch(barcode, query);
+                html += `<div class="barcode-item">${highlightedBarcode}</div>`;
+            });
+            
+            html += `</div>`;
+            html += `</div>`;
+            
+            return html;
+        }
+
         function createBarcodesListHTML(barcodes, scannedCode) {
             const uniqueBarcodes = [...new Set(barcodes)];
             const barcodesCount = uniqueBarcodes.length;
@@ -21917,9 +21978,51 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             return html;
         }
 
+        function showBarcodeTooltip(event, element) {
+            event.stopPropagation();
+            
+            document.querySelectorAll('.barcode-tooltip').forEach(tooltip => {
+                tooltip.style.display = 'none';
+            });
+            
+            const tooltip = element.nextElementSibling;
+            if (tooltip && tooltip.classList.contains('barcode-tooltip')) {
+                tooltip.style.display = 'block';
+                
+                const rect = element.getBoundingClientRect();
+                tooltip.style.position = 'fixed';
+                tooltip.style.left = Math.min(rect.left, window.innerWidth - 320) + 'px';
+                tooltip.style.top = (rect.bottom + 5) + 'px';
+                
+                const closeTooltip = (e) => {
+                    if (!tooltip.contains(e.target) && e.target !== element) {
+                        tooltip.style.display = 'none';
+                        document.removeEventListener('click', closeTooltip);
+                    }
+                };
+                
+                setTimeout(() => {
+                    document.addEventListener('click', closeTooltip);
+                }, 100);
+            }
+        }
+
         function toggleBarcodesList(element) {
             const list = element.querySelector('.scan-result-barcodes-list');
             list.classList.toggle('expanded');
+            
+            const title = element.querySelector('.scan-result-barcodes-title span:last-child');
+            if (list.classList.contains('expanded')) {
+                title.textContent = 'нажмите для скрытия';
+            } else {
+                title.textContent = 'нажмите для просмотра';
+            }
+        }
+
+        function highlightMatch(text, searchTerm) {
+            if (!searchTerm || !text) return text;
+            const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.toString().replace(regex, '<mark>$1</mark>');
         }
 
         // ===== ОСТАЛЬНЫЕ ФУНКЦИИ =====
@@ -21976,10 +22079,13 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 switch(mode) {
                     case 'article':
                         return product.article.toLowerCase().includes(searchTerm.toLowerCase());
+                    
                     case 'barcode':
                         return product.barcode.includes(searchTerm);
+                    
                     case 'name':
                         return product.name.toLowerCase().includes(searchTerm.toLowerCase());
+                    
                     default:
                         return product.article.toLowerCase().includes(searchTerm.toLowerCase());
                 }
@@ -22043,6 +22149,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             if (hasImage) {
                 const imageButton = document.createElement('button');
                 imageButton.className = 'image-button';
+                imageButton.title = 'Показать изображение товара';
                 imageButton.innerHTML = '&#127750;';
                 imageButton.onclick = function() {
                     showProductImage(product);
@@ -22057,6 +22164,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             
             const printButton = document.createElement('button');
             printButton.className = 'print-button';
+            printButton.title = 'Печать ценника';
             printButton.innerHTML = '&#129534;';
             printButton.onclick = function() {
                 openPrintModal(product);
@@ -22229,7 +22337,12 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 hasText = searchInput.value.trim() !== '';
             }
             
-            document.getElementById('clearSearchBtn').style.display = hasText ? 'block' : 'none';
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+            if (hasText) {
+                clearSearchBtn.style.display = 'block';
+            } else {
+                clearSearchBtn.style.display = 'none';
+            }
         }
 
         function clearSearchFields() {
@@ -22245,7 +22358,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             }
             
             updateClearButton();
-            document.getElementById('resultsContainer').style.display = 'none';
+            resultsContainer.style.display = 'none';
         }
 
         function showProductImage(product) {
@@ -22254,10 +22367,11 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             modal.id = 'imageModal';
             modal.style.display = 'flex';
             
-            let imageCode = product.alternativeImageCode || '';
-            let alternativeImageCode = product.imageCode || '';
+			let imageCode = product.alternativeImageCode || '';
+			let alternativeImageCode = product.imageCode || '';
             
             let imageUrl = '';
+            let errorMessage = '';
             
             if (imageCode) {
                 const cleanCode = imageCode.trim();
@@ -22273,19 +22387,33 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 <div class="modal-frame" style="max-width: 90%; max-height: 90%;">
                     <div style="text-align: center; padding: 20px;">
                         <h3 style="margin-bottom: 20px;">${product.article} - ${product.name}</h3>
-                        <div style="max-height: 70vh; overflow: auto; margin: 20px 0;">
-                            <img src="${imageUrl || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%25%22 y=%2250%25%22 font-size=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22>&#128247;</text></svg>'}" 
-                                 style="max-width: 100%; max-height: 60vh; border-radius: 8px;"
-                                 onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%25%22 y=%2250%25%22 font-size=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22>&#10060;</text></svg>'">
+                        <div style="max-height: 70vh; overflow: auto; margin: 20px 0;" id="imageContainer">
+                            <img id="productImage" 
+                                 src="${imageUrl || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%25%22 y=%2250%25%22 font-size=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22>&#128247;</text></svg>'}" 
+                                 style="max-width: 100%; max-height: 60vh; border-radius: 8px; display: block; margin: 0 auto;"
+                                 onerror="handleImageError(this, '${alternativeImageCode.replace(/'/g, "\\'")}')"
+                                 alt="Изображение товара">
+                            <div id="imageError" style="display: none; padding: 40px; color: #999;">
+                                <div style="font-size: 48px; margin-bottom: 20px;">&#128247;</div>
+                                <div style="font-size: 18px; font-weight: bold; color: #666;">Изображение не найдено</div>
+                                <div style="font-size: 12px; margin-top: 10px; color: #999;">Пробуем альтернативный код...</div>
+                            </div>
                         </div>
-                        <button onclick="this.closest('.modal-overlay').style.display='none'" 
-                                class="camera-btn" 
-                                style="background-color: #f44336;">
-                            Закрыть
-                        </button>
+                        <div style="margin-top: 15px; text-align: center;">
+                            <button onclick="this.closest('.modal-overlay').style.display='none'" 
+                                    class="camera-btn" 
+                                    style="background-color: #f44336; min-width: 200px;">
+                                Закрыть
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
+            
+            const oldModal = document.getElementById('imageModal');
+            if (oldModal) {
+                oldModal.remove();
+            }
             
             document.body.appendChild(modal);
             
@@ -22296,57 +22424,61 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             };
         }
 
-        function highlightMatch(text, searchTerm) {
-            if (!searchTerm || !text) return text;
-            const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-            return text.toString().replace(regex, '<mark>$1</mark>');
-        }
-
-        function createMultipleBarcodesHTML(barcodes, query) {
-            const uniqueBarcodes = [...new Set(barcodes)];
-            const barcodesCount = uniqueBarcodes.length;
+        function handleImageError(imgElement, alternativeImageCode) {
+            const errorDiv = document.getElementById('imageError');
+            const imageContainer = document.getElementById('imageContainer');
             
-            let html = `<span class="multiple-barcodes" onclick="showBarcodeTooltip(event, this)">Несколько (${barcodesCount})</span>`;
-            html += `<div class="barcode-tooltip">`;
-            html += `<div class="barcode-list">`;
-            
-            uniqueBarcodes.forEach(barcode => {
-                const highlightedBarcode = highlightMatch(barcode, query);
-                html += `<div class="barcode-item">${highlightedBarcode}</div>`;
-            });
-            
-            html += `</div>`;
-            html += `</div>`;
-            
-            return html;
-        }
-
-        function showBarcodeTooltip(event, element) {
-            event.stopPropagation();
-            
-            document.querySelectorAll('.barcode-tooltip').forEach(tooltip => {
-                tooltip.style.display = 'none';
-            });
-            
-            const tooltip = element.nextElementSibling;
-            if (tooltip && tooltip.classList.contains('barcode-tooltip')) {
-                tooltip.style.display = 'block';
+            if (alternativeImageCode && alternativeImageCode.trim() !== '') {
+                const cleanCode = alternativeImageCode.trim();
+                let fileName = cleanCode;
+                if (!fileName.includes('.jpg') && !fileName.includes('.jpeg') && 
+                    !fileName.includes('.png') && !fileName.includes('.gif')) {
+                    fileName += '.jpg';
+                }
+                const alternativeUrl = `https://kubanstar.ru/images/virtuemart/product/${fileName}`;
                 
-                const rect = element.getBoundingClientRect();
-                tooltip.style.position = 'fixed';
-                tooltip.style.left = Math.min(rect.left, window.innerWidth - 320) + 'px';
-                tooltip.style.top = (rect.bottom + 5) + 'px';
+                if (errorDiv) {
+                    errorDiv.style.display = 'block';
+                    errorDiv.innerHTML = `
+                        <div style="font-size: 48px; margin-bottom: 20px;">&#128260;</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #666;">Загружаем альтернативное изображение...</div>
+                        <div style="font-size: 12px; margin-top: 10px; color: #999;">Код: ${alternativeImageCode}</div>
+                    `;
+                }
                 
-                const closeTooltip = (e) => {
-                    if (!tooltip.contains(e.target) && e.target !== element) {
-                        tooltip.style.display = 'none';
-                        document.removeEventListener('click', closeTooltip);
-                    }
+                const newImg = new Image();
+                newImg.onload = function() {
+                    imgElement.src = alternativeUrl;
+                    imgElement.style.display = 'block';
+                    if (errorDiv) errorDiv.style.display = 'none';
                 };
-                
-                setTimeout(() => {
-                    document.addEventListener('click', closeTooltip);
-                }, 100);
+                newImg.onerror = function() {
+                    if (errorDiv) {
+                        errorDiv.style.display = 'block';
+                        errorDiv.innerHTML = `
+                            <div style="font-size: 48px; margin-bottom: 20px;">&#10060;</div>
+                            <div style="font-size: 18px; font-weight: bold; color: #666;">Изображение не найдено</div>
+                            <div style="font-size: 12px; margin-top: 10px; color: #999;">
+                                Основной код: ${imgElement.src.includes('kubanstar.ru') ? imgElement.src.split('/').pop() : 'не указан'}<br>
+                                Альтернативный код: ${alternativeImageCode || 'не указан'}
+                            </div>
+                        `;
+                    }
+                    imgElement.style.display = 'none';
+                };
+                newImg.src = alternativeUrl;
+            } else {
+                if (errorDiv) {
+                    errorDiv.style.display = 'block';
+                    errorDiv.innerHTML = `
+                        <div style="font-size: 48px; margin-bottom: 20px;">&#10060;</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #666;">Изображение не найдено</div>
+                        <div style="font-size: 12px; margin-top: 10px; color: #999;">
+                            Код изображения: ${imgElement.src.includes('kubanstar.ru') ? imgElement.src.split('/').pop() : 'не указан'}
+                        </div>
+                    `;
+                }
+                imgElement.style.display = 'none';
             }
         }
 
@@ -22356,27 +22488,17 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             const scrollToTopBtn = document.getElementById('scrollToTopBtn');
             
             window.addEventListener('scroll', function() {
-                scrollToTopBtn.classList.toggle('show', window.pageYOffset > 300);
+                if (window.pageYOffset > 300) {
+                    scrollToTopBtn.classList.add('show');
+                } else {
+                    scrollToTopBtn.classList.remove('show');
+                }
             });
             
             scrollToTopBtn.addEventListener('click', function() {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-        }
-
-        function setupPriceTagTypeSelector() {
-            const options = document.querySelectorAll('.price-tag-type-option');
-            
-            options.forEach(option => {
-                option.addEventListener('click', function() {
-                    options.forEach(opt => opt.classList.remove('selected'));
-                    this.classList.add('selected');
-                    this.querySelector('input[type="radio"]').checked = true;
-                    currentPriceTagType = this.getAttribute('data-type');
-                    
-                    if (currentProductForPrint) {
-                        updatePriceTagPreview(currentProductForPrint, currentPriceTagType);
-                    }
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
                 });
             });
         }
@@ -22395,25 +22517,83 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         const nameInput = document.getElementById('nameInput');
         const barcodeInput = document.getElementById('barcodeInput');
         
-        const closeAndroidScannerBtn = document.getElementById('closeAndroidScanner');
-        const closeIOSScannerBtn = document.getElementById('closeIOSScanner');
-        const continueScanBtn = document.getElementById('continueScanBtn');
-        const closeResultBtn = document.getElementById('closeResultBtn');
+        const cameraModal = document.getElementById('cameraModal');
+        const resultModal = document.getElementById('resultModal');
+        const printModal = document.getElementById('printModal');
+        const datesModal = document.getElementById('datesModal');
+        const closeCameraModal = document.getElementById('closeCameraModal');
         const closePrintModalBtn = document.getElementById('closePrintModal');
         const closeDatesModalBtn = document.getElementById('closeDatesModal');
+        
+        const cameraVideo = document.getElementById('cameraVideo');
+        const stopCameraBtn = document.getElementById('stopCamera');
+        
+        const resultCount = document.getElementById('resultCount');
+        const resultProducts = document.getElementById('resultProducts');
+        const continueScanBtn = document.getElementById('continueScanBtn');
+        const closeResultBtn = document.getElementById('closeResultBtn');
+
         const printActionBtn = document.getElementById('printActionBtn');
+
         const priceTagTypeSelector = document.getElementById('priceTagTypeSelector');
+
+        // Элементы iOS сканера
+        const closeIOSScannerBtn = document.getElementById('closeIOSScanner');
+        const switchIOSCameraBtn = document.getElementById('switchIOSCamera');
 
         function updateSearchUI() {
             const mode = getCurrentSearchMode();
-            combinedSearchFields.style.display = mode === 'combined' ? 'flex' : 'none';
-            searchInput.style.display = mode === 'combined' ? 'none' : 'block';
+            
+            if (mode === 'combined') {
+                combinedSearchFields.style.display = 'flex';
+                searchInput.style.display = 'none';
+            } else {
+                combinedSearchFields.style.display = 'none';
+                searchInput.style.display = 'block';
+            }
+            
             updateClearButton();
+        }
+
+        function setupPriceTagTypeSelector() {
+            const options = priceTagTypeSelector.querySelectorAll('.price-tag-type-option');
+            
+            options.forEach(option => {
+                option.addEventListener('click', function() {
+                    options.forEach(opt => opt.classList.remove('selected'));
+                    
+                    this.classList.add('selected');
+                    
+                    const radio = this.querySelector('input[type="radio"]');
+                    radio.checked = true;
+                    
+                    currentPriceTagType = this.getAttribute('data-type');
+                    
+                    if (currentProductForPrint) {
+                        updatePriceTagPreview(currentProductForPrint, currentPriceTagType);
+                    }
+                });
+            });
+            
+            const radios = priceTagTypeSelector.querySelectorAll('input[type="radio"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        const option = this.closest('.price-tag-type-option');
+                        currentPriceTagType = option.getAttribute('data-type');
+                        
+                        if (currentProductForPrint) {
+                            updatePriceTagPreview(currentProductForPrint, currentPriceTagType);
+                        }
+                    }
+                });
+            });
         }
 
         // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
 
         searchButton.addEventListener('click', searchProducts);
+
         clearSearchBtn.addEventListener('click', clearSearchFields);
 
         searchInput.addEventListener('input', updateClearButton);
@@ -22421,63 +22601,86 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
         nameInput.addEventListener('input', updateClearButton);
         barcodeInput.addEventListener('input', updateClearButton);
 
-        [searchInput, articleInput, nameInput, barcodeInput].forEach(input => {
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') searchProducts();
-            });
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') searchProducts();
         });
 
-        scanButtonAndroid.addEventListener('click', openAndroidScanner);
+        articleInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') searchProducts();
+        });
+
+        nameInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') searchProducts();
+        });
+
+        barcodeInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') searchProducts();
+        });
+
+        scanButtonAndroid.addEventListener('click', openCamera);
         scanButtonIOS.addEventListener('click', openIOSScanner);
 
-        closeAndroidScannerBtn.addEventListener('click', stopAndroidScanner);
-        closeIOSScannerBtn.addEventListener('click', closeIOSScanner);
+        closeCameraModal.addEventListener('click', function() {
+            stopCameraStream();
+            cameraModal.style.display = 'none';
+        });
 
-        // Добавленные обработчики для Android сканера
-        const androidContent = document.querySelector('.android-scanner-content');
-        if (androidContent) {
-            androidContent.addEventListener('click', (e) => {
-                e.stopPropagation();
-            });
-        }
-
-        document.getElementById('androidScannerModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('androidScannerModal')) {
-                stopAndroidScanner();
+        cameraModal.addEventListener('click', function(e) {
+            if (e.target === cameraModal) {
+                stopCameraStream();
+                cameraModal.style.display = 'none';
             }
         });
 
+        stopCameraBtn.addEventListener('click', function() {
+            stopCameraStream();
+            cameraModal.style.display = 'none';
+        });
+
         continueScanBtn.addEventListener('click', function() {
-            document.getElementById('resultModal').style.display = 'none';
+            resultModal.style.display = 'none';
             setTimeout(() => {
                 if (isIOS()) {
                     openIOSScanner();
                 } else {
-                    openAndroidScanner();
+                    openCamera();
                 }
             }, 300);
         });
 
         closeResultBtn.addEventListener('click', function() {
-            document.getElementById('resultModal').style.display = 'none';
+            resultModal.style.display = 'none';
         });
 
-        document.getElementById('resultModal').addEventListener('click', function(e) {
-            if (e.target === this) this.style.display = 'none';
+        resultModal.addEventListener('click', function(e) {
+            if (e.target === resultModal) resultModal.style.display = 'none';
         });
 
         closePrintModalBtn.addEventListener('click', closePrintModal);
-        document.getElementById('printModal').addEventListener('click', function(e) {
-            if (e.target === this) closePrintModal();
+
+        printModal.addEventListener('click', function(e) {
+            if (e.target === printModal) closePrintModal();
         });
 
         closeDatesModalBtn.addEventListener('click', closeDatesModal);
-        document.getElementById('datesModal').addEventListener('click', function(e) {
-            if (e.target === this) closeDatesModal();
+
+        datesModal.addEventListener('click', function(e) {
+            if (e.target === datesModal) closeDatesModal();
         });
 
         printActionBtn.addEventListener('click', handlePrint);
+
         document.getElementById('current-date').addEventListener('click', openDatesModal);
+
+        // Обработчики iOS сканера
+        closeIOSScannerBtn.addEventListener('click', closeIOSScanner);
+        
+        switchIOSCameraBtn.addEventListener('click', switchIOSCamera);
+
+        const iosScannerModal = document.getElementById('iosScannerModal');
+        iosScannerModal.addEventListener('click', function(e) {
+            if (e.target === iosScannerModal) closeIOSScanner();
+        });
 
         searchModeRadios.forEach(radio => {
             radio.addEventListener('change', function() {
@@ -22498,8 +22701,11 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             initScrollToTopButton();
             setupPriceTagTypeSelector();
 
-            if (DATA_UPDATE_DATE && DATA_UPDATE_DATE.trim() !== "") {
-                let displayDate = DATA_UPDATE_DATE.includes(" ") ? DATA_UPDATE_DATE.split(" ")[0] : DATA_UPDATE_DATE;
+			if (DATA_UPDATE_DATE && DATA_UPDATE_DATE.trim() !== "") {
+                let displayDate = DATA_UPDATE_DATE;
+                if (DATA_UPDATE_DATE.includes(" ")) {
+                    displayDate = DATA_UPDATE_DATE.split(" ")[0];
+                }
                 document.getElementById('current-date').textContent = displayDate;
             }
         });
@@ -22521,13 +22727,14 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             }
         });
 
+        // Обработчик видимости страницы для iOS
         document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                if (iosIsScanning) closeIOSScanner();
-                if (scanInterval) stopAndroidScanner();
+            if (document.hidden && iosIsScanning) {
+                closeIOSScanner();
             }
         });
 
+        // Обработчик ориентации для iOS
         window.addEventListener('orientationchange', function() {
             if (iosIsScanning) {
                 setTimeout(() => {
