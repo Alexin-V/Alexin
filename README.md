@@ -21579,7 +21579,22 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             androidModal.style.display = 'block';
             
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
+                // Останавливаем предыдущий стрим если был
+                if (stream) {
+                    stream.getTracks().forEach(track => {
+                        track.stop();
+                        track.enabled = false;
+                    });
+                    stream = null;
+                }
+                
+                if (scanInterval) {
+                    clearInterval(scanInterval);
+                    scanInterval = null;
+                }
+                
+                // Запрашиваем доступ к камере с конкретным ID
+                stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         deviceId: { exact: ONEPLUS15_CAMERA_ID },
                         width: { ideal: 1280 },
@@ -21589,19 +21604,29 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 
                 const video = document.getElementById('androidCameraVideo');
                 video.srcObject = stream;
-                await video.play();
                 
+                // Ждем пока видео начнет воспроизводиться
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        video.play().then(resolve);
+                    };
+                });
+                
+                // Инициализируем детектор штрихкодов
                 const detector = await initBarcodeDetector();
                 if (!detector) {
+                    alert('BarcodeDetector не поддерживается в этом браузере');
                     stopAndroidScanner();
                     return;
                 }
                 
+                // Создаем canvas для анализа кадров
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
                 
+                // Запускаем интервал сканирования
                 scanInterval = setInterval(async () => {
-                    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    if (video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
                         canvas.width = video.videoWidth;
                         canvas.height = video.videoHeight;
                         
@@ -21610,42 +21635,58 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                         try {
                             const barcodes = await detector.detect(canvas);
                             if (barcodes && barcodes.length > 0) {
+                                // Вибрация при успешном сканировании (если поддерживается)
+                                if (navigator.vibrate) {
+                                    navigator.vibrate(200);
+                                }
                                 handleScannedCode(barcodes[0].rawValue);
                             }
-                        } catch (error) {}
+                        } catch (error) {
+                            // Игнорируем ошибки детекции
+                        }
                     }
                 }, 300);
                 
             } catch (error) {
+                console.error('Ошибка доступа к камере:', error);
                 stopAndroidScanner();
+                
+                let errorMessage = 'Не удалось получить доступ к камере.';
+                if (error.name === 'NotAllowedError') {
+                    errorMessage = 'Доступ к камере запрещен. Разрешите доступ в настройках браузера.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage = 'Камера не найдена.';
+                } else if (error.name === 'OverconstrainedError') {
+                    errorMessage = 'Камера не поддерживает требуемые параметры.';
+                }
+                alert(errorMessage);
             }
         }
 
         function stopAndroidScanner() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
+            try {
+                if (stream) {
+                    stream.getTracks().forEach(track => {
+                        track.stop();
+                        track.enabled = false;
+                    });
+                    stream = null;
+                }
+            } catch (e) {
+                console.error('Ошибка при остановке видео:', e);
             }
+            
             if (scanInterval) {
                 clearInterval(scanInterval);
                 scanInterval = null;
             }
+            
+            const video = document.getElementById('androidCameraVideo');
+            if (video) {
+                video.srcObject = null;
+            }
+            
             document.getElementById('androidScannerModal').style.display = 'none';
-        }
-
-        function handleScannedCode(code) {
-            if (!code || code.trim().length === 0) return;
-            
-            stopAndroidScanner();
-            document.getElementById('modeBarcode').checked = true;
-            updateSearchUI();
-            
-            const cleanCode = code.toString().trim();
-            document.getElementById('searchInput').value = cleanCode;
-            updateClearButton();
-            
-            const results = performSimpleSearch(cleanCode, 'barcode');
-            showScanResults(cleanCode, results);
         }
 
         // ===== ФУНКЦИИ ДЛЯ iOS СКАНЕРА =====
@@ -22391,6 +22432,20 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
 
         closeAndroidScannerBtn.addEventListener('click', stopAndroidScanner);
         closeIOSScannerBtn.addEventListener('click', closeIOSScanner);
+
+        // Добавленные обработчики для Android сканера
+        const androidContent = document.querySelector('.android-scanner-content');
+        if (androidContent) {
+            androidContent.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+
+        document.getElementById('androidScannerModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('androidScannerModal')) {
+                stopAndroidScanner();
+            }
+        });
 
         continueScanBtn.addEventListener('click', function() {
             document.getElementById('resultModal').style.display = 'none';
