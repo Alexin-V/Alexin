@@ -21480,56 +21480,96 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             }
         }
 
-        async function openCamera() {
+async function openCamera() {
+    try {
+        stopCameraStream();
+        
+        // Определяем устройство
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        const isOnePlus15 = userAgent.includes('OnePlus 15') || 
+                           userAgent.includes('OnePlus15') || 
+                           userAgent.includes('OP15') ||
+                           // Добавляем дополнительные проверки
+                           (userAgent.includes('Android') && userAgent.includes('OnePlus'));
+        
+        let constraints = {
+            video: {
+                facingMode: 'environment',
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: false
+        };
+        
+        // Для OnePlus 15 используем найденный ID камеры
+        if (isOnePlus15) {
+            constraints = {
+                video: {
+                    deviceId: { exact: ONEPLUS15_CAMERA_ID },
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: false
+            };
+        }
+        
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        const cameraVideo = document.getElementById('cameraVideo');
+        cameraVideo.srcObject = stream;
+        document.getElementById('cameraModal').style.display = 'flex';
+        
+        await cameraVideo.play();
+        
+        if (!barcodeDetector) {
+            barcodeDetector = await initBarcodeDetector();
+        }
+        
+        if (!barcodeDetector) {
+            alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
+            stopCameraStream();
+            return;
+        }
+        
+        startBarcodeDetection(barcodeDetector);
+        
+    } catch (error) {
+        console.error('Ошибка доступа к камере:', error);
+        
+        // Если это OnePlus 15 и не сработал ID, пробуем обычный режим
+        if (isOnePlus15) {
             try {
-                stopCameraStream();
-                
-                let constraints = {
-                    video: {
-                        facingMode: 'environment',
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
+                const fallbackStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' },
                     audio: false
-                };
-                
-                // Для OnePlus 15 используем конкретный ID камеры
-                if (isOnePlus15()) {
-                    constraints = {
-                        video: {
-                            deviceId: { exact: ONEPLUS15_CAMERA_ID },
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
-                        },
-                        audio: false
-                    };
-                }
-                
-                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                });
                 
                 const cameraVideo = document.getElementById('cameraVideo');
-                cameraVideo.srcObject = stream;
+                cameraVideo.srcObject = fallbackStream;
                 document.getElementById('cameraModal').style.display = 'flex';
                 
                 await cameraVideo.play();
+                stream = fallbackStream;
                 
                 if (!barcodeDetector) {
                     barcodeDetector = await initBarcodeDetector();
                 }
                 
-                if (!barcodeDetector) {
+                if (barcodeDetector) {
+                    startBarcodeDetection(barcodeDetector);
+                } else {
                     alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
                     stopCameraStream();
-                    return;
                 }
                 
-                startBarcodeDetection(barcodeDetector);
-                
-            } catch (error) {
-                console.error('Ошибка доступа к камере:', error);
-                alert('Не удалось получить доступ к камере. Пожалуйста, разрешите доступ к камере в настройках браузера.');
+            } catch (fallbackError) {
+                alert('Не удалось получить доступ к камере на OnePlus 15.');
             }
+        } else {
+            alert('Не удалось получить доступ к камере. Пожалуйста, разрешите доступ к камере в настройках браузера.');
         }
+    }
+}
 
         function startBarcodeDetection(detector) {
             const canvas = document.createElement('canvas');
