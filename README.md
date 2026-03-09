@@ -1450,7 +1450,7 @@
 
     <script>
 		// ===== ДАТА =====
-        const DATA_UPDATE_DATE = "09.03.2026 07:41"; // Будет заполнена AHK скриптом: "04.02.2026"
+        const DATA_UPDATE_DATE = "09.03.2026 08:01"; // Будет заполнена AHK скриптом: "04.02.2026"
         
         // ===== ДАТЫ ИЗМЕНЕНИЯ ФАЙЛОВ =====
         const URAL_OFFICE_DATE = "07.03.2026 10:40"; // Будет заполнена AHK скриптом: "03.02.2026 14:32"
@@ -1480,7 +1480,7 @@
         let iosIsScanning = false;
         let iosLastScannedCode = '';
         let iosCurrentFacingMode = 'environment';
-        
+
         // Пример данных
         const productsData = `6080010075148;KS-8001;Набор для творчества "ЧАСТИЧНАЯ ВЫКЛАДКА СТРАЗАМИ" 10*15 в пакете;70,00;70,00;6;;10;2;0,030;;0,050;0,010;;Cb010003474_1;;;200;Cb010003474_1;
 ЦБ010003475;Q-А998;Парусник на радиоуправлении на батарейках с рулём.;355,00;355,00;;;8;;;;0,167;;;;50;177,50;48;Cb010003475_1;
@@ -21431,6 +21431,10 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             return /Android/.test(navigator.userAgent);
         }
 
+        function isOnePlus15() {
+            return /OnePlus 15|OnePlus15|OP15/i.test(navigator.userAgent);
+        }
+
         function isBarcodeDetectorSupported() {
             return ('BarcodeDetector' in window);
         }
@@ -21459,20 +21463,6 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             }
         }
 
-        function isHTTPS() {
-            return window.location.protocol === 'https:';
-        }
-
-        function isLocalhost() {
-            return window.location.hostname === 'localhost' || 
-                   window.location.hostname === '127.0.0.1' ||
-                   window.location.hostname === '';
-        }
-
-        function canUseCamera() {
-            return true;
-        }
-
         function setupPlatformUI() {
             const scanButtonAndroid = document.getElementById('scanButtonAndroid');
             const scanButtonIOS = document.getElementById('scanButtonIOS');
@@ -21481,62 +21471,134 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 scanButtonAndroid.style.display = 'none';
                 scanButtonIOS.style.display = 'flex';
                 searchButton.style.maxWidth = '300px';
-            } else if (isAndroid()) {
-                scanButtonAndroid.style.display = 'flex';
-                scanButtonIOS.style.display = 'none';
-                setTimeout(() => {
-                    initBarcodeDetector();
-                }, 1000);
             } else {
                 scanButtonAndroid.style.display = 'flex';
                 scanButtonIOS.style.display = 'none';
-                setTimeout(() => {
-                    initBarcodeDetector();
-                }, 1000);
             }
         }
 
-        async function openCamera() {
-            try {
-                stopCameraStream();
+async function openCamera() {
+    try {
+        stopCameraStream();
+        
+        // Для Android выбираем заднюю камеру
+        if (isAndroid()) {
+            // Получаем список камер
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            
+            if (videoDevices.length > 0) {
+                // Находим камеру с самым маленьким номером, которая не фронтальная
+                let selectedCamera = null;
                 
-                const constraints = {
+                // Сортируем по deviceId (обычно нумерация сохраняется)
+                const sortedDevices = [...videoDevices].sort((a, b) => 
+                    a.deviceId.localeCompare(b.deviceId)
+                );
+                
+                for (const device of sortedDevices) {
+                    const label = device.label.toLowerCase();
+                    // Пропускаем фронтальные
+                    if (label.includes('front') || label.includes('фронт')) {
+                        continue;
+                    }
+                    // Берем первую попавшуюся не фронтальную
+                    selectedCamera = device;
+                    break;
+                }
+                
+                // Если не нашли, берем первую камеру
+                if (!selectedCamera) {
+                    selectedCamera = videoDevices[0];
+                }
+                
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        deviceId: { exact: selectedCamera.deviceId },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+            } else {
+                // Если не получилось получить список, используем стандартный режим
+                stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: 'environment',
                         width: { ideal: 1280 },
                         height: { ideal: 720 }
                     },
                     audio: false
-                };
-                
-                stream = await navigator.mediaDevices.getUserMedia(constraints);
-                
-                cameraVideo.srcObject = stream;
-                cameraModal.style.display = 'flex';
-                
-                await cameraVideo.play();
-                
-                if (!barcodeDetector) {
-                    barcodeDetector = await initBarcodeDetector();
-                }
-                
-                if (!barcodeDetector) {
-                    alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
-                    stopCameraStream();
-                    return;
-                }
-                
-                startBarcodeDetection(barcodeDetector);
-                
-            } catch (error) {
-                console.error('Ошибка доступа к камере:', error);
-                alert('Не удалось получить доступ к камере. Пожалуйста, разрешите доступ к камере в настройках браузера.');
+                });
             }
+        } else {
+            // Для iOS и других используем стандартный режим
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'environment',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: false
+            });
         }
+        
+        const cameraVideo = document.getElementById('cameraVideo');
+        cameraVideo.srcObject = stream;
+        document.getElementById('cameraModal').style.display = 'flex';
+        
+        await cameraVideo.play();
+        
+        if (!barcodeDetector) {
+            barcodeDetector = await initBarcodeDetector();
+        }
+        
+        if (!barcodeDetector) {
+            alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
+            stopCameraStream();
+            return;
+        }
+        
+        startBarcodeDetection(barcodeDetector);
+        
+    } catch (error) {
+        console.error('Ошибка доступа к камере:', error);
+        
+        // Если что-то пошло не так, пробуем стандартный режим
+        try {
+            const fallbackStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' },
+                audio: false
+            });
+            
+            const cameraVideo = document.getElementById('cameraVideo');
+            cameraVideo.srcObject = fallbackStream;
+            document.getElementById('cameraModal').style.display = 'flex';
+            
+            await cameraVideo.play();
+            stream = fallbackStream;
+            
+            if (!barcodeDetector) {
+                barcodeDetector = await initBarcodeDetector();
+            }
+            
+            if (barcodeDetector) {
+                startBarcodeDetection(barcodeDetector);
+            } else {
+                alert('Ваш браузер не поддерживает прямое сканирование штрихкодов.');
+                stopCameraStream();
+            }
+            
+        } catch (fallbackError) {
+            alert('Не удалось получить доступ к камере. Пожалуйста, разрешите доступ к камере в настройках браузера.');
+        }
+    }
+}
 
         function startBarcodeDetection(detector) {
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
+            const cameraVideo = document.getElementById('cameraVideo');
             
             scanInterval = setInterval(async () => {
                 if (cameraVideo.readyState === cameraVideo.HAVE_ENOUGH_DATA) {
@@ -21570,7 +21632,10 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
                 clearInterval(scanInterval);
                 scanInterval = null;
             }
-            cameraVideo.srcObject = null;
+            const cameraVideo = document.getElementById('cameraVideo');
+            if (cameraVideo) {
+                cameraVideo.srcObject = null;
+            }
         }
 
         function handleScannedCode(code) {
@@ -21581,6 +21646,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             updateSearchUI();
             
             const cleanCode = code.toString().trim();
+            const searchInput = document.getElementById('searchInput');
             searchInput.value = cleanCode;
             updateClearButton();
             
@@ -21588,7 +21654,7 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             showScanResults(cleanCode, results);
         }
 
-        // ===== НОВЫЕ ФУНКЦИИ ДЛЯ iOS СКАНЕРА =====
+        // ===== ФУНКЦИИ ДЛЯ iOS СКАНЕРА =====
 
         async function openIOSScanner() {
             console.log('Открытие iOS сканера...');
@@ -21605,121 +21671,103 @@ HATBER       ;160ЗКс6В_16765;Записная книжка женщины 16
             }, 300);
         }
 
-// ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ iOS (iPhone 11/12/13/14/15) =====
-function initIOSBarcodeScanner() {
-    try {
-        if (iosHtml5QrCode && iosIsScanning) {
-            iosHtml5QrCode.stop().then(() => {
-                iosHtml5QrCode.clear();
-                iosHtml5QrCode = null;
-            }).catch(() => {
-                iosHtml5QrCode = null;
-            });
-        }
-
-        // КОНФИГУРАЦИЯ: Убираем facingMode из первого параметра!
-        const config = {
-            fps: 10,
-            qrbox: { width: 250, height: 150 },
-            rememberLastUsedCamera: true,
-            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-            // ВАЖНО: Передаем constraints сюда, во второй аргумент!
-            videoConstraints: {
-                width: { min: 640, ideal: 1280, max: 1920 },
-                height: { min: 480, ideal: 720, max: 1080 },
-                facingMode: { ideal: "environment" }, // ideal, не exact
-                // Подсказываем браузеру, что нам нужна камера, которая умеет фокусироваться
-                advanced: [{
-                    focusMode: "continuous",
-                    // Для iOS 17+ можно добавить zoom, но для совместимости оставим ниже
-                }]
-            }
-        };
-
-        iosHtml5QrCode = new Html5Qrcode("ios-qr-reader");
-
-        // ВАЖНО: Первый аргумент - пустой объект!
-        iosHtml5QrCode.start(
-            { }, // НЕ передаем facingMode сюда! Оставляем пустым.
-            config,
-            onIOSScanSuccess,
-            onIOSScanError
-        ).then(() => {
-            console.log('iOS сканирование запущено успешно');
-            iosIsScanning = true;
-
-            document.getElementById('iosScannerLoader').style.display = 'none';
-            document.getElementById('iosNoCameraMessage').style.display = 'none';
-            hideIOSScannerStatus();
-
-            // ----------------------------------------------------
-            // МАГИЯ: Принудительно применяем фокус и зум через 1.5 секунды
-            // ----------------------------------------------------
-            setTimeout(() => {
+        function initIOSBarcodeScanner() {
+            try {
                 if (iosHtml5QrCode && iosIsScanning) {
-                    try {
-                        // 1. Включаем постоянный автофокус
-                        iosHtml5QrCode.applyVideoConstraints({
-                            focusMode: "continuous"
-                        }).then(() => {
-                            console.log('? Режим фокусировки установлен: continuous');
-                        }).catch(e => console.warn('?? Не удалось установить focusMode:', e));
-
-                        // 2. Для iPhone 11 и новее: увеличиваем масштаб (зум)
-                        //    Это компенсирует большую минимальную дистанцию фокуса!
-                        //    Значение 2.0 - 3.0 решает проблему "близко - не видит"
-                        const isNewIPhone = /iPhone 1[1-9]|iPhone 2[0-9]|iPhone 1[0-9] Pro/.test(navigator.userAgent);
-                        if (isNewIPhone) {
-                            setTimeout(() => {
-                                iosHtml5QrCode.applyVideoConstraints({
-                                    advanced: [{ zoom: 2.2 }] // Экспериментально: 2.2 отлично работает на 12 Pro Max
-                                }).then(() => {
-                                    console.log('? Установлен zoom 2.2 для новой камеры');
-                                }).catch(e => console.warn('?? Зум не поддерживается:', e));
-                            }, 500); // Немного с задержкой после установки фокуса
-                        }
-
-                    } catch (e) {
-                        console.warn('Ошибка при настройке камеры:', e);
-                    }
+                    iosHtml5QrCode.stop().then(() => {
+                        iosHtml5QrCode.clear();
+                        iosHtml5QrCode = null;
+                    }).catch(() => {
+                        iosHtml5QrCode = null;
+                    });
                 }
-            }, 1500); // Даем камере полностью инициализироваться
 
-        }).catch(err => {
-            console.error('Ошибка запуска iOS сканера:', err);
+                const config = {
+                    fps: 10,
+                    qrbox: { width: 250, height: 150 },
+                    rememberLastUsedCamera: true,
+                    supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+                    videoConstraints: {
+                        width: { min: 640, ideal: 1280, max: 1920 },
+                        height: { min: 480, ideal: 720, max: 1080 },
+                        facingMode: { ideal: "environment" },
+                        advanced: [{
+                            focusMode: "continuous",
+                        }]
+                    }
+                };
 
-            // --- ЗАПАСНОЙ ПЛАН: Пробуем без videoConstraints если не завелось ---
-            if (err.toString().includes('Overconstrained') || err.toString().includes('environment')) {
-                console.log('?? Запасной план: без сложных constraints');
-                showIOSScannerStatus('Настройка камеры...');
+                iosHtml5QrCode = new Html5Qrcode("ios-qr-reader");
 
                 iosHtml5QrCode.start(
-                    { facingMode: "environment" },
-                    {
-                        fps: 10,
-                        qrbox: { width: 250, height: 150 },
-                        rememberLastUsedCamera: true
-                    },
+                    { },
+                    config,
                     onIOSScanSuccess,
                     onIOSScanError
                 ).then(() => {
+                    console.log('iOS сканирование запущено успешно');
                     iosIsScanning = true;
+
                     document.getElementById('iosScannerLoader').style.display = 'none';
+                    document.getElementById('iosNoCameraMessage').style.display = 'none';
                     hideIOSScannerStatus();
-                }).catch(err2 => {
-                    console.error('Запасной план тоже не сработал:', err2);
-                    showIOSNoCameraMessage();
+
+                    setTimeout(() => {
+                        if (iosHtml5QrCode && iosIsScanning) {
+                            try {
+                                iosHtml5QrCode.applyVideoConstraints({
+                                    focusMode: "continuous"
+                                }).catch(e => console.warn('Не удалось установить focusMode:', e));
+
+                                const isNewIPhone = /iPhone 1[1-9]|iPhone 2[0-9]|iPhone 1[0-9] Pro/.test(navigator.userAgent);
+                                if (isNewIPhone) {
+                                    setTimeout(() => {
+                                        iosHtml5QrCode.applyVideoConstraints({
+                                            advanced: [{ zoom: 2.2 }]
+                                        }).catch(e => console.warn('Зум не поддерживается:', e));
+                                    }, 500);
+                                }
+
+                            } catch (e) {
+                                console.warn('Ошибка при настройке камеры:', e);
+                            }
+                        }
+                    }, 1500);
+
+                }).catch(err => {
+                    console.error('Ошибка запуска iOS сканера:', err);
+
+                    if (err.toString().includes('Overconstrained') || err.toString().includes('environment')) {
+                        console.log('Запасной план: без сложных constraints');
+                        showIOSScannerStatus('Настройка камеры...');
+
+                        iosHtml5QrCode.start(
+                            { facingMode: "environment" },
+                            {
+                                fps: 10,
+                                qrbox: { width: 250, height: 150 },
+                                rememberLastUsedCamera: true
+                            },
+                            onIOSScanSuccess,
+                            onIOSScanError
+                        ).then(() => {
+                            iosIsScanning = true;
+                            document.getElementById('iosScannerLoader').style.display = 'none';
+                            hideIOSScannerStatus();
+                        }).catch(err2 => {
+                            console.error('Запасной план тоже не сработал:', err2);
+                            showIOSNoCameraMessage();
+                        });
+                    } else {
+                        showIOSNoCameraMessage();
+                    }
                 });
-            } else {
+
+            } catch (error) {
+                console.error('Критическая ошибка инициализации iOS сканера:', error);
                 showIOSNoCameraMessage();
             }
-        });
-
-    } catch (error) {
-        console.error('Критическая ошибка инициализации iOS сканера:', error);
-        showIOSNoCameraMessage();
-    }
-}
+        }
 
         function onIOSScanSuccess(decodedText, decodedResult) {
             console.log('iOS сканирование успешно:', decodedText);
@@ -21739,13 +21787,14 @@ function initIOSBarcodeScanner() {
                 });
             }
  
-				setTimeout(() => { 
+			setTimeout(() => { 
                 closeIOSScanner();
                 
                 document.getElementById('modeBarcode').checked = true;
                 updateSearchUI();
                 
                 const cleanCode = decodedText.toString().trim();
+                const searchInput = document.getElementById('searchInput');
                 searchInput.value = cleanCode;
                 updateClearButton();
                 
@@ -21838,6 +21887,11 @@ function initIOSBarcodeScanner() {
 
         function showScanResults(code, results) {
             lastScannedCode = code;
+            
+            const resultCount = document.getElementById('resultCount');
+            const resultProducts = document.getElementById('resultProducts');
+            const cameraModal = document.getElementById('cameraModal');
+            const resultModal = document.getElementById('resultModal');
             
             if (results.length === 0) {
                 resultCount.textContent = 'Товары не найдены';
@@ -22347,6 +22401,7 @@ function initIOSBarcodeScanner() {
                 hasText = searchInput.value.trim() !== '';
             }
             
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
             if (hasText) {
                 clearSearchBtn.style.display = 'block';
             } else {
@@ -22686,6 +22741,7 @@ function initIOSBarcodeScanner() {
         
         switchIOSCameraBtn.addEventListener('click', switchIOSCamera);
 
+        const iosScannerModal = document.getElementById('iosScannerModal');
         iosScannerModal.addEventListener('click', function(e) {
             if (e.target === iosScannerModal) closeIOSScanner();
         });
